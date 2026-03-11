@@ -462,6 +462,8 @@ function estandariza_info( $data ) {
                                           <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $selcompania == "Chilena Consolidada") echo "selected" ?>>Chilena Consolidada</option>
                   <option value="CHUBB"
                                           <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $selcompania == "CHUBB") echo "selected" ?>>CHUBB</option>
+                  <option value="Colmena"
+                                          <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $selcompania == "Colmena") echo "selected" ?>>Colmena</option>
                   <option value="Confuturo"
                                           <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $selcompania == "Confuturo") echo "selected" ?>>Confuturo</option>
                   <option value="Consorcio"
@@ -1157,6 +1159,7 @@ function cambia_deducible() {
     var ramo = document.getElementById("ramo").value;
     var contador = document.getElementById("contador").value;
     var orgn = '<?php echo $camino; ?>';
+    var origen_2='<?php echo $accion_secundaria; ?>';
 
     
     if (ramo == "VEH" || ramo == "VEH - Vehículos Comerciales Livianos" || ramo == "VEH - Vehículos Particulares" ||
@@ -1165,8 +1168,13 @@ function cambia_deducible() {
             document.getElementById('deducible_para_otros[' +i+ ']').style.display="none";
             document.getElementById('deducible_para_RC[' +i+ ']').style.display="none";
             document.getElementById('deducible_para_vehiculos[' +i+ ']').style.display="flex";
-            document.getElementById('cobertura[' +i+ ']').value="Cobertura: Plan L + Taller de marca + Responsabilidad Civil (Daños a terceros) UF 1.500 + Asistencia B + Auto de reemplazo 30 días con copago diario $5.000";
+            
+            if (origen_2 != "renovar" && document.getElementById('cobertura[' + i + ']').value == "") {
+               console.log("entro a renovar cobertura");
+               console.log(document.getElementById('cobertura[' + i + ']').value)
+            document.getElementById('cobertura[' +i+ ']').value="Cobertura: Plan L + Taller de marca + Responsabilidad Civil (Daños a terceros) UF 1.500 + Asistencia B + Auto de reemplazo 30 días con copago diario $5.000"; document.getElementById('cobertura[' +i+ ']').value="Cobertura: Plan L + Taller de marca + Responsabilidad Civil (Daños a terceros) UF 1.500 + Asistencia B + Auto de reemplazo 30 días con copago diario $5.000"; 
                       }
+        }
     } else if (ramo == "INC" || ramo == "Hogar" || ramo == "PyME" || ramo == "INC - Condominio" || ramo ==
         "INC - Hogar" || ramo == "INC - Misceláneos" || ramo == "INC - Perjuicio por Paralización" || ramo ==
         "INC - Pyme" || ramo == "INC - TRBF (Todo Riesgo Bienes Físicos)") {
@@ -2643,7 +2651,7 @@ function vencimientogarantia(){
                 //inicio deducible para vehiculos
                     '<div id="deducible_para_vehiculos[' + iCnt + ']" style="display:none;"> '+
                         '<select class="form-control" id="deducible_vehiculo[' +iCnt+ ']" onChange="pobladeducible()">'+
-                            '<option value="null" ?>Selecciona el deducible </option>'+
+                            ' <option selected disabled value="">Selecciona Deducible...</option>'+
                             '<option value="Sin deducible">Sin deducible</option>'+
                             '<option value="UF 3">UF 3</option>'+
                             '<option value="UF 5">UF 5</option>'+
@@ -2726,8 +2734,8 @@ function vencimientogarantia(){
                     '</div>'+
                 //inicio deducible para vehiculos
                     '<div id="deducible_para_vehiculos[' + iCnt + ']" style="display:none;" > '+
-                        '<select class="form-control" id="deducible_vehiculo[' +iCnt+ ']" onChange="pobladeducible()">'+
-                            '<option value="null" ?>Selecciona el deducible </option>'+
+                        '<select class="form-control" id="deducible_vehiculo[' +iCnt+ ']" onChange="pobladeducible()" >'+
+                            '<option selected disabled value="">Selecciona Deducible...</option>'+
                             '<option value="Sin deducible">Sin deducible</option>'+
                             '<option value="UF 3">UF 3</option>'+
                             '<option value="UF 5">UF 5</option>'+

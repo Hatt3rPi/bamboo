@@ -197,6 +197,7 @@ $(document).ready(function() {
                         case 'Cancelado':
                             estado='<span class="badge badge-dark">'+data+'</span>';
                             break;
+                        
                         default:
                             estado='<span class="badge badge-light">'+data+'</span>';
                             break;

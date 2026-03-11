@@ -32,6 +32,7 @@ $hojaActiva->setCellValue('Q2', 'Dice');
 $hojaActiva->setCellValue('R2', 'Debe Decir');
 $hojaActiva->setCellValue('S2', 'Comentario');
 $hojaActiva->setCellValue('T2', 'Compañia');
+$hojaActiva->setCellValue('U2', 'Estado');
 
 $styleArray = [
     'font' => [
@@ -66,6 +67,7 @@ $hojaActiva->getColumnDimension('Q')->setWidth(40);
 $hojaActiva->getColumnDimension('R')->setWidth(40);
 $hojaActiva->getColumnDimension('S')->setWidth(30);
 $hojaActiva->getColumnDimension('T')->setWidth(15);
+$hojaActiva->getColumnDimension('U')->setWidth(15);
 $fila=3;
 
 while ($rows = mysqli_fetch_object($resultado))
@@ -90,6 +92,7 @@ while ($rows = mysqli_fetch_object($resultado))
     $hojaActiva->setCellValue('R'.$fila, $rows->debe_decir);
     $hojaActiva->setCellValue('S'.$fila, $rows->comentario_endoso);
     $hojaActiva->setCellValue('T'.$fila, $rows->compania);
+    $hojaActiva->setCellValue('U'.$fila, $rows->estado);
     $fila++;
 }
 $fecha = new DateTime(date("Y-m-d H:i:sP"), new DateTimeZone('America/Santiago') );
