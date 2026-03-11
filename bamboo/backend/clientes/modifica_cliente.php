@@ -4,6 +4,8 @@
         session_start(); 
     } 
 require_once "/home/gestio10/public_html/backend/config.php";
+mysqli_set_charset($link, 'utf8');
+mysqli_select_db($link, 'gestio10_asesori1_bamboo');
 $rut_completo = preg_replace('/[^k0-9]/i', '', $_POST["rut2"]);
 
 $id=estandariza_info($_POST["id"]);
@@ -37,6 +39,7 @@ foreach (array_keys($_POST['nombrecontact']) as $key) {
   $vacio = "";
   $borrar2=  "DELETE from clientes_contactos  WHERE id_cliente=".$id." and nombre='".$vacio."';";
 mysqli_query($link,$borrar2);
+mysqli_close($link);
 /*
 ECHO "<br>".$borrar;
 ECHO "<br>".$borrar2;

@@ -9,9 +9,10 @@ function estandariza_info( $data ) {
   return $data;
 }
 require_once "/home/gestio10/public_html/backend/config.php";
+mysqli_set_charset($link, 'utf8');
+mysqli_select_db($link, 'gestio10_asesori1_bamboo');
 if ( $_SERVER[ "REQUEST_METHOD" ] == "POST" ) {
-mysqli_set_charset( $link, 'utf8' );
-mysqli_select_db( $link, 'gestio10_asesori1_bamboo' );
+
 //poliza
 if ( $_POST[ "tipo" ] == "buscar" ) {
   $ramo = $_POST[ "ramo" ];
@@ -66,6 +67,7 @@ $template = str_replace( '_[SU_ini]_', '', $template );
 $template = str_replace( '_[SU_fin]_', '', $template );
 $url = htmlspecialchars( "https://mail.google.com/mail/?view=cm&fs=1&to=$destinatario&su=$subject&body=$body" );
 }
+mysqli_close($link);
 ?>
 
 <!DOCTYPE html>

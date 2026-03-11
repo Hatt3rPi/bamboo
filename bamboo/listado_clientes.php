@@ -11,6 +11,8 @@ function estandariza_info($data) {
     return $data;
   }
 require_once "/home/gestio10/public_html/backend/config.php";
+mysqli_set_charset($link, 'utf8');
+mysqli_select_db($link, 'gestio10_asesori1_bamboo');
 $num=0;
  $busqueda=$busqueda_err=$data='';
  $rut=$nombre=$telefono=$correo=$lista='';
@@ -169,7 +171,7 @@ $buscar= estandariza_info($_POST["busqueda"]);
                     '</select> registros',
                     "sInfoFiltered": "(Resultado búsqueda: _TOTAL_ de _MAX_ registros totales)",
                 "sLengthMenu": "Muestra _MENU_ registros por página",
-                "sZeroRecords": "No hay registros asociados",
+                "sZeroRecords": "Se están cargando los registros. Espera unos segundos más.",
                 "sInfo": "Mostrando página _PAGE_ de _PAGES_",
                 "sInfoEmpty": "No hay registros disponibles",
                 "oPaginate": {

@@ -11,7 +11,8 @@ function estandariza_info( $data ) {
   return $data;
 }
 require_once "/home/gestio10/public_html/backend/config.php";
-
+mysqli_set_charset($link, 'utf8');
+mysqli_select_db($link, 'gestio10_asesori1_bamboo');
 if ( $_SERVER[ "REQUEST_METHOD" ] == "POST" ) {
   mysqli_set_charset( $link, 'utf8' );
   mysqli_select_db( $link, 'gestio10_asesori1_bamboo' );
@@ -51,7 +52,7 @@ $camino =  $_POST[ "tipo" ];
       }
       break;
   }
-
+  mysqli_close($link);
 
   $template_ejemplo = $template;
   $template_ejemplo = str_replace( '_[NOMBRE_CLIENTE]_', 'Juan Pérez', $template_ejemplo );
@@ -144,8 +145,10 @@ $camino =  $_POST[ "tipo" ];
             <option value="null">Selecciona una instancia</option>
           <option value="info_cotizar" <?php if ($instancia == "info_cotizar") echo "selected" ?>>Información para Cotizar</option>
           <option value="envio_cotizacion" <?php if ($instancia == "envio_cotizacion") echo "selected" ?>>Envío de Cotización</option>
-          <option value="envio_poliza" <?php if ($instancia == "envio_poliza") echo "selected" ?>>Enviar póliza</option>
-          <option value="reenvio_poliza" <?php if ($instancia == "reenvio_poliza") echo "selected" ?>>Reenviar póliza</option>
+          <option value="envio_poliza" <?php if ($instancia == "envio_poliza") echo "selected" ?>>Enviar póliza - Un Item</option>
+          <option value="reenvio_poliza" <?php if ($instancia == "reenvio_poliza") echo "selected" ?>>Reenviar póliza - Un Item</option>
+          <option value="varios_items_envio_poliza" <?php if ($instancia == "varios_items_envio_poliza") echo "selected" ?>>Enviar póliza - Varios Items</option>
+          <option value="varios_items_reenvio_poliza" <?php if ($instancia == "varios_items_reenvio_poliza") echo "selected" ?>>Reenviar póliza - Varios Items</option>
         </select>
       </div>
       <div class="col-6">

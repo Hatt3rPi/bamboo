@@ -12,7 +12,9 @@ function estandariza_info($data) {
     return $data;
   }
 require_once "/home/gestio10/public_html/backend/config.php";
-$num_cliente=$num_poliza=0;
+mysqli_set_charset($link, 'utf8');
+mysqli_select_db($link, 'gestio10_asesori1_bamboo');
+$num_cliente=$num_poliza=$num_prop_poliza=0;
  $busqueda=$busqueda_err=$data=$resultado_poliza='';
  $tarea=$fecha_vencimiento=$recurrente=$tarea_con_fecha_fin=$fecha_fin='';
  $rut=$nombre=$telefono=$correo=$tabla_clientes=$tabla_poliza=$dia_recordatorio=$prioridad=$tipo_tarea='';
@@ -59,7 +61,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         mysqli_set_charset( $link, 'utf8');
         mysqli_select_db($link, 'gestio10_asesori1_bamboo');
             //poliza
-            $resultado_poliza=mysqli_query($link, 'SELECT id, compania, vigencia_final, numero_poliza, materia_asegurada, patente_ubicacion,cobertura, rut_proponente, rut_asegurado FROM polizas where id='.$busqueda.' order by compania, numero_poliza;');
+            $resultado_poliza=mysqli_query($link, 'SELECT distinct a.id, compania, vigencia_final, a.numero_poliza, rut_proponente, b.rut_asegurado FROM polizas_2 as a left join items as b on a.numero_poliza=b.numero_poliza where a.id='.$busqueda.' order by compania, a.numero_poliza;');
 
             While($row=mysqli_fetch_object($resultado_poliza))
                 {
@@ -67,13 +69,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     $compania = $row->compania;
                     $vigencia_final= $row->vigencia_final;
                     $poliza= $row->numero_poliza;
-                    $materia_asegurada= $row->materia_asegurada;
-                    $patente_ubicacion = $row->patente_ubicacion;
-                    $cobertura = $row->cobertura;
                     $rut_proponente = $row->rut_proponente;
                     $rut_asegurado = $row->rut_asegurado;
                     $num_poliza=$num_poliza+1;
-                    $tabla_poliza=$tabla_poliza.'<tr><td>'.$num_poliza.'</td><td><input type="checkbox" id="'.$id.'" name="check_poliza" checked disabled></td><td>'.$poliza.'</td><td>'.$compania.'</td><td>'.$cobertura.'</td><td>'.$vigencia_final.'</td><td>'.$materia_asegurada.'</td><td>'.$patente_ubicacion.'</td></tr>'."<br>";        
+                    $tabla_poliza=$tabla_poliza.'<tr><td>'.$num_poliza.'</td><td><input type="checkbox" id="'.$id.'" name="check_poliza" checked disabled></td><td>'.$poliza.'</td><td>'.$compania.'</td><td>'.$cobertura.'</td><td>'.$vigencia_final.'</td></tr>'."<br>";        
                 }     
         //cliente
         $resultado=mysqli_query($link, 'SELECT id, concat_ws(\'-\',rut_sin_dv, dv) as rut, concat_ws(\' \',nombre_cliente,  apellido_paterno, apellido_materno) as nombre , telefono, correo FROM clientes where  rut_sin_dv in ('.$rut_proponente.' , '.$rut_asegurado.') ORDER BY apellido_paterno ASC, apellido_materno ASC;');
@@ -102,16 +101,18 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             case 'individual':
                 $resultado_tarea=mysqli_query($link, 'SELECT a.id, a.tarea, a.estado, a.prioridad, a.fecha_vencimiento FROM tareas as a where a.id='.$busqueda);
                 $query_poliza="SELECT b.id, b.compania, b.vigencia_final, b.numero_poliza, b.materia_asegurada, b.patente_ubicacion, b.cobertura, b.rut_proponente, b.rut_asegurado FROM tareas_relaciones as a left join polizas as b on a.id_relacion=b.id where a.base='polizas' and a.id_tarea=".$busqueda;    
+                $query_propuesta_poliza="SELECT distinct a.id, compania, ramo, vigencia_final, a.numero_propuesta, rut_proponente, b.rut_asegurado FROM propuesta_polizas as a left join items as b on a.numero_propuesta=b.numero_propuesta where a.id=(select id_relacion from tareas_relaciones where id_tarea='".$busqueda."' and base='propuestas') order by compania, a.numero_propuesta"; 
                 $query_cliente="SELECT b.id, concat_ws('-',b.rut_sin_dv, b.dv) as rut, concat_ws(' ', b.nombre_cliente,  b.apellido_paterno,  b.apellido_materno) as nombre , b.telefono, b.correo  FROM tareas_relaciones as a left join clientes as b on a.id_relacion=b.id where a.base='clientes' and a.id_tarea=".$busqueda;
                 break;
             case 'recurrente':
                 $resultado_tarea=mysqli_query($link, 'SELECT id, tarea, estado, prioridad, recurrente, tarea_con_fecha_fin, fecha_fin, dia_recordatorio FROM tareas_recurrentes where id='.$busqueda);
                 $query_poliza="SELECT b.id, b.compania, b.vigencia_final, b.numero_poliza, b.materia_asegurada, b.patente_ubicacion, b.cobertura, b.rut_proponente, b.rut_asegurado FROM tareas_relaciones as a left join polizas as b on a.id_relacion=b.id where a.base='polizas' and a.id_tarea_recurrente=".$busqueda;    
+                $query_propuesta_poliza="SELECT distinct a.id, compania, ramo, vigencia_final, a.numero_propuesta, rut_proponente, b.rut_asegurado FROM propuesta_polizas as a left join items as b on a.numero_propuesta=b.numero_propuesta where a.id=(select id_relacion from tareas_relaciones where id_tarea_recurrente='".$busqueda."' and base='propuestas') order by compania, a.numero_propuesta";
                 $query_cliente="SELECT b.id, concat_ws('-',b.rut_sin_dv, b.dv) as rut, concat_ws(' ', b.nombre_cliente,  b.apellido_paterno,  b.apellido_materno) as nombre , b.telefono, b.correo  FROM tareas_relaciones as a left join clientes as b on a.id_relacion=b.id where a.base='clientes' and a.id_tarea_recurrente=".$busqueda;
                 break;
         }
-            
-            While($row=mysqli_fetch_object($resultado_tarea))
+
+        While($row=mysqli_fetch_object($resultado_tarea))
                 {
                     $id_tarea= $row->id;
                     $tarea= $row->tarea;
@@ -127,7 +128,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
          //poliza
             $resultado_poliza=mysqli_query($link, $query_poliza);
 
-            While($row=mysqli_fetch_object($resultado_poliza))
+        While($row=mysqli_fetch_object($resultado_poliza))
                 {
                     $id= $row ->id;
                     $compania = $row->compania;
@@ -155,7 +156,57 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 $tabla_clientes=$tabla_clientes.'<tr><td>'.$num_cliente.'</td><td><input type="checkbox" id="'.$id.'" name="check_cliente" checked disabled></td><td>'.$rut.'</td><td>'.$nombre.'</td><td>'.$telefono.'</td><td>'.$correo.'</td></tr>'."<br>";        
             }
         
-}
+        //propuesta
+        $resultado_prop=mysqli_query($link, $query_propuesta_poliza);
+            While($row=mysqli_fetch_object($resultado_prop))
+                {
+                    $id= $row ->id;
+                    $compania = $row->compania;
+                    $vigencia_final= $row->vigencia_final;
+                    $propuesta_poliza= $row->numero_propuesta;
+                    $rut_proponente = $row->rut_proponente;
+                    $rut_asegurado = $row->rut_asegurado;
+                    $ramo=$row->ramo;
+                    $num_prop_poliza=$num_prop_poliza+1;
+                    $tabla_propuesta_poliza=$tabla_propuesta_poliza.'<tr><td>'.$num_prop_poliza.'</td><td><input type="checkbox" id="'.$id.'" name="check_propuesta" checked disabled></td><td>'.$propuesta_poliza.'</td><td>'.$compania.'</td><td>'.$ramo.'</td><td>'.$vigencia_final.'</td></tr>'."<br>";        
+                } 
+
+    }
+// Viene desde propuesta
+    if(!empty(trim($_POST["id_propuesta"]))){
+        $busqueda=$_POST["id_propuesta"];
+        mysqli_set_charset( $link, 'utf8');
+        mysqli_select_db($link, 'gestio10_asesori1_bamboo');
+            //poliza
+            $resultado_poliza=mysqli_query($link, 'SELECT distinct a.id, compania, vigencia_final, ramo, a.numero_propuesta, rut_proponente, b.rut_asegurado FROM propuesta_polizas as a left join items as b on a.numero_propuesta=b.numero_propuesta where a.id='.$busqueda.' order by compania, a.numero_propuesta;');
+
+            While($row=mysqli_fetch_object($resultado_poliza))
+                {
+                    $id= $row ->id;
+                    $compania = $row->compania;
+                    $vigencia_final= $row->vigencia_final;
+                    $propuesta_poliza= $row->numero_propuesta;
+                    $rut_proponente = $row->rut_proponente;
+                    $rut_asegurado = $row->rut_asegurado;
+                    $ramo = $row->ramo;
+                    $num_prop_poliza=$num_prop_poliza+1;
+                    $tabla_propuesta_poliza=$tabla_propuesta_poliza.'<tr><td>'.$num_prop_poliza.'</td><td><input type="checkbox" id="'.$id.'" name="check_propuesta" checked disabled></td><td>'.$propuesta_poliza.'</td><td>'.$compania.'</td><td>'.$ramo.'</td><td>'.$vigencia_final.'</td></tr>'."<br>";        
+                }     
+        //cliente
+        $resultado=mysqli_query($link, 'SELECT id, concat_ws(\'-\',rut_sin_dv, dv) as rut, concat_ws(\' \',nombre_cliente,  apellido_paterno, apellido_materno) as nombre , telefono, correo FROM clientes where  rut_sin_dv in ('.$rut_proponente.' , '.$rut_asegurado.') ORDER BY apellido_paterno ASC, apellido_materno ASC;');
+        While($row=mysqli_fetch_object($resultado))
+            {
+                $rut=$row->rut;
+                $id=$row->id;
+                $nombre=$row->nombre;
+                $telefono=$row->telefono;
+                $correo=$row->correo;
+                $num_cliente=$num_cliente+1;
+                $rutsindv=estandariza_info(substr(str_replace("-", "", $rut), 0, strlen(str_replace("-", "", $rut))-1));
+                $tabla_clientes=$tabla_clientes.'<tr><td>'.$num_cliente.'</td><td><input type="checkbox" id="'.$id.'" name="check_cliente"></td><td>'.$rut.'</td><td>'.$nombre.'</td><td>'.$telefono.'</td><td>'.$correo.'</td></tr>'."<br>";        
+            }       
+        mysqli_close($link);
+    }
 }
 else {    
 echo '<style>.info_clientes { display:none;}</style>';
@@ -261,12 +312,33 @@ echo '<style>.info_clientes { display:none;}</style>';
                         <th>Compañia</th>
                         <th>Cobertura</th>
                         <th>Vigencia Final</th>
-                        <th>Materia Asegurada</th>
-                        <th>Observaciones materia asegurada</th>
                     </thead>
                 </tr>
                 <tbody>
                     <?php echo $tabla_poliza; ?>
+                </tbody>
+            </table>
+        </div>
+        <br>
+        </div>
+    <div id="cuadro_propuesta_poliza">
+        <label id = "titulo_propuesta" style="<?php if ($_SERVER["REQUEST_METHOD"] <> "POST") { echo 'display:none;'; } ?>"> Datos propuesta póliza
+            Asociada <em>(Opcional)</em></label>
+        <br style="<?php if ($_SERVER["REQUEST_METHOD"] <> "POST") { echo 'display:none;'; } ?>">
+            <div class="form-row" style="<?php if ($_SERVER["REQUEST_METHOD"] <> "POST") { echo 'display:none;'; } ?>">
+            <table name="tabla_propuesta_polizas" id="tabla_propuesta_polizas" class="table table-striped">
+                <tr>
+                    <thead>
+                        <th>#</th>
+                        <th>Seleccionar propuesta</th>
+                        <th>Número Propuesta</th>
+                        <th>Compañia</th>
+                        <th>Ramo</th>
+                        <th>Vigencia Final</th>
+                    </thead>
+                </tr>
+                <tbody>
+                    <?php echo $tabla_propuesta_poliza; ?>
                 </tbody>
             </table>
         </div>
@@ -419,100 +491,76 @@ echo '<style>.info_clientes { display:none;}</style>';
 </html>
 
 <script>
-/*
-$tarea= $row->tarea;
-                    $estado = $row->estado;
-                    $prioridad= $row->prioridad;
-                    $fecha_vencimiento= $row->fecha_vencimiento;
-                    $recurrente= $row->recurrente;
-                    $tarea_con_fecha_fin= $row->tarea_con_fecha_fin;
-                    $fecha_fin= $row->fecha_fin;
-                    $dia_recordatorio= $row->dia_recordatorio;
-*/
 
 function post() {
-    /*
-    console.log('tarea_unica:'+document.getElementById('tarea_unica').checked);
-    console.log('tarea_recurrente:'+document.getElementById('tarea_recurrente').checked);
-    console.log('dia_mes:'+document.getElementById('dia_mes').value);
-    console.log('sin_fecha:'+document.getElementById('sin_fecha').checked);
-    console.log('con_fecha:'+document.getElementById('con_fecha').checked);
-    console.log('fechavencimiento_recurrente:'+document.getElementById('fechavencimiento_recurrente').value);
-    */
     var tarea_recurrente = 0;
     var tarea_con_fin = 0;
     var dia = 0;
     var fecha;
-    
-      if (document.getElementById("fechavencimiento").value == "") {
+    if (document.getElementById("fechavencimiento").value == "") {
         document.getElementById("validador1").style.visibility = "visible";
-    
-          
-      } 
-      
-      if (document.getElementById("tarea").value == "") {
+    }
+    if (document.getElementById("tarea").value == "") {
         document.getElementById("validador2").style.visibility = "visible";
-    
-          
-      } 
-    
-    
-    else if( document.getElementById("fechavencimiento").value != "" && document.getElementById("tarea").value != "" )
-        {
-    
-    if (document.getElementById('tarea_recurrente').checked) {
-        tarea_recurrente = 1;
-        dia = document.getElementById('dia_mes').value;
-        if (document.getElementById('con_fecha').checked) {
-            tarea_con_fin = 1;
-            fecha = document.getElementById('fechavencimiento_recurrente').value;
+    } else if (document.getElementById("fechavencimiento").value != "" && document.getElementById("tarea").value != "") {
+        if (document.getElementById('tarea_recurrente').checked) {
+            tarea_recurrente = 1;
+            dia = document.getElementById('dia_mes').value;
+            if (document.getElementById('con_fecha').checked) {
+                tarea_con_fin = 1;
+                fecha = document.getElementById('fechavencimiento_recurrente').value;
+            }
         }
-    }
 
-    //console.log("fechavencimiento : "+document.getElementById('fechavencimiento').value);
-    //console.log("tarea : "+document.getElementById('tarea').value);
-    var arreglo = '[';
-    var num = 0;
-    var coma = '';
-    var clientes = document.getElementsByName('check_cliente');
-    for (var i = 0; i < clientes.length; i++) {
-        if (clientes[i].type == 'checkbox' && clientes[i].checked == true)
-        {
-            arreglo += coma + ' {"id":"' + clientes[i].getAttribute('id') + '","base":"clientes"}';
-            coma = ',';
+        //console.log("fechavencimiento : "+document.getElementById('fechavencimiento').value);
+        //console.log("tarea : "+document.getElementById('tarea').value);
+        var arreglo = '[';
+        var num = 0;
+        var coma = '';
+        var clientes = document.getElementsByName('check_cliente');
+        for (var i = 0; i < clientes.length; i++) {
+            if (clientes[i].type == 'checkbox' && clientes[i].checked == true) {
+                arreglo += coma + ' {"id":"' + clientes[i].getAttribute('id') + '","base":"clientes"}';
+                coma = ',';
+            }
         }
-    }
-    var polizas = document.getElementsByName('check_poliza');
-    for (var j = 0; j < polizas.length; j++) {
-        if (polizas[j].type == 'checkbox' && polizas[j].checked == true)
-        {
-            arreglo += coma + ' {"id":"' + polizas[j].getAttribute('id') + '","base":"polizas"}';
-            coma = ',';
+        var polizas = document.getElementsByName('check_poliza');
+        for (var j = 0; j < polizas.length; j++) {
+            if (polizas[j].type == 'checkbox' && polizas[j].checked == true) {
+                arreglo += coma + ' {"id":"' + polizas[j].getAttribute('id') + '","base":"polizas"}';
+                coma = ',';
+            }
         }
-    }
+        var propuestas = document.getElementsByName('check_propuesta');
+        for (var j = 0; j < propuestas.length; j++) {
+            if (propuestas[j].type == 'checkbox' && propuestas[j].checked == true) {
+                arreglo += coma + ' {"id":"' + propuestas[j].getAttribute('id') + '","base":"propuestas"}';
+                coma = ',';
+            }
+        }
 
-    arreglo += ']';
-    ///bamboo/backend/actividades/crea_tarea.php
-    $.redirect('/bamboo/backend/actividades/crea_tarea.php', {
-        'prioridad': document.getElementById('prioridad').value,
-        'fechavencimiento': document.getElementById('fechavencimiento').value,
-        'tarea': document.getElementById('tarea').value,
-        'relaciones': arreglo,
-        //tarea recurrente
-        'tarea_recurrente': tarea_recurrente,
-        'dia': dia,
-        'tarea_con_fin': tarea_con_fin,
-        'fecha': fecha,
-        //fin tarea recurrente
-        //inicio aux modificar
-        'modificar': '<?php echo $aux_modificar; ?>',
-        'id_tarea': '<?php echo $id_tarea; ?>'
-        //fin aux modificar
-    }, 'post');
+        arreglo += ']';
+        ///bamboo/backend/actividades/crea_tarea.php
+        $.redirect('/bamboo/backend/actividades/crea_tarea.php', {
+            'prioridad': document.getElementById('prioridad').value,
+            'fechavencimiento': document.getElementById('fechavencimiento').value,
+            'tarea': document.getElementById('tarea').value,
+            'relaciones': arreglo,
+            //tarea recurrente
+            'tarea_recurrente': tarea_recurrente,
+            'dia': dia,
+            'tarea_con_fin': tarea_con_fin,
+            'fecha': fecha,
+            //fin tarea recurrente
+            //inicio aux modificar
+            'modificar': '<?php echo $aux_modificar; ?>',
+            'id_tarea': '<?php echo $id_tarea; ?>'
+            //fin aux modificar
+        }, 'post');
+    }
 }
-}
- 
-function check_fecha(){
+
+function check_fecha() {
 
     if (document.getElementById("fechavencimiento").value != "") {
         document.getElementById("validador1").style.visibility = "hidden";
@@ -520,19 +568,19 @@ function check_fecha(){
 
 }
 
-function check_tarea(){
+function check_tarea() {
 
     if (document.getElementById("tarea").value != "") {
         document.getElementById("validador2").style.visibility = "hidden";
     }
 
 }
-   
+
 document.getElementById("formulario").addEventListener('submit', function(event) {
     if (document.getElementById("fechavencimiento").value == "") {
         document.getElementById("validador1").style.visibility = "visible";
-        event.preventDefault();} else {
-    }
+        event.preventDefault();
+    } else {}
 });
 
 function checkTipoTarea(tipoTarea) {
@@ -552,6 +600,7 @@ function checkTipoTarea(tipoTarea) {
             document.getElementById("panel_fecha").style.display = "none";
             document.getElementById("panel_dias").style.display = "block";
             document.getElementById("pregunta_fecha").style.display = "block";
+            document.getElementById("fechavencimiento").value='2000-01-01'
             break;
         }
         case 'sin_fecha': {
@@ -568,89 +617,93 @@ function checkTipoTarea(tipoTarea) {
         }
     }
 }
-function fecha_cliente(){
+
+function fecha_cliente() {
     var now = new Date();
     var day = ("0" + now.getDate()).slice(-2);
     var month = ("0" + (now.getMonth() + 1)).slice(-2);
-    var today = now.getFullYear()+"-"+(month)+"-"+(day) ;
+    var today = now.getFullYear() + "-" + (month) + "-" + (day);
     document.getElementById("fechavencimiento").min = today;
     document.getElementById("fechavencimiento_recurrente").min = today;
 }
 $(document).ready(function() {
     fecha_cliente();
-    var consulta='<?php if ($_SERVER["REQUEST_METHOD"] == "POST") echo "True"; ?>'
-    if (consulta=='True'){
-    var tipo_tarea = '<?php echo $tipo_tarea; ?>';
-    console.log(tipo_tarea);
-    document.getElementById('tarea').value = '<?php echo $tarea; ?>';
-    document.getElementById('fechavencimiento').value = '<?php echo $fecha_vencimiento; ?>';
+    var consulta = '<?php if ($_SERVER["REQUEST_METHOD"] == "POST") echo "True"; ?>'
+    if (consulta == 'True') {
+        var tipo_tarea = '<?php echo $tipo_tarea; ?>';
+        console.log(tipo_tarea);
+        document.getElementById('tarea').value = '<?php echo $tarea; ?>';
+        document.getElementById('fechavencimiento').value = '<?php echo $fecha_vencimiento; ?>';
 
-    switch (tipo_tarea) {
-        case 'individual': {
-            document.getElementById("formulario_tareas_recurrentes").style.display = "none"
-            break
-        }
-        case 'recurrente': {
-            var recurrente = '<?php echo $recurrente; ?>';
-            var tarea_infinita = '<?php echo $tarea_con_fecha_fin; ?>';
-             if (recurrente == 1) {
-                checkTipoTarea('recurrente');
-                if (tarea_infinita == 1) {
-                    checkTipoTarea('con_fecha');
-                    document.getElementById('fechavencimiento_recurrente').value = '<?php echo $fecha_fin; ?>';
-                } else {
-                    checkTipoTarea('sin_fecha');
-                }
+        switch (tipo_tarea) {
+            case 'individual': {
+                document.getElementById("formulario_tareas_recurrentes").style.display = "none"
+                break
             }
-            break
+            case 'recurrente': {
+                var recurrente = '<?php echo $recurrente; ?>';
+                var tarea_infinita = '<?php echo $tarea_con_fecha_fin; ?>';
+                if (recurrente == 1) {
+                    checkTipoTarea('recurrente');
+                    if (tarea_infinita == 1) {
+                        checkTipoTarea('con_fecha');
+                        document.getElementById('fechavencimiento_recurrente').value = '<?php echo $fecha_fin; ?>';
+                    } else {
+                        checkTipoTarea('sin_fecha');
+                    }
+                }
+                break
+            }
+            default: {
+
+            }
         }
-        default: {
+
+        var num_cliente = '<?php echo $num_cliente; ?>';
+        var num_poliza = '<?php echo $num_poliza; ?>';
+        var num_prop_poliza = '<?php echo $num_prop_poliza; ?>';
+
+        if (num_cliente == "0") {
+
+            document.getElementById('cuadro_cliente').style.display = "none";
+            document.getElementById('titulo_cliente').style.display = "none";
+        }
+
+        if (num_poliza == "0") {
+
+            document.getElementById('cuadro_poliza').style.display = "none";
+            document.getElementById('titulo_poliza').style.display = "none";
+        }
+        if (num_prop_poliza == "0") {
+
+            document.getElementById('cuadro_propuesta_poliza').style.display = "none";
+            document.getElementById('titulo_propuesta').style.display = "none";
+        }
+        if (num_poliza == "0" && num_cliente == "0") {
+
+            document.getElementById('titulo_actividad').style.display = "none";
 
         }
+
     }
-    
-    var num_cliente ='<?php echo $num_cliente; ?>';
-    var num_poliza ='<?php echo $num_poliza; ?>';
-    
-    if(num_cliente == "0"){
-        
-       document.getElementById('cuadro_cliente').style.display = "none";
-       document.getElementById('titulo_cliente').style.display = "none";
-    }
-    
-     if(num_poliza == "0"){
-        
-       document.getElementById('cuadro_poliza').style.display = "none";
-       document.getElementById('titulo_poliza').style.display = "none";
-    }
-    
-        if(num_poliza == "0" && num_cliente == "0" ){
-        
-       document.getElementById('titulo_actividad').style.display = "none";
-     
-    }
-    
-}    
 })
-	var bPreguntar = true;
- 
-	window.onbeforeunload = preguntarAntesDeSalir;
- 
-	function preguntarAntesDeSalir () {
-		var respuesta;
- 
-		if ( bPreguntar ) {
-			respuesta = confirm ( '¿Seguro que quieres salir?' );
- 
-			if ( respuesta ) {
-				window.onunload = function () {
-					return true;
-				}
-			} else {
-				return false;
-			}
-		}
-	}
+var bPreguntar = true;
 
+window.onbeforeunload = preguntarAntesDeSalir;
 
+function preguntarAntesDeSalir() {
+    var respuesta;
+
+    if (bPreguntar) {
+        respuesta = confirm('¿Seguro que quieres salir?');
+
+        if (respuesta) {
+            window.onunload = function() {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+}
 </script>

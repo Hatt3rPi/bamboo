@@ -12,6 +12,8 @@ function estandariza_info($data) {
     return $data;
   }
 require_once "/home/gestio10/public_html/backend/config.php";
+mysqli_set_charset($link, 'utf8');
+mysqli_select_db($link, 'gestio10_asesori1_bamboo');
 $num=0;
 
 mysqli_set_charset($link, 'utf8');
@@ -20,7 +22,7 @@ mysqli_set_charset($link, 'utf8');
 $sql = "SELECT *, concat_ws('-',mes,SUBSTRING(anomes, 3,2)) as anomes_nombre FROM `stock_polizas` WHERE ANOMES BETWEEN ANOMES(DATE_ADD(CURRENT_DATE, INTERVAL -12 MONTH)) AND ANOMES(DATE_ADD(CURRENT_DATE, INTERVAL + 6 MONTH))";
     $resultado=mysqli_query($link, $sql);
 
-    $leyendas = $stock=$salidas=$entradas=$ramo=$cantidad=array();
+    $leyendas = $stock=$salidas=$entradas=$ramo=$porcentaje=$cantidad=array();
 While($row=mysqli_fetch_object($resultado))
   {
       if($row->anomes==date("Ym")){
@@ -34,12 +36,14 @@ While($row=mysqli_fetch_object($resultado))
       array_push($salidas,$row->salidas );
   }
   
-$resultado2=mysqli_query($link, "SELECT ramo, count(*) as cantidad FROM polizas where estado not in ('Cancelado','Anulado') group by ramo order by count(*) desc");
+$resultado2=mysqli_query($link, "SELECT b.ramo_agrupado AS ramo, COUNT(a.ramo) AS cantidad, CONCAT(FORMAT((COUNT(a.ramo) / (SELECT COUNT(*) FROM polizas_2 WHERE estado NOT IN ('Cancelado', 'Anulado'))) * 100, 1), '%') AS porcentaje_total FROM polizas_2 AS a LEFT JOIN ramos_agrupados AS b ON a.ramo = b.ramo WHERE estado NOT IN ('Cancelado', 'Anulado') GROUP BY b.ramo_agrupado ORDER BY COUNT(a.ramo) DESC");
 While($row2=mysqli_fetch_object($resultado2))
   {
       array_push($ramo,$row2->ramo );
       array_push($cantidad,$row2->cantidad );
+      array_push($porcentaje,$row2->porcentaje_total );
   }
+  mysqli_close($link);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -71,6 +75,8 @@ While($row2=mysqli_fetch_object($resultado2))
     <div id="header"><?php include 'header2.php' ?></div>
     <div class="container">
         <canvas id="myChart" width="400" height="100"></canvas><br>
+        <hr>
+        <canvas id="myChart2" width="400" height="100"></canvas><br>
         <hr>
         <canvas id="torta" width="400" height="100" class="chartjs-render-monitor"></canvas>
         <hr><br>
@@ -130,53 +136,27 @@ While($row2=mysqli_fetch_object($resultado2))
                                 </select>
                             </div>
                         </div>
-                        <table class="display" style="width:100%" id="listado_polizas">
-                            <tr>
+                                    <table class="display" style="width:100%" id="listado_polizas">
+                   <tr>
                     <th></th>
                     <th>Estado</th>
-                    <th>Póliza</th>
-                    <th>Compañia</th>
-                    <th>Ramo</th>
+                    <th>N° Póliza</th>
                     <th>Inicio Vigencia</th>
                     <th>Fin Vigencia</th>
-                    <th>Materia Asegurada</th>
-                    <th>Tipo póliza</th>
-                    <th>Observaciones</th>
-                    <th>Deducible</th>
-                    <th>Prima afecta</th>
-                    <th>Prima exenta</th>
-                    <th>Prima bruta anual</th>
+                    <th>Compañia</th>
+                    <th>Ramo</th>
                     <th>Añomes final</th>
                     <th>Añomes inicial</th>
-                    <th>Moneda póliza</th>
-                    <th>Cobertura</th>
                     <th>Proponente</th>
                     <th>Rut Proponente</th>
-                    <th>Asegurado</th>
-                    <th>Rut Asegurado</th>
                     <th>grupo</th>
                     <th>referido</th>
-                    <th>monto_asegurado</th>
-                    <th>numero_propuesta</th>
-                    <th>fecha_envio_propuesta</th>
-                    <th>comision</th>
-                    <th>porcentaje_comision</th>
-                    <th>comision_bruta</th>
-                    <th>comision_neta</th>
-                    <th>numero_boleta</th>
-                    <th>boleta_negativa</th>
-                    <th>comision_negativa</th>
-                    <th>depositado_fecha</th>
-                    <th>vendedor</th>
-                    <th>nombre_vendedor</th>
-                    <th>forma_pago</th>
-                    <th>nro_cuotas</th>
-                    <th>valor_cuota</th>
-                    <th>fecha_primera_cuota</th>
-                   <th>Prima neta</th>
-                            </tr>
-                        </table>
-                        <div id="botones_poliza"></div>
+                    </tr>
+
+            </table>
+            <div id="botones_poliza">
+            <button title="Descargar_excel_polizas" id="boton_descarga_excel" type="button"  onclick="descarga_excel();">Descargar Excel <i class="fas fa-file-excel"></i></button>
+            </div>
                     </div>
                 </div>
             </div>
@@ -235,7 +215,7 @@ $(document).ready(function() {
   var   table_tareas = $('#listado_tareas').DataTable({
 
         "ajax": "/bamboo/backend/actividades/busqueda_listado_tareas.php",
-        "scrollX": true,
+        "scrollX": false,
         "columns": [{
                 "className": 'details-control',
                 "orderable": false,
@@ -333,7 +313,7 @@ $(document).ready(function() {
                 '</select> registros',
                 "sInfoFiltered": "(Resultado búsqueda: _TOTAL_ de _MAX_ registros totales)",
             "sLengthMenu": "Muestra _MENU_ registros por página",
-            "sZeroRecords": "No hay registros asociados",
+            "sZeroRecords": "Se están cargando los registros. Espera unos segundos más.",
             "sInfo": "Mostrando página _PAGE_ de _PAGES_",
             "sInfoEmpty": "No hay registros disponibles",
             "oPaginate": {
@@ -392,10 +372,10 @@ $(document).ready(function() {
     }).container().appendTo($('#botones_tareas'));
 
      table = $('#listado_polizas').DataTable({
-        "ajax": "/bamboo/backend/polizas/busqueda_listado_polizas_filtrada.php",
-        "scrollX": true,
+"ajax": "/bamboo/backend/polizas/busqueda_listado_polizas.php",
+        "scrollX": false,
         "searchPanes":{
-            "columns":[2,3,13,14],
+            "columns":[2],
         },
         "dom": 'Pfrtip',
         "columns": [{
@@ -403,216 +383,68 @@ $(document).ready(function() {
                 "orderable": false,
                 "data": null,
                 "defaultContent": '<i class="fas fa-search-plus"></i>'
-            },
+            }, //0
             {
                 "data": "estado",
                 title: "Estado"
-            },
+            }, //1
             { 
-                data: null, 
+                data: "numero_poliza", 
                 title: "Nro Póliza",
-                render: function ( data, type, row ) {
-                    return data.numero_poliza + ' (' + data.item + ')';
-            } },
-            {
-                "data": "compania",
-                title: "Compañía"
-            },
-            {
-                "data": "ramo",
-                title: "Ramo"
-            },
+            }, //2
             {
                 "data": "vigencia_inicial",
                 title: "Vigencia Inicio"
-            },
+            }, //3
             {
                 "data": "vigencia_final",
                 title: "Vigencia Término"
-            },
+            }, //4
             {
-                "data": "materia_asegurada",
-                title: "Materia asegurada"
-            },
+                "data": "compania",
+                title: "Compañia"
+            }, //5
             {
-                "data": "tipo_poliza",
-                title: "Tipo póliza"
-            },
-            {
-                "data": "patente_ubicacion",
-                title: "Observaciones materia asegurada"
-            },
-            {
-                "data": "deducible",
-                title: "Deducible"
-            },
-            {
-                "data": "prima_afecta",
-                title: "Prima afecta"
-            },
-            {
-                "data": "prima_exenta",
-                title: "Prima exenta"
-            },
-            {
-                "data": "prima_bruta_anual",
-                title: "Prima bruta anual"
-            },
+                "data": "ramo",
+                title: "Ramo"
+            }, //6
             {
                 "data": "anomes_final",
                 title: "Añomes final"
-            },
+            }, //7
             {
                 "data": "anomes_inicial",
                 title: "Añomes inicial"
-            },
-            {
-                "data": "moneda_poliza",
-                title: "Moneda póliza"
-            },
-            {
-                "data": "cobertura",
-                title: "Cobertura"
-            },
+            }, //8
+
             {
                 "data": "nom_clienteP",
                 title: "Proponente"
-            },
+            }, //10
             {
                 "data": "rut_clienteP",
                 title: "Rut Proponente"
-            },
-            {
-                "data": "nom_clienteA",
-                title: "Asegurado"
-            },
-            {
-                "data": "rut_clienteA",
-                title: "Rut Asegurado"
-            },
+            }, //11
             {
                 "data": "grupo",
                 title: "Grupo"
-            },
+            }, //12
             {
                 "data": "referido",
                 title: "Referido"
-            },
-            {
-                "data": "monto_asegurado",
-                title: "Monto Asegurado"
-            },
-            {
-                "data": "numero_propuesta",
-                title: "Propuesta"
-            },
-            {
-                "data": "fecha_envio_propuesta",
-                title: "Fecha envío propuesto"
-            },
-            {
-                "data": "comision",
-                title: "Comisión"
-            },
-            {
-                "data": "porcentaje_comision",
-                title: "% Comisión"
-            },
-            {
-                "data": "comision_bruta",
-                title: "Comisión Bruta"
-            },
-            {
-                "data": "comision_neta",
-                title: "Comisión Neta"
-            },
-            {
-                "data": "numero_boleta",
-                title: "Número boleta"
-            },
-            {
-                "data": "boleta_negativa",
-                title: "Boleta negativa"
-            },
-            {
-                "data": "comision_negativa",
-                title: "Comisión negativa"
-            },
-            {
-                "data": "depositado_fecha",
-                title: "Fecha depósito"
-            },
-            {
-                "data": "vendedor",
-                title: "vendedor"
-            },
-            {
-                "data": "nombre_vendedor",
-                title: "Nombre vendedor"
-            },
-            {
-                "data": "forma_pago",
-                title: "Forma de pago"
-            },
-            {
-                "data": "nro_cuotas",
-                title: "Número de cuotas"
-            },
-            {
-                "data": "valor_cuota",
-                title: "Valor cuota"
-            },
-            {
-                "data": "fecha_primera_cuota",
-                title: "Fecha primera cuota"
-            },
-            {
-                "data": "prima_neta",
-                title: "Prima neta"
-            }
-            ,
-            {
-                "data": "poliza_renovada",
-                title: "Póliza renovada"
-            }
-            ,
-            {
-                "data": "informacion_adicional",
-                title: "Información adicional"
-            }
-            ,
-            {
-                "data": "venc_gtia",
-                title: "Fecha Vencimiento Garantía"
-            }
-            ,
-            {
-                "data": "fech_cancela",
-                title: "Fecha Cancelación"
-            }
-            ,
-            {
-                "data": "motivo_cancela",
-                title: "Motivo Cancelación"
-            }
+            } // 13
         ],
-        //          "search": {
-        //          "search": "abarca"
-        //          },
-        "columnDefs": [{
-                "targets": [10, 11, 12,13,14,15,16,17,19,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,45,46],
+        "columnDefs": [
+            {
+                "targets": [7,8],
                 "visible": false,
             },
-            {
-                "targets": [10, 11, 12,13,14,15,16,17,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,45,46],
-                "searchable": false
-            },
-            {
+        {
         targets: 1,
         render: function (data, type, row, meta) {
              var estado='';
             switch (data) {
-                case 'Activo':
+                        case 'Activo':
                             estado='<span class="badge badge-primary">'+data+'</span>';
                             break;
                         case 'Renovado':
@@ -630,18 +462,23 @@ $(document).ready(function() {
                     }
           return estado;  //render link in cell
         }},
-                {
-        targets: [5,6],
+        {
+        targets: [3,4],
          render: function(data, type, full)
          {
-             if (type == 'display')
-                 return moment(data).format('DD/MM/YYYY');
-             else
-                 return moment(data).format('YYYY/MM/DD');
+            if (data==null || data=="0000-00-00")
+            {
+                return '';
+            }
+            else
+            {
+                return moment(data).format('YYYY/MM/DD');
+            }
          }}
         ],
         "order": [
-            [6, "asc"]
+            
+            [4, "desc"]
         ],
         "oLanguage": {
             "sSearch": "Búsqueda rápida",
@@ -653,7 +490,7 @@ $(document).ready(function() {
                 '</select> registros',
                 "sInfoFiltered": "(Resultado búsqueda: _TOTAL_ de _MAX_ registros totales)",
             "sLengthMenu": "Muestra _MENU_ registros por página",
-            "sZeroRecords": "No hay registros asociados",
+            "sZeroRecords": "Se están cargando los registros. Espera unos segundos más.",
             "sInfo": "Mostrando página _PAGE_ de _PAGES_",
             "sInfoEmpty": "No hay registros disponibles",
             "oPaginate": {
@@ -692,47 +529,20 @@ $(document).ready(function() {
             tr.removeClass('shown');
         } else {
             // Open this row
-            row.child(detalle_polizas(row.data())).show();
+            row.child(format_poliza(row.data())).show();
             tr.addClass('shown');
         }
     });
-    //$('#listado_polizas').dataTable().fnFilter('Activo');
-    
-    var dd = new Date();
-    var fecha = '' + dd.getFullYear() + '-' + (("0" + (dd.getMonth() + 1)).slice(-2)) + '-' + (("0" + (dd
-        .getDate() + 1)).slice(-2)) + ' (' + dd.getHours() + dd.getMinutes() + dd.getSeconds() + ')';
-
-    var buttons2 = new $.fn.dataTable.Buttons(table, {
-        buttons: [{
-                sheetName: 'Pólizas',
-                orientation: 'landscape',
-                extend: 'excelHtml5',
-                filename: 'Listado Pólizas al: ' + fecha,
-                exportOptions: {
-                    columns: [1,18,19,20,21,22,3,5,6,14,8,4,2,7,9,17,16,10,11,12,41,13,24,25,26,27,28,29,30,31,33,32,34,35,23,37,38,39,40,42,43,44,45,46]
-                }
-            },
-            {
-                orientation: 'landscape',
-                extend: 'pdfHtml5',
-                filename: 'Listado Pólizas al: ' + fecha,
-                exportOptions: {
-                    columns: [1,18,19,20,21,22,3,5,6,14,8,4,2,7,9,17,16,10,11,12,41,13,24,25,26,27,28,29,30,31,33,32,34,35,23,37,38,39,40,42,43,44,45,46]
-                }
-            }
-        ]
-    }).container().appendTo($('#botones_poliza'));
-
-
 
 });
 
 function detalle_tareas(d) {
-    $sin_rel=$tabla_clientes=$tabla_polizas='';
+    $sin_rel=$tabla_clientes=$tabla_polizas=$tabla_propuestas='';
     if (d.relaciones == 0) {
         $sin_rel= 'Tarea sin asociar a clientes  o pólizas';
         $tabla_clientes = 'Sin clientes asociados';
         $tabla_polizas = 'Sin pólizas asociadas';
+        $tabla_propuestas = 'Sin propuestas de póliza asociadas';
     } else {
         if (d.clientes == 0) {
             $tabla_clientes = 'Sin clientes asociados';
@@ -743,10 +553,8 @@ function detalle_tareas(d) {
                 $cont_i=0;
             for (i = 0; i < d.clientes; i++) {
                 $cont_i=$cont_i+1;
-                $tabla_clientes = $tabla_clientes + '<tr><td>' + $cont_i + '</td><td>' + d.nombre[i] + '</td><td>' + d
-                    .telefono[i] + '</td><td>' + d.correo[i] +
-                    '</td><td><button title="Buscar información asociada" type="button" id=' + d
-                    .id_cliente[i] +
+                $tabla_clientes = $tabla_clientes + '<tr><td>' + $cont_i + '</td><td>' + d.nombre[i] + '</td><td>' + d.telefono[i] + '</td><td>' + d.correo[i] +
+                    '</td><td><button title="Buscar información asociada" type="button" id=' + d.id_cliente[i] +
                     ' name="info" onclick="botones(this.id, this.name, \'cliente\')"><i class="fas fa-search"></i></button></td></tr>';
             }
             $tabla_clientes = $tabla_clientes + '</table>';
@@ -756,21 +564,35 @@ function detalle_tareas(d) {
         } else {
             $tabla_polizas =
                 '<table  background-color:#F6F6F6; color:#FFF; cellpadding="5" cellspacing="0" border="1" style="padding-left:50px;">' +
-                '<tr><th># Pólizas</th><th>Estado</th><th>Nro Póliza</th><th>Compañia</th><th>Ramo</th><th>Inicio Vigencia</th><th>Vigencia Final</th><th>Materia asegurada</th><th>Acciones</th></tr>';
+                '<tr><th># Pólizas</th><th>Estado</th><th>Nro Póliza</th><th>Inicio Vigencia</th><th>Vigencia Final</th><th>Acciones</th></tr>';
                 $cont_j=0;
             for (j = 0; j < d.polizas; j++) {
                 $cont_j=$cont_j+1;
-                $tabla_polizas = $tabla_polizas + '<tr><td>' + $cont_j + '</td><td><span class="'+d.estado_poliza_alerta[j]+'">'+d.estado_poliza[j]+'</span></td><td>' + d
-                    .numero_poliza[j] + '</td><td>' + d.compania[j] +
-                    '</td><td>' + d.ramo[j] +
+                $tabla_polizas = $tabla_polizas + '<tr><td>' + $cont_j + 
+                    '</td><td><span class="'+d.estado_poliza_alerta[j]+'">'+d.estado_poliza[j]+
+                    '</span></td><td>' + d.numero_poliza[j] + 
                     '</td><td>' + d.vigencia_inicial[j] +
                     '</td><td>' + d.vigencia_final[j] +
-                    '</td><td>' + d.materia_asegurada[j] +
-                    '</td><td><button title="Buscar información asociada" type="button" id=' + d
-                    .id_poliza[j] +
-                    ' name="modifica" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-edit"></i></button></td></tr>';
+                    '</td><td><button title="Buscar información asociada" type="button" id=' + d.id_poliza[j] +
+                    ' name="info" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-search"></i></button></td></tr>';
             }
             $tabla_polizas = $tabla_polizas + '</table>';
+        }
+        if (d.propuestas == 0) {
+            $tabla_propuestas = 'Sin propuestas de pólizas asociadas';
+        } else {
+            $tabla_propuestas =
+                '<table  background-color:#F6F6F6; color:#FFF; cellpadding="5" cellspacing="0" border="1" style="padding-left:50px;">' +
+                '<tr><th># Propuestas</th><th>Estado</th><th>Nro propuesta</th><th>Inicio Vigencia</th><th>Vigencia Final</th><th>Acciones</th></tr>';
+                $cont_j=0;
+            for (j = 0; j < d.propuestas; j++) {
+                $cont_j=$cont_j+1;
+                $tabla_propuestas = $tabla_propuestas + '<tr><td>' + $cont_j + '</td><td><span class="'+d.estado_propuesta_alerta[j]+'">'+d.estado_propuesta[j]+'</span></td><td>' + d.numero_propuesta[j] + '</td><td>' + d.vigencia_inicial[j] +
+                    '</td><td>' + d.vigencia_final[j] +
+                    '</td><td><button title="Buscar información asociada" type="button" id=' + d.numero_propuesta[j] +
+                    ' name="info" onclick="botones(this.id, this.name, \'propuesta\')"><i class="fas fa-search"></i></button></td></tr>';
+            }
+            $tabla_propuestas = $tabla_propuestas + '</table>';
         }
     }
 
@@ -778,23 +600,25 @@ function detalle_tareas(d) {
     return '<table background-color:#F6F6F6; color:#FFF; cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
         '<tr>' +
         '<td>Acciones:</td>' +
-        '<td><button title="Buscar información asociada" type="button" id=' + d.id_tarea +
-        ' name="info" onclick="botones(this.id, this.name, \'tarea\')"><i class="fas fa-search"></i></button><a> </a><button title="Editar"  type="button" id=' +
-        d.id_tarea +
-        ' name="modifica" onclick="botones(this.id, this.name, \'tarea\')"><i class="fas fa-edit"></i></button><a> </a><button title="Completar tarea"  type="button" id=' +
-        d.id_tarea +
-        ' name="cerrar_tarea" id=' + d.id_tarea +
-        ' onclick="botones(this.id, this.name, \'tarea\')"><i class="fas fa-check-circle"></i></i></button></td>' +
+        '<td>'+
+        '<button title="Buscar información asociada" type="button" id=' + d.id_tarea +' name="info" onclick="botones(this.id, this.name, \'tarea\')"><i class="fas fa-search"></i></button><a> </a>'+
+        '<button title="Completar tarea"  type="button" id=' + d.id_tarea +' name="cerrar_tarea" onclick="botones(this.id, this.name, \'tarea\')"><i class="fas fa-check-circle"></i></i></button></td>' +
         '</tr>' +
         '<tr><td>Clientes:</td>'+
         '<td>'+ $tabla_clientes+'</td></tr>'+
         '<tr><td>Pólizas:</td>'+
         '<td>'+$tabla_polizas+'</td></tr>'+
+        '<tr><td>Propuestas de Pólizas:</td>'+
+        '<td>'+$tabla_propuestas+'</td></tr>'+
         '</table>';
 }
 
-function detalle_polizas(d) {
+function format_poliza(d) {
     var ext_cancelado='';
+    var items='';
+    var endosos='';  
+    var listado_items='';
+    var listado_endosos='';
     if (d.estado=='Cancelado'){
         ext_cancelado='<tr>' +
         '<td>Fecha CANCELACIÓN:</td>' +
@@ -805,41 +629,153 @@ function detalle_polizas(d) {
         '<td>' + d.motivo_cancela + '</td>' +
         '</tr>';
     }
-    return '<table background-color:#F6F6F6; color:#FFF; cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
-        '<tr>' +
-        '<td>Deducible:</td>' +
-        '<td>' + d.deducible +'</td>' +
-        '</tr>' +
-        '<tr>' +
-        '<td>Prima afecta:</td>' +
-        '<td>' + d.prima_afecta + '</td>' +
-        '</tr>' +
-        '<tr>' +
-        '<td>Prima exenta:</td>' +
-        '<td>' + d.prima_exenta + '</td>' +
-        '</tr>' +
-        ext_cancelado + 
-        '<tr>' +
-        '<td>Prima bruta anual:</td>' +
-        '<td>' + d.prima_bruta_anual + '</td>' +
-        '</tr>' +
-        '<tr>' +
-        '<td>Acciones</td>' +
-        '<td><button title="Buscar información asociada" type="button" id=' + d.id_poliza +
-        ' name="info" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-search"></i></button><a> </a><button title="Editar"  type="button" id=' +
-        d.id_poliza +
-        ' name="modifica" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-edit"></i></button><a> </a><button title="Asignar tarea"  type="button" id=' +
-        d.id_poliza +
-        ' name="tarea" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-clipboard-list"></i></button><a> </a><button title="Generar correo"  type="button"' +
-        'id='+ d.id_poliza +
-        ' name="correo" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-envelope-open-text"></i></button><a> </a><button style="background-color: #FF0000" title="Eliminar"  type="button" id=' +
-        d.id_poliza +
-        ' name="elimina" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-trash-alt"></i></button></td>' +
+    //inicio endosos
+    console.log('nro de endosos: '+ d.nro_endosos);
+        if(d.nro_endosos=="0"){
+            endosos=
+            '<tr>' +
+                '<td></td>' +
+                '<td></td>' +
+            '</tr>';   
+            
+        }
+        else {
+            for (var i=0; i< d.nro_endosos; i++){
+                listado_endosos+= '<tr>'+
+                '<td>' + d.endosos[i].numero_endoso + '</td>'+
+                '<td>' + d.endosos[i].tipo_endoso + '</td>'+
+                '<td>' + d.endosos[i].descripcion_endoso + '</td>'+
+                '<td>' + d.endosos[i].dice + '</td>'+
+                '<td>' + d.endosos[i].debe_decir + '</td>'+
+                '<td>' + d.endosos[i].vigencia_inicial + '</td>'+
+                '<td>' + d.endosos[i].vigencia_final + '</td>'+
+                '<td>' + d.endosos[i].fecha_ingreso_endoso + '</td>'+
+                '<td>' + d.endosos[i].fecha_prorroga + '</td>'+
+                '</tr>';
+            }
+            endosos='<tr>' +
+            '<td VALIGN=TOP>Endosos: </td>' +
+            '<td><table class="table table-striped" style="width:100%" id="listado_endosos_1">'+
+            '<tr>'+
+            '<th>Número</th>'+
+            '<th>Tipo</th>'+
+            '<th>Descripción</th>'+
+            '<th>Dice</th>'+
+            '<th>Debe decir</th>'+
+            '<th>Vigencia Inicial</th>'+
+            '<th>Vigencia Final</th>'+
+            '<th>Fecha ingreso</th>'+
+            '<th>Fecha Prorroga</th>'+
+            '</tr>'+
+            listado_endosos+
+            '</table></td>' +
+            '</tr>' ;
+    }
+    
+    //fin endosos
+    console.log(d.total_items);
+    if(d.total_items=="0"){
+            items=
+            '<tr>' +
+            '<td>Sin ítems registrados</td>' +
+            '</tr>';   
+        }
+        else {
+            
+            for (var i=0; i<d.total_items; i++){
+            listado_items+= '<tr>'+
+            '<td>' + (i+1) + '</td>'+
+            '<td>' + d.items[i].rut_clienteA + '</td>'+
+            '<td>' + d.items[i].nom_clienteA + '</td>'+
+            '<td>' + d.items[i].materia_asegurada + '</td>'+
+            '<td>' + d.items[i].patente_ubicacion + '</td>'+
+            '<td>' + d.items[i].cobertura + '</td>'+
+            '<td>' + d.items[i].deducible + '</td>'+
+            '<td>' + d.items[i].monto_asegurado + '</td>'+
+            '<td>' + d.items[i].prima_afecta + '</td>'+
+            '<td>' + d.items[i].prima_exenta + '</td>'+
+            '<td>' + d.items[i].prima_neta + '</td>'+
+            '<td>' + d.items[i].prima_bruta + '</td>'+
+            '<td>' + d.items[i].venc_gtia + '</td>'
+            '</tr>';
+  
+            }
+            items='<table class="table table-striped" style="width:100%" id="listado_polizas_1">'+
+            '<tr>'+
+            '<th></th>'+
+            '<th>Rut Asegurado</th>'+
+            '<th>Nombre Asegurado</th>'+
+            '<th>Materia Asegurada</th>'+
+            '<th>Patente o Ubicación</th>'+
+            '<th>Cobertura</th>'+
+            '<th>Deducible</th>'+
+            '<th>Monto asegurado</th>'+
+            '<th>Prima Afecta</th>'+
+            '<th>Prima Exenta</th>'+
+            '<th>Prima Neta</th>'+
+            '<th>Prima Bruta</th>'+
 
+            '<th>Vencimiento Garantía</th>'+
+            
+            '</tr>'+
+            listado_items+
+            '</table>' ;
+
+    }
+    return '<table background-color:#F6F6F6; color:#FFF; cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
+
+        '<tr>' +
+        ext_cancelado + 
+            '<td VALIGN=TOP>Primas: </td>' +
+            '<td>'+
+                '<table class="table table-striped" style="width:100%">'+
+                    '<tr>' +
+                        '<td>Total Prima afecta:</td>' +
+                        '<td>' + d.total_prima_afecta + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td>Total Prima exenta:</td>' +
+                        '<td>' + d.total_prima_exenta + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td>Total Prima neta anual:</td>' +
+                        '<td>' + d.total_prima_neta + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td>Total Prima bruta anual:</td>' +
+                        '<td>' + d.total_prima_bruta + '</td>' +
+                    '</tr>' +
+                '</table>'+
+            '</td>' +
+        '</tr>' +
+        '<tr>' +
+        '<td></td>' +
+        '<td></td>' +
+        '<tr>' +
+        '<tr>' +
+            '<td VALIGN=TOP>Ítems: </td>' +
+            '<td>' + items + '</td>' +
+        '</tr>' +
+         '<tr>' +
+        '<td></td>' +
+        '<td></td>' +
+        '<tr>' + endosos +      
+        '<tr>' +
+        '<td VALIGN=TOP>Acciones: </td>' +
+        '<td>' +
+        '<button title="Buscar información asociada" type="button" id="' + d.id_poliza + '" name="info" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-search"></i></button><a> </a>' +
+        '<button title="Editar Póliza"  type="button" id="' + d.numero_poliza + '" name="modifica_poliza" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-edit"></i></button><a> </a>' +
+        '<button title="Renovar póliza" type="button" id="' + d.numero_poliza + '" name="renovar" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-redo"></i></button><a> - </a>' +
+        '<button title="Asignar tarea"  type="button" id=' + d.id_poliza +' name="tarea" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-clipboard-list"></i></button><a> </a>' +
+        '<button title="WIP Generar correo"  type="button"' + 'id='+ d.id_poliza + ' name="correo" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-envelope-open-text"></i></button><a> - </a>' +
+        '<button title="WIP Generar propuesta de endoso"  type="button"' + 'id='+ d.id_poliza + ' name="crea_propuesta_endoso" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-eraser"></i></button><a> - </a>' +
+        '<button style="background-color: #FF0000" title="Cancelar póliza"  type="button" id=' + d.id_poliza + ' name="cancelar_poliza" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-backspace"></i></button><a> </a>' +
+        '<button style="background-color: #FF0000" title="Anular póliza"  type="button" id=' + d.id_poliza + ' name="anular_poliza" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-ban"></i></button><a> </a>' +
+        '<button style="background-color: #FF0000" title="Eliminar póliza"  type="button" id=' + d.id_poliza + ' name="eliminar_poliza" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-trash"></i></button>' +
+        '</td>' +
         '</tr>' +
         '</table>';
 }
-
 function botones(id, accion, base) {
     console.log("ID:" + id + " => acción:" + accion);
     switch (accion) {
@@ -962,6 +898,39 @@ var chart = new Chart(ctx, {
         }
     }
 });
+var ctx2 = document.getElementById('myChart2').getContext('2d');
+var chart2 = new Chart(ctx2, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: genera_data('leyendas'),
+        datasets: [{
+            label: 'Pólizas que inician su vigencia',
+            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+            borderColor: 'rgb(54, 162, 235)',
+            data: genera_data('entradas')
+        },
+        {
+            label: 'Pólizas que finalizan su vigencia',
+            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: genera_data('salidas')
+        }]
+    },
+
+    // Configuration options go here
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    min: 0
+                }
+            }]
+        }
+    }
+});
 
 var randomScalingFactor = function() {
     return Math.round(Math.random() * 100);
@@ -1003,6 +972,7 @@ var myDoughnutChart = new Chart(ctx2, {
         }
     }
 });
+
 
 function genera_data(data) {
     switch (data) {
@@ -1069,8 +1039,8 @@ function genera_data(data) {
         }
         var iFini = document.getElementById("fec_min").value;
         var iFfin = document.getElementById('fec_max').value;
-        var iStartDateCol = 6;
-        var iEndDateCol = 6;
+        var iStartDateCol = 4;
+        var iEndDateCol = 4;
         iFini=iFini.substring(0,4) + iFini.substring(5,7)+ iFini.substring(8,10);
         iFfin=iFfin.substring(0,4) + iFfin.substring(5,7)+ iFfin.substring(8,10);
 
@@ -1103,5 +1073,11 @@ function genera_data(data) {
     document.getElementById("fec_max").value=formateoFechas(fin);
     table.draw();
     });
-    
+
+    function descarga_excel(){
+    var dias=document.getElementById("busqueda_dias").value;
+     $.redirect('/bamboo/backend/polizas/genera_excel_polizas_filtradas.php', {
+    'filtro_dias': dias
+    }, 'get');
+}
 </script>
