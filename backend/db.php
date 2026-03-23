@@ -13,7 +13,7 @@ function db_connect() {
         $pg_host = PG_HOST;
         $pg_user = PG_USERNAME;
         $pg_port = PG_PORT;
-        if (strpos($pg_host, '.supabase.co') !== false) {
+        if (strpos($pg_host, 'db.') === 0 && substr($pg_host, -12) === '.supabase.co') {
             // Extraer project ref del host (db.XXXX.supabase.co)
             $ref = str_replace(['db.', '.supabase.co'], '', $pg_host);
             $pg_host = 'aws-1-us-east-2.pooler.supabase.com';
