@@ -41,7 +41,13 @@ else
 }
 function retrocede()
 {
+    if (!isset($_COOKIE['historial']) || empty($_COOKIE['historial'])) {
+        return json_encode(array('-','-','-'));
+    }
     $historial=json_decode($_COOKIE['historial'],true);
+    if (!is_array($historial) || !isset($historial['data']) || empty($historial['data'])) {
+        return json_encode(array('-','-','-'));
+    }
     $contador=count($historial['data'])-1;
     $cookie_url=$historial['data'][$contador]['url'];
     $cookie_id=$historial['data'][$contador]['id'];
