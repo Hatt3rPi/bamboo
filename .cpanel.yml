@@ -1,0 +1,12 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/customw2/public_html
+    - /bin/cp -R bamboo $DEPLOYPATH/
+    - /bin/cp -R bambooQA $DEPLOYPATH/
+    - /bin/mkdir -p $DEPLOYPATH/backend
+    - /bin/cp backend/db.php $DEPLOYPATH/backend/
+    - /bin/cp -R backend/login $DEPLOYPATH/backend/
+    - /bin/cp -R vendor $DEPLOYPATH/
+    - /bin/cp index.php $DEPLOYPATH/
+    - find $DEPLOYPATH/bamboo $DEPLOYPATH/bambooQA $DEPLOYPATH/backend/login -name "*.php" -exec sed -i 's|/home/gestio10/public_html|/home/customw2/public_html|g' {} +
