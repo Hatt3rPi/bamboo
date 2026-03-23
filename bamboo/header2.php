@@ -11,7 +11,7 @@ if ( !isset( $_SESSION[ "loggedin" ] ) || $_SESSION[ "loggedin" ] !== true ) {
 header( "location: /backend/login/login.php" );
 exit;
 }
-if ($_COOKIE['valida_arreglo']==1){
+if (isset($_COOKIE['valida_arreglo']) && $_COOKIE['valida_arreglo']==1){
     //setcookie('valida_arreglo',"",time() - (10),"/");
     $arreglo=json_decode(html_entity_decode($_COOKIE['arreglo']),true);
     $arreglo=stripslashes($_COOKIE['arreglo']);
