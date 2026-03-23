@@ -194,6 +194,10 @@ function sql_translate($sql) {
     // CAST(x AS UNSIGNED) → CAST(x AS INTEGER)
     $sql = preg_replace('/CAST\s*\((.+?)\s+AS\s+UNSIGNED\s*\)/i', 'CAST($1 AS INTEGER)', $sql);
 
+    // SUBSTRING(integer_col, ...) → SUBSTRING(integer_col::text, ...)
+    // PostgreSQL SUBSTRING requiere text, no integer
+    $sql = preg_replace('/SUBSTRING\s*\(\s*(\w+)\s*,/i', 'SUBSTRING($1::text,', $sql);
+
     // IF(cond, v1, v2) → CASE WHEN cond THEN v1 ELSE v2 END
     // Manejo recursivo de IF() anidados con paréntesis balanceados
     $maxIterations = 10;
