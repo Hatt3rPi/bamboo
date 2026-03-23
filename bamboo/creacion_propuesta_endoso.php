@@ -3,8 +3,8 @@ if ( !isset( $_SESSION ) ) {
   session_start();
 }
 require_once "/home/gestio10/public_html/backend/config.php";
-mysqli_set_charset($link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo');
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
 
 
 //$_SERVER[ "REQUEST_METHOD" ] = "POST";
@@ -19,8 +19,8 @@ $camino=$_POST["accion"];
 if ($_SERVER[ "REQUEST_METHOD" ] == "POST" and ($_POST["accion"] == 'crea_propuesta_endoso_web' or $_POST["accion"] == 'crea_propuesta_endoso_manual'))
 {
         $query = "select distinct a.numero_poliza, a.compania, a.id as id_poliza,a.ramo, a.vigencia_inicial, a.vigencia_final, CONCAT_WS('-',a.rut_proponente, a.dv_proponente) as rut_proponente, CONCAT_WS(' ',b.nombre_cliente, b.apellido_paterno, ' ', b.apellido_materno) as nombre_proponente, FORMAT(sum(c.prima_afecta), 2, 'de_DE') as total_prima_afecta, FORMAT(sum(c.prima_exenta), 2, 'de_DE') as total_prima_exenta, FORMAT(sum(c.prima_neta), 2, 'de_DE') as total_prima_neta, FORMAT(sum(c.prima_bruta_anual), 2, 'de_DE') as total_prima_bruta, FORMAT(sum(c.monto_asegurado), 2, 'de_DE') as total_monto_asegurado, a.moneda_poliza from polizas_2 as a left join clientes as b on a.rut_proponente=b.rut_sin_dv left join items as c on a.numero_poliza=c.numero_poliza where a.id='".$_POST["numero_poliza"]."'";
-        $resultado = mysqli_query( $link, $query );
-        While( $row = mysqli_fetch_object( $resultado ) ) {
+        $resultado = db_query($link, $query );
+        While( $row = db_fetch_object( $resultado ) ) {
             $numero_poliza = $row->numero_poliza;
             $ramo=$row->ramo;
             $id_poliza = $row->id_poliza;
@@ -39,8 +39,8 @@ if ($_SERVER[ "REQUEST_METHOD" ] == "POST" and ($_POST["accion"] == 'crea_propue
 }
 elseif ($_SERVER[ "REQUEST_METHOD" ] == "POST" and ($_POST["accion"] == 'actualiza_propuesta' or $_POST["accion"] == 'crear_endoso')){
         $query = "select * from propuesta_endosos where id='".$_POST["id"]."'";
-        $resultado = mysqli_query( $link, $query );
-        While( $row = mysqli_fetch_object( $resultado ) ) {
+        $resultado = db_query($link, $query );
+        While( $row = db_fetch_object( $resultado ) ) {
             $numero_propuesta = $row->numero_propuesta_endoso;
             $numero_poliza = $row->numero_poliza;
             $ramo=$row->ramo;
@@ -73,8 +73,8 @@ elseif ($_SERVER[ "REQUEST_METHOD" ] == "POST" and ($_POST["accion"] == 'actuali
 elseif($_SERVER[ "REQUEST_METHOD" ] == "POST" and $_POST["accion"] == 'actualiza_endoso'){
         //no funcionando
         $query = "select * from endosos where id='".$_POST["id"]."'";
-        $resultado = mysqli_query( $link, $query );
-        While( $row = mysqli_fetch_object( $resultado ) ) {
+        $resultado = db_query($link, $query );
+        While( $row = db_fetch_object( $resultado ) ) {
             $numero_propuesta=$row->numero_propuesta_endoso;
             $numero_endoso = $row->numero_endoso;
             $fecha_emision = $row->fecha_emision;

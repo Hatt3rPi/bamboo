@@ -6,15 +6,15 @@
     } 
 require_once "/home/gestio10/public_html/backend/config.php";
 $id_renovada=$_GET[ "id_a_renovar" ];
-    mysqli_set_charset($link, 'utf8');
-    mysqli_select_db($link, 'gestio10_asesori1_bamboo');
+    db_set_charset($link, 'utf8');
+    db_select_db($link, DB_NAME);
     //$sql = "SELECT id FROM clientes WHERE CONTACT(rut_sin_dv, \'-\',dv) = ?";
     $sql = "select id, numero_poliza from polizas where id_poliza_renovada=".$id_renovada;
-    $resultado=mysqli_query($link, $sql);
+    $resultado=db_query($link, $sql);
     $codigo='{
         "data": [';
         $conta=0;
-    While($row=mysqli_fetch_object($resultado))
+    While($row=db_fetch_object($resultado))
   {
     $conta=$conta+1;
     if ($conta==1){
@@ -26,6 +26,6 @@ $id_renovada=$_GET[ "id_a_renovar" ];
   }
 
   $codigo.=']}';
-  mysqli_close($link);
+  db_close($link);
   echo $codigo;
 ?>

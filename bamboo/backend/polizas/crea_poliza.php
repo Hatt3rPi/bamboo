@@ -53,21 +53,21 @@ $venc_gtia=estandariza_info($_POST["venc_gtia"]);
 $item=estandariza_info($_POST["item"]);
 
 
-mysqli_set_charset( $link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo');
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
 if ($id_poliza_renovada!=='')
 {
-  mysqli_query($link, "update polizas_2 set tipo_poliza='Renovada' where id=".$id_poliza_renovada);
+  db_query($link, "update polizas_2 set tipo_poliza='Renovada' where id=".$id_poliza_renovada);
   $query='INSERT INTO polizas_2 (numero_boleta, comision_negativa, boleta_negativa, depositado_fecha,  estado, tipo_poliza, moneda_valor_cuota,  rut_proponente,  dv_proponente,  rut_asegurado,  dv_asegurado,  compania,  ramo,  vigencia_inicial,  vigencia_final,  numero_poliza,  cobertura,  materia_asegurada,  patente_ubicacion, moneda_poliza,  deducible,  prima_afecta,  prima_exenta,  prima_neta,  prima_bruta_anual,  monto_asegurado,  numero_propuesta,  fecha_envio_propuesta,  moneda_comision,  comision,  porcentaje_comision,  comision_bruta,  comision_neta,  forma_pago, nro_cuotas,  valor_cuota,  fecha_primera_cuota,  vendedor, nombre_vendedor, poliza_renovada , id_poliza_renovada ,endoso,informacion_adicional, venc_gtia,item) VALUES ( "'.$boleta.'","'.$comisionneg.'", "'.$boletaneg.'", "'.$fechadeposito.'", "Activo", null,"'.$moenda_cuota.'","'.$rut_prop.'","'.$dv_prop.'","'.$rut_aseg.'","'.$dv_aseg.'","'.$selcompania.'","'.$ramo.'","'.$fechainicio.'","'.$fechavenc.'","'.$nro_poliza.'","'.$cobertura.'","'.$materia.'","'.$detalle_materia.'","'.$moneda_poliza.'","'.$deducible.'","'.$prima_afecta.'","'.$prima_exenta.'","'.$prima_neta.'","'.$prima_bruta.'","'.$monto_aseg.'","'.$nro_propuesta.'","'.$fechaprop.'","'.$moneda_comision.'","'.$comision.'","'.$porcentaje_comsion.'","'.$comisionbruta.'","'.$comisionneta.'","'.$modo_pago.'","'.$cuotas.'","'.$valorcuota.'","'.$fechaprimer.'","'.$con_vendedor.'","'.$nombre_vendedor.'","'.$poliza_renovada.'","'.$id_poliza_renovada.'","'.$endoso.'","'.$comentario.'","'.$venc_gtia.'","'.$item.'");';
-  mysqli_query($link, $query);
-  mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega póliza', '".str_replace("'","**",$query)."','poliza',null, '".$_SERVER['PHP_SELF']."')");
+  db_query($link, $query);
+  db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega póliza', '".str_replace("'","**",$query)."','poliza',null, '".$_SERVER['PHP_SELF']."')");
   
 }
 else
 {
   $query='INSERT INTO polizas_2 (numero_boleta, comision_negativa, boleta_negativa, depositado_fecha,  estado, tipo_poliza, moneda_valor_cuota,  rut_proponente,  dv_proponente,  rut_asegurado,  dv_asegurado,  compania,  ramo,  vigencia_inicial,  vigencia_final,  numero_poliza,  cobertura,  materia_asegurada,  patente_ubicacion, moneda_poliza,  deducible,  prima_afecta,  prima_exenta,  prima_neta,  prima_bruta_anual,  monto_asegurado,  numero_propuesta,  fecha_envio_propuesta,  moneda_comision,  comision,  porcentaje_comision,  comision_bruta,  comision_neta,  forma_pago, nro_cuotas,  valor_cuota,  fecha_primera_cuota,  vendedor, nombre_vendedor, poliza_renovada , endoso,informacion_adicional, venc_gtia,item)                     VALUES ( "'.$boleta.'","'.$comisionneg.'", "'.$boletaneg.'", "'.$fechadeposito.'", "Activo", null,"'.$moenda_cuota.'","'.$rut_prop.'","'.$dv_prop.'","'.$rut_aseg.'","'.$dv_aseg.'","'.$selcompania.'","'.$ramo.'","'.$fechainicio.'","'.$fechavenc.'","'.$nro_poliza.'","'.$cobertura.'","'.$materia.'","'.$detalle_materia.'","'.$moneda_poliza.'","'.$deducible.'","'.$prima_afecta.'","'.$prima_exenta.'","'.$prima_neta.'","'.$prima_bruta.'","'.$monto_aseg.'","'.$nro_propuesta.'","'.$fechaprop.'","'.$moneda_comision.'","'.$comision.'","'.$porcentaje_comsion.'","'.$comisionbruta.'","'.$comisionneta.'","'.$modo_pago.'","'.$cuotas.'","'.$valorcuota.'","'.$fechaprimer.'","'.$con_vendedor.'","'.$nombre_vendedor.'","'.$poliza_renovada.'","'.$endoso.'","'.$comentario.'","'.$venc_gtia.'","'.$item.'");';
-  mysqli_query($link, $query);
-  mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega póliza', '".str_replace("'","**",$query)."','poliza',null, '".$_SERVER['PHP_SELF']."')");
+  db_query($link, $query);
+  db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega póliza', '".str_replace("'","**",$query)."','poliza',null, '".$_SERVER['PHP_SELF']."')");
 
 }
 
@@ -82,7 +82,7 @@ function estandariza_info($data) {
 function cambia_puntos_por_coma($data){
   //$data=str_replace('.','',$data);
 $data=str_replace(',','.',$data);
-mysqli_close($link);
+db_close($link);
 return $data;
 }
 ?>

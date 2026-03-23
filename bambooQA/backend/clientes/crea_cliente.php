@@ -17,12 +17,12 @@ $rut_completo = str_replace("-", "", estandariza_info($_POST["rut"]));
  $grupo=estandariza_info($_POST["grupo"]);
 
 
-mysqli_set_charset( $link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo_prePAP');
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
 $query='insert into clientes(nombre_cliente, apellido_paterno, apellido_materno, rut_sin_dv, dv, direccion_personal, correo,direccion_laboral, telefono, referido, grupo) values (\''.$nombre.'\', \''.$apellidop.'\', \''.$apellidom.'\', \''.$rut.'\', \''.$dv.'\', \''.$direccionp.'\', \''.$correo_electronico.'\', \''.$direccionl.'\', \''.$telefono.'\', \''.$referido.'\', \''.$grupo.'\');';
-mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega clientes', '".str_replace("'","**",$query)."','cliente',null, '".$_SERVER['PHP_SELF']."')");
+db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega clientes', '".str_replace("'","**",$query)."','cliente',null, '".$_SERVER['PHP_SELF']."')");
 
-mysqli_query($link, $query);
+db_query($link, $query);
 
 //echo 'insert into clientes(nombre_cliente, rut_sin_dv, dv, direccion_personal, correo,direccion_laboral, telefono, referido, grupo) values (\''.$nombre.'\', \''.$rut.'\', \''.$dv.'\', \''.$direccionp.'\', \''.$correo_electronico.'\', \''.$direccionl.'\', \''.$telefono.'\', \''.$referido.'\', \''.$grupo.'\');';
   foreach (array_keys($_POST['nombrecontact']) as $key) {
@@ -30,12 +30,12 @@ mysqli_query($link, $query);
     $telefonocontact = $_POST['telefonocontact'][$key];
     $emailcontact = $_POST['emailcontact'][$key];
     $query_contactos="INSERT INTO clientes_contactos (id_cliente, nombre, telefono, correo) select id , '".$nombrecontact."', '".$telefonocontact."', '".$emailcontact."' from clientes where rut_sin_dv='".$rut."';";
-    mysqli_query($link, $query_contactos);
-    mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega contactos', '".str_replace("'","**",$query_contactos)."','contacto',null, '".$_SERVER['PHP_SELF']."')");
+    db_query($link, $query_contactos);
+    db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega contactos', '".str_replace("'","**",$query_contactos)."','contacto',null, '".$_SERVER['PHP_SELF']."')");
    
     //echo "INSERT INTO clientes_contactos (id_cliente,indice, nombre, telefono, correo) select id , '".$nombrecontact."', '".$key."',, '".$telefonocontact."', '".$emailcontact."' from clientes where rut_sin_dv='".$rut."';";
   }
-  mysqli_close($link);
+  db_close($link);
 
 //echo '<script type="text/javascript">
 //redirige('.$rut.');

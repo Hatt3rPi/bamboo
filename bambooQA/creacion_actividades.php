@@ -12,8 +12,8 @@ function estandariza_info($data) {
     return $data;
   }
 require_once "/home/gestio10/public_html/backend/config.php";
-mysqli_set_charset($link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo_prePAP');
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
 $num_cliente=$num_poliza=$num_prop_poliza=0;
  $busqueda=$busqueda_err=$data=$resultado_poliza='';
  $tarea=$fecha_vencimiento=$recurrente=$tarea_con_fecha_fin=$fecha_fin='';
@@ -23,11 +23,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 // Viene desde cliente
     if(!empty(trim($_POST["id_cliente"]))){
         $busqueda=$_POST["id_cliente"];
-        mysqli_set_charset( $link, 'utf8');
-        mysqli_select_db($link, 'gestio10_asesori1_bamboo_prePAP');
+        db_set_charset($link, 'utf8');
+        db_select_db($link, DB_NAME);
         //cliente
-        $resultado=mysqli_query($link, 'SELECT id, concat_ws(\'-\',rut_sin_dv, dv) as rut, concat_ws(\' \',nombre_cliente,  apellido_paterno, apellido_materno) as nombre , telefono, correo FROM clientes where  id='.$busqueda.' ORDER BY apellido_paterno ASC, apellido_materno ASC;');
-        While($row=mysqli_fetch_object($resultado))
+        $resultado=db_query($link, 'SELECT id, concat_ws(\'-\',rut_sin_dv, dv) as rut, concat_ws(\' \',nombre_cliente,  apellido_paterno, apellido_materno) as nombre , telefono, correo FROM clientes where  id='.$busqueda.' ORDER BY apellido_paterno ASC, apellido_materno ASC;');
+        While($row=db_fetch_object($resultado))
             {
                 $rut=$row->rut;
                 $id=$row->id;
@@ -39,9 +39,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 $tabla_clientes=$tabla_clientes.'<tr><td>'.$num_cliente.'</td><td><input type="checkbox" id="'.$id.'" name="check_cliente" checked disabled></td><td>'.$rut.'</td><td>'.$nombre.'</td><td>'.$telefono.'</td><td>'.$correo.'</td></tr>'."<br>";        
             }
             //poliza
-            $resultado_poliza=mysqli_query($link, 'SELECT id, compania, vigencia_final, numero_poliza, materia_asegurada, patente_ubicacion,cobertura FROM polizas where rut_proponente="'.$rutsindv.'" or rut_asegurado="'.$rutsindv.'"  order by compania, numero_poliza;');
+            $resultado_poliza=db_query($link, 'SELECT id, compania, vigencia_final, numero_poliza, materia_asegurada, patente_ubicacion,cobertura FROM polizas where rut_proponente="'.$rutsindv.'" or rut_asegurado="'.$rutsindv.'"  order by compania, numero_poliza;');
 
-            While($row=mysqli_fetch_object($resultado_poliza))
+            While($row=db_fetch_object($resultado_poliza))
                 {
                     $id= $row ->id;
                     $compania = $row->compania;
@@ -53,17 +53,17 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     $num_poliza=$num_poliza+1;
                     $tabla_poliza=$tabla_poliza.'<tr><td>'.$num_poliza.'</td><td><input type="checkbox" id="'.$id.'" name="check_poliza"></td><td>'.$poliza.'</td><td>'.$compania.'</td><td>'.$cobertura.'</td><td>'.$vigencia_final.'</td><td>'.$materia_asegurada.'</td><td>'.$patente_ubicacion.'</td></tr>'."<br>";        
                 }            
-        mysqli_close($link);
+        db_close($link);
     } 
 // Viene desde póliza
     if(!empty(trim($_POST["id_poliza"]))){
         $busqueda=$_POST["id_poliza"];
-        mysqli_set_charset( $link, 'utf8');
-        mysqli_select_db($link, 'gestio10_asesori1_bamboo_prePAP');
+        db_set_charset($link, 'utf8');
+        db_select_db($link, DB_NAME);
             //poliza
-            $resultado_poliza=mysqli_query($link, 'SELECT distinct a.id, compania, vigencia_final, a.numero_poliza, rut_proponente, b.rut_asegurado FROM polizas_2 as a left join items as b on a.numero_poliza=b.numero_poliza where a.id='.$busqueda.' order by compania, a.numero_poliza;');
+            $resultado_poliza=db_query($link, 'SELECT distinct a.id, compania, vigencia_final, a.numero_poliza, rut_proponente, b.rut_asegurado FROM polizas_2 as a left join items as b on a.numero_poliza=b.numero_poliza where a.id='.$busqueda.' order by compania, a.numero_poliza;');
 
-            While($row=mysqli_fetch_object($resultado_poliza))
+            While($row=db_fetch_object($resultado_poliza))
                 {
                     $id= $row ->id;
                     $compania = $row->compania;
@@ -75,8 +75,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     $tabla_poliza=$tabla_poliza.'<tr><td>'.$num_poliza.'</td><td><input type="checkbox" id="'.$id.'" name="check_poliza" checked disabled></td><td>'.$poliza.'</td><td>'.$compania.'</td><td>'.$cobertura.'</td><td>'.$vigencia_final.'</td></tr>'."<br>";        
                 }     
         //cliente
-        $resultado=mysqli_query($link, 'SELECT id, concat_ws(\'-\',rut_sin_dv, dv) as rut, concat_ws(\' \',nombre_cliente,  apellido_paterno, apellido_materno) as nombre , telefono, correo FROM clientes where  rut_sin_dv in ('.$rut_proponente.' , '.$rut_asegurado.') ORDER BY apellido_paterno ASC, apellido_materno ASC;');
-        While($row=mysqli_fetch_object($resultado))
+        $resultado=db_query($link, 'SELECT id, concat_ws(\'-\',rut_sin_dv, dv) as rut, concat_ws(\' \',nombre_cliente,  apellido_paterno, apellido_materno) as nombre , telefono, correo FROM clientes where  rut_sin_dv in ('.$rut_proponente.' , '.$rut_asegurado.') ORDER BY apellido_paterno ASC, apellido_materno ASC;');
+        While($row=db_fetch_object($resultado))
             {
                 $rut=$row->rut;
                 $id=$row->id;
@@ -87,32 +87,32 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 $rutsindv=estandariza_info(substr(str_replace("-", "", $rut), 0, strlen(str_replace("-", "", $rut))-1));
                 $tabla_clientes=$tabla_clientes.'<tr><td>'.$num_cliente.'</td><td><input type="checkbox" id="'.$id.'" name="check_cliente"></td><td>'.$rut.'</td><td>'.$nombre.'</td><td>'.$telefono.'</td><td>'.$correo.'</td></tr>'."<br>";        
             }       
-        mysqli_close($link);
+        db_close($link);
     } 
 // Viene desde modificar tarea
     if(!empty(trim($_POST["id_tarea"]))){
         $busqueda=$_POST["id_tarea"];
         $tipo_tarea=$_POST["tipo_tarea"];
         $aux_modificar='update';
-        mysqli_set_charset( $link, 'utf8');
-        mysqli_select_db($link, 'gestio10_asesori1_bamboo_prePAP');
+        db_set_charset($link, 'utf8');
+        db_select_db($link, DB_NAME);
             //poliza
         switch ($tipo_tarea){
             case 'individual':
-                $resultado_tarea=mysqli_query($link, 'SELECT a.id, a.tarea, a.estado, a.prioridad, a.fecha_vencimiento FROM tareas as a where a.id='.$busqueda);
+                $resultado_tarea=db_query($link, 'SELECT a.id, a.tarea, a.estado, a.prioridad, a.fecha_vencimiento FROM tareas as a where a.id='.$busqueda);
                 $query_poliza="SELECT b.id, b.compania, b.vigencia_final, b.numero_poliza, b.materia_asegurada, b.patente_ubicacion, b.cobertura, b.rut_proponente, b.rut_asegurado FROM tareas_relaciones as a left join polizas as b on a.id_relacion=b.id where a.base='polizas' and a.id_tarea=".$busqueda;    
                 $query_propuesta_poliza="SELECT distinct a.id, compania, ramo, vigencia_final, a.numero_propuesta, rut_proponente, b.rut_asegurado FROM propuesta_polizas as a left join items as b on a.numero_propuesta=b.numero_propuesta where a.id=(select id_relacion from tareas_relaciones where id_tarea='".$busqueda."' and base='propuestas') order by compania, a.numero_propuesta"; 
                 $query_cliente="SELECT b.id, concat_ws('-',b.rut_sin_dv, b.dv) as rut, concat_ws(' ', b.nombre_cliente,  b.apellido_paterno,  b.apellido_materno) as nombre , b.telefono, b.correo  FROM tareas_relaciones as a left join clientes as b on a.id_relacion=b.id where a.base='clientes' and a.id_tarea=".$busqueda;
                 break;
             case 'recurrente':
-                $resultado_tarea=mysqli_query($link, 'SELECT id, tarea, estado, prioridad, recurrente, tarea_con_fecha_fin, fecha_fin, dia_recordatorio FROM tareas_recurrentes where id='.$busqueda);
+                $resultado_tarea=db_query($link, 'SELECT id, tarea, estado, prioridad, recurrente, tarea_con_fecha_fin, fecha_fin, dia_recordatorio FROM tareas_recurrentes where id='.$busqueda);
                 $query_poliza="SELECT b.id, b.compania, b.vigencia_final, b.numero_poliza, b.materia_asegurada, b.patente_ubicacion, b.cobertura, b.rut_proponente, b.rut_asegurado FROM tareas_relaciones as a left join polizas as b on a.id_relacion=b.id where a.base='polizas' and a.id_tarea_recurrente=".$busqueda;    
                 $query_propuesta_poliza="SELECT distinct a.id, compania, ramo, vigencia_final, a.numero_propuesta, rut_proponente, b.rut_asegurado FROM propuesta_polizas as a left join items as b on a.numero_propuesta=b.numero_propuesta where a.id=(select id_relacion from tareas_relaciones where id_tarea_recurrente='".$busqueda."' and base='propuestas') order by compania, a.numero_propuesta";
                 $query_cliente="SELECT b.id, concat_ws('-',b.rut_sin_dv, b.dv) as rut, concat_ws(' ', b.nombre_cliente,  b.apellido_paterno,  b.apellido_materno) as nombre , b.telefono, b.correo  FROM tareas_relaciones as a left join clientes as b on a.id_relacion=b.id where a.base='clientes' and a.id_tarea_recurrente=".$busqueda;
                 break;
         }
 
-        While($row=mysqli_fetch_object($resultado_tarea))
+        While($row=db_fetch_object($resultado_tarea))
                 {
                     $id_tarea= $row->id;
                     $tarea= $row->tarea;
@@ -126,9 +126,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     $dia_recordatorio= $row->dia_recordatorio;
                 }     
          //poliza
-            $resultado_poliza=mysqli_query($link, $query_poliza);
+            $resultado_poliza=db_query($link, $query_poliza);
 
-        While($row=mysqli_fetch_object($resultado_poliza))
+        While($row=db_fetch_object($resultado_poliza))
                 {
                     $id= $row ->id;
                     $compania = $row->compania;
@@ -143,8 +143,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     $tabla_poliza=$tabla_poliza.'<tr><td>'.$num_poliza.'</td><td><input type="checkbox" id="'.$id.'" name="check_poliza" checked disabled></td><td>'.$poliza.'</td><td>'.$compania.'</td><td>'.$cobertura.'</td><td>'.$vigencia_final.'</td><td>'.$materia_asegurada.'</td><td>'.$patente_ubicacion.'</td></tr>'."<br>";        
                 }  
         //cliente
-        $resultado=mysqli_query($link, $query_cliente);
-        While($row=mysqli_fetch_object($resultado))
+        $resultado=db_query($link, $query_cliente);
+        While($row=db_fetch_object($resultado))
             {
                 $rut=$row->rut;
                 $id=$row->id;
@@ -157,8 +157,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             }
         
         //propuesta
-        $resultado_prop=mysqli_query($link, $query_propuesta_poliza);
-            While($row=mysqli_fetch_object($resultado_prop))
+        $resultado_prop=db_query($link, $query_propuesta_poliza);
+            While($row=db_fetch_object($resultado_prop))
                 {
                     $id= $row ->id;
                     $compania = $row->compania;
@@ -175,12 +175,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 // Viene desde propuesta
     if(!empty(trim($_POST["id_propuesta"]))){
         $busqueda=$_POST["id_propuesta"];
-        mysqli_set_charset( $link, 'utf8');
-        mysqli_select_db($link, 'gestio10_asesori1_bamboo_prePAP');
+        db_set_charset($link, 'utf8');
+        db_select_db($link, DB_NAME);
             //poliza
-            $resultado_poliza=mysqli_query($link, 'SELECT distinct a.id, compania, vigencia_final, ramo, a.numero_propuesta, rut_proponente, b.rut_asegurado FROM propuesta_polizas as a left join items as b on a.numero_propuesta=b.numero_propuesta where a.id='.$busqueda.' order by compania, a.numero_propuesta;');
+            $resultado_poliza=db_query($link, 'SELECT distinct a.id, compania, vigencia_final, ramo, a.numero_propuesta, rut_proponente, b.rut_asegurado FROM propuesta_polizas as a left join items as b on a.numero_propuesta=b.numero_propuesta where a.id='.$busqueda.' order by compania, a.numero_propuesta;');
 
-            While($row=mysqli_fetch_object($resultado_poliza))
+            While($row=db_fetch_object($resultado_poliza))
                 {
                     $id= $row ->id;
                     $compania = $row->compania;
@@ -193,8 +193,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     $tabla_propuesta_poliza=$tabla_propuesta_poliza.'<tr><td>'.$num_prop_poliza.'</td><td><input type="checkbox" id="'.$id.'" name="check_propuesta" checked disabled></td><td>'.$propuesta_poliza.'</td><td>'.$compania.'</td><td>'.$ramo.'</td><td>'.$vigencia_final.'</td></tr>'."<br>";        
                 }     
         //cliente
-        $resultado=mysqli_query($link, 'SELECT id, concat_ws(\'-\',rut_sin_dv, dv) as rut, concat_ws(\' \',nombre_cliente,  apellido_paterno, apellido_materno) as nombre , telefono, correo FROM clientes where  rut_sin_dv in ('.$rut_proponente.' , '.$rut_asegurado.') ORDER BY apellido_paterno ASC, apellido_materno ASC;');
-        While($row=mysqli_fetch_object($resultado))
+        $resultado=db_query($link, 'SELECT id, concat_ws(\'-\',rut_sin_dv, dv) as rut, concat_ws(\' \',nombre_cliente,  apellido_paterno, apellido_materno) as nombre , telefono, correo FROM clientes where  rut_sin_dv in ('.$rut_proponente.' , '.$rut_asegurado.') ORDER BY apellido_paterno ASC, apellido_materno ASC;');
+        While($row=db_fetch_object($resultado))
             {
                 $rut=$row->rut;
                 $id=$row->id;
@@ -205,7 +205,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 $rutsindv=estandariza_info(substr(str_replace("-", "", $rut), 0, strlen(str_replace("-", "", $rut))-1));
                 $tabla_clientes=$tabla_clientes.'<tr><td>'.$num_cliente.'</td><td><input type="checkbox" id="'.$id.'" name="check_cliente"></td><td>'.$rut.'</td><td>'.$nombre.'</td><td>'.$telefono.'</td><td>'.$correo.'</td></tr>'."<br>";        
             }       
-        mysqli_close($link);
+        db_close($link);
     }
 }
 else {    

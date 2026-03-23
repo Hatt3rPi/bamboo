@@ -12,18 +12,18 @@ function estandariza_info($data) {
     return $data;
   }
 require_once "/home/gestio10/public_html/backend/config.php";
-mysqli_set_charset($link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo');
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
 $num=0;
 
-mysqli_set_charset($link, 'utf8');
-    mysqli_select_db($link, 'gestio10_asesori1_bamboo');
+db_set_charset($link, 'utf8');
+    db_select_db($link, DB_NAME);
     //$sql = "SELECT id FROM clientes WHERE CONTACT(rut_sin_dv, \'-\',dv) = ?";
 $sql = "SELECT *, concat_ws('-',mes,SUBSTRING(anomes, 3,2)) as anomes_nombre FROM `stock_polizas` WHERE ANOMES BETWEEN ANOMES(DATE_ADD(CURRENT_DATE, INTERVAL -12 MONTH)) AND ANOMES(DATE_ADD(CURRENT_DATE, INTERVAL + 6 MONTH))";
-    $resultado=mysqli_query($link, $sql);
+    $resultado=db_query($link, $sql);
 
     $leyendas = $stock=$salidas=$entradas=$ramo=$cantidad=array();
-While($row=mysqli_fetch_object($resultado))
+While($row=db_fetch_object($resultado))
   {
       if($row->anomes==date("Ym")){
       array_push($leyendas," (actual) --> ".$row->anomes_nombre);          
@@ -36,13 +36,13 @@ While($row=mysqli_fetch_object($resultado))
       array_push($salidas,$row->salidas );
   }
   
-$resultado2=mysqli_query($link, "SELECT ramo, count(*) as cantidad FROM polizas_2 where estado not in ('Cancelado','Anulado') group by ramo order by count(*) desc");
-While($row2=mysqli_fetch_object($resultado2))
+$resultado2=db_query($link, "SELECT ramo, count(*) as cantidad FROM polizas_2 where estado not in ('Cancelado','Anulado') group by ramo order by count(*) desc");
+While($row2=db_fetch_object($resultado2))
   {
       array_push($ramo,$row2->ramo );
       array_push($cantidad,$row2->cantidad );
   }
-  mysqli_close($link);
+  db_close($link);
 ?>
 <!DOCTYPE html>
 <html lang="es">

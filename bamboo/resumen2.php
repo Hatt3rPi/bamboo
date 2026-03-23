@@ -10,15 +10,15 @@ if (!isset($_SESSION))
 
 require_once "/home/gestio10/public_html/backend/config.php";
 require_once "/home/gestio10/public_html/bamboo/backend/funciones.php";
-mysqli_set_charset($link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo');
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
 $buscar = $base = $id = $nombre_base = '';
 $id_clientes = $id_polizas = $endosos = $propuestas =$propuestas_endosos= 'busqueda dummy';
 $num = 0;
 $busqueda = $busqueda_err = $data = $query= $resultado_poliza= '';
 $rut = $nombre = $telefono = $correo = $lista = '';
 //$query = "SELECT a.id as id_poliza, b.id as idP, c.id as idA FROM polizas as a left join clientes as b on a.rut_proponente=b.rut_sin_dv and b.rut_sin_dv is not null left join clientes as c on a.rut_asegurado=c.rut_sin_dv and c.rut_sin_dv is not null where a.id=".$id;
-//$resultado_poliza=mysqli_query($link, $query);
+//$resultado_poliza=db_query($link, $query);
 if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) == true and isset($_POST["id"]) !== true)
 {
     $buscar = eliminar_acentos(estandariza_info($_POST["busqueda"]));
@@ -33,8 +33,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
     {
         case 'poliza':
             $query = "select distinct a.numero_poliza, a.id as id_poliza, b.id as idP, d.id as idA from polizas_2 as a left join clientes as b on a.rut_proponente=b.rut_sin_dv left join items as c on a.numero_poliza=c.numero_poliza left join clientes as d on c.rut_asegurado= d.rut_sin_dv where a.id=" . $id;
-            $resultado_poliza = mysqli_query($link, $query);
-            while ($row = mysqli_fetch_object($resultado_poliza))
+            $resultado_poliza = db_query($link, $query);
+            while ($row = db_fetch_object($resultado_poliza))
             {
                 if ($row->idA == $row->idP)
                 {
@@ -48,14 +48,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
             }
 
             $query = "select distinct b.numero_propuesta from polizas_2 as a left join propuesta_polizas as b on a.numero_propuesta=b.numero_propuesta where a.id=" . $id;
-            $resultado_poliza = mysqli_query($link, $query);
-            while ($row = mysqli_fetch_object($resultado_poliza))
+            $resultado_poliza = db_query($link, $query);
+            while ($row = db_fetch_object($resultado_poliza))
             {   if($row->numero_propuesta!==null){
                 $propuestas = $row->numero_propuesta;}
             }
             $query = "select numero_endoso from endosos where id_poliza=" . $id;
-            $resultado_poliza = mysqli_query($link, $query);
-            while ($row = mysqli_fetch_object($resultado_poliza))
+            $resultado_poliza = db_query($link, $query);
+            while ($row = db_fetch_object($resultado_poliza))
             {   if($row->numero_endoso!==null){
                 $endoso = $row->numero_endoso;}
             }
@@ -64,8 +64,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
         case 'propuesta':
             $query = "select distinct a.numero_propuesta, b.id as idP, d.id as idA from propuesta_polizas as a left join clientes as b on a.rut_proponente=b.rut_sin_dv left join items as c on a.numero_propuesta=c.numero_propuesta left join clientes as d on c.rut_asegurado= d.rut_sin_dv where a.numero_propuesta='" . $id . "';";
 
-            $resultado_poliza = mysqli_query($link, $query);
-            while ($row = mysqli_fetch_object($resultado_poliza))
+            $resultado_poliza = db_query($link, $query);
+            while ($row = db_fetch_object($resultado_poliza))
             {
                 if ($row->idA == $row->idP)
                 {
@@ -79,8 +79,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
             }
 
             $query = "select distinct b.id as id_poliza from propuesta_polizas as a left join polizas_2 as b on a.numero_propuesta=b.numero_propuesta where a.numero_propuesta='" . $id . "';";
-            $resultado_poliza = mysqli_query($link, $query);
-            while ($row = mysqli_fetch_object($resultado_poliza))
+            $resultado_poliza = db_query($link, $query);
+            while ($row = db_fetch_object($resultado_poliza))
             {   if($row->id_poliza!==null){
                     $id_polizas = $row->id_poliza;
                 }
@@ -88,8 +88,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
         break;
         case 'cliente':
             $query = "SELECT nombre_cliente FROM clientes where id=" . $id;
-            $resultado_poliza = mysqli_query($link, $query);
-            while ($row = mysqli_fetch_object($resultado_poliza))
+            $resultado_poliza = db_query($link, $query);
+            while ($row = db_fetch_object($resultado_poliza))
             {
                 $nombre_base = $row->nombre_cliente;
             }
@@ -97,8 +97,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
             $id_polizas=$nombre_base;
             /* funciona para 0 y 1 póliza. cuando hay más de 1 se debe armar array
             $query = "select distinct a.numero_poliza, a.id as id_poliza, b.id as idP, d.id as idA from polizas_2 as a left join clientes as b on a.rut_proponente=b.rut_sin_dv left join items as c on a.numero_poliza=c.numero_poliza left join clientes as d on c.rut_asegurado= d.rut_sin_dv where d.id=" . $id;
-            $resultado_poliza = mysqli_query($link, $query);
-            while ($row = mysqli_fetch_object($resultado_poliza))
+            $resultado_poliza = db_query($link, $query);
+            while ($row = db_fetch_object($resultado_poliza))
             {   if($row->id_poliza!==null){
                 $endoso = $row->id_poliza;}
             }
@@ -107,8 +107,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
         case 'tarea':
             $nombre_base = $id;
             $query = "SELECT id_relacion FROM tareas_relaciones  where base='clientes' and id_tarea=" . $id;
-            $resultado_poliza = mysqli_query($link, $query);
-            while ($row = mysqli_fetch_object($resultado_poliza))
+            $resultado_poliza = db_query($link, $query);
+            while ($row = db_fetch_object($resultado_poliza))
             {
                 if ($id_clientes == 'busqueda dummy')
                 {
@@ -117,8 +117,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
                 $id_clientes = $id_clientes . "^" . $row->id_relacion . "$ | ";
             }
             $query2 = "SELECT id_relacion FROM tareas_relaciones  where base='polizas' and id_tarea=" . $id;
-            $resultado_poliza2 = mysqli_query($link, $query2);
-            while ($row = mysqli_fetch_object($resultado_poliza2))
+            $resultado_poliza2 = db_query($link, $query2);
+            while ($row = db_fetch_object($resultado_poliza2))
             {
                 if ($id_polizas == 'busqueda dummy')
                 {
@@ -130,8 +130,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
         case 'tarea recurrente':
             $nombre_base = $id;
             $query = "SELECT id_relacion FROM tareas_relaciones  where base='clientes' and id_tarea_recurrente=" . $id;
-            $resultado_poliza = mysqli_query($link, $query);
-            while ($row = mysqli_fetch_object($resultado_poliza))
+            $resultado_poliza = db_query($link, $query);
+            while ($row = db_fetch_object($resultado_poliza))
             {
                 if ($id_clientes == 'busqueda dummy')
                 {
@@ -140,8 +140,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
                 $id_clientes = $id_clientes . "^" . $row->id_relacion . "$ | ";
             }
             $query2 = "SELECT id_relacion FROM tareas_relaciones  where base='polizas' and id_tarea_recurrente=" . $id;
-            $resultado_poliza2 = mysqli_query($link, $query2);
-            while ($row = mysqli_fetch_object($resultado_poliza2))
+            $resultado_poliza2 = db_query($link, $query2);
+            while ($row = db_fetch_object($resultado_poliza2))
             {
                 if ($id_polizas == 'busqueda dummy')
                 {
@@ -152,8 +152,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
             break;
         case 'endoso':
             $query = "select id_poliza, numero_endoso, numero_propuesta_endoso, numero_poliza, nombre_proponente from endosos where numero_endoso='" . $id."'";
-            $resultado_endoso = mysqli_query($link, $query);
-            while ($row = mysqli_fetch_object($resultado_endoso))
+            $resultado_endoso = db_query($link, $query);
+            while ($row = db_fetch_object($resultado_endoso))
             {   
                 if($row->id_poliza!==null)
                 {
@@ -166,8 +166,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
             break;
         case 'propuesta_endoso':
             $query = "select a.id_poliza, a.numero_propuesta_endoso, a.numero_poliza, a.nombre_proponente, b.numero_endoso from propuesta_endosos as a left join endosos as b on a.numero_propuesta_endoso=b.numero_propuesta_endoso where a.numero_propuesta_endoso='" . $id."'";
-            $resultado_endoso = mysqli_query($link, $query);
-            while ($row = mysqli_fetch_object($resultado_endoso))
+            $resultado_endoso = db_query($link, $query);
+            while ($row = db_fetch_object($resultado_endoso))
             {   
                 if($row->id_poliza!==null)
                 {
@@ -184,7 +184,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
     }
 
 }
-    mysqli_close($link);
+    db_close($link);
 ?>
 
 <!DOCTYPE html>

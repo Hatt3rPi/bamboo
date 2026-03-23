@@ -52,37 +52,37 @@ $motivo_cancela = estandariza_info($_POST["datomotivo_cancela"]);
 $venc_gtia  = estandariza_info($_POST["venc_gtia"]);
 $item  = estandariza_info($_POST["item"]);
 
-mysqli_set_charset( $link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo_prePAP');
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
 switch ($_POST["accion"]) {
     case 'elimina':
         $query="delete from polizas where id=".$_POST["id_poliza"];
-       mysqli_query($link, $query);
-       mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Elimina póliza', '".str_replace("'","**",$query)."','poliza',".$_POST["id_poliza"].", '".$_SERVER['PHP_SELF']."')");
+       db_query($link, $query);
+       db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Elimina póliza', '".str_replace("'","**",$query)."','poliza',".$_POST["id_poliza"].", '".$_SERVER['PHP_SELF']."')");
     break;
     case 'cancelar':
         $query= "update polizas set estado='Cancelado', fech_cancela='".$_POST["datofecha_cancelacion"]."',motivo_cancela ='".$_POST["datomotivo_cancela"]."' where id=".$_POST["id_poliza"];
-        mysqli_query($link, $query);
-       mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Cancela póliza', '".str_replace("'","**",$query)."','poliza',".$_POST["id_poliza"].", '".$_SERVER['PHP_SELF']."')");
+        db_query($link, $query);
+       db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Cancela póliza', '".str_replace("'","**",$query)."','poliza',".$_POST["id_poliza"].", '".$_SERVER['PHP_SELF']."')");
         //acá se deben cerrar las tareas asociadas a la póliza cancelada
         $query="";
         $query= "update tareas as a left join tareas_relaciones as c on a.id=c.id_tarea left join polizas as b on c.id_relacion=b.id set a.estado='Cerrado' where c.base='polizas' and a.estado in('Activo','Atrasado') and b.id=".$_POST["id_poliza"];
-        mysqli_query($link, $query);
-       mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Cancela póliza', '".str_replace("'","**",$query)."','poliza',".$_POST["id_poliza"].", '".$_SERVER['PHP_SELF']."')");
+        db_query($link, $query);
+       db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Cancela póliza', '".str_replace("'","**",$query)."','poliza',".$_POST["id_poliza"].", '".$_SERVER['PHP_SELF']."')");
 
        break;
     case 'anular':
         $query= "update polizas set estado='Anulado' where id=".$_POST["id_poliza"];
-        mysqli_query($link, $query);
-        mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Anula póliza', '".str_replace("'","**",$query)."','poliza',".$_POST["id_poliza"].", '".$_SERVER['PHP_SELF']."')");
+        db_query($link, $query);
+        db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Anula póliza', '".str_replace("'","**",$query)."','poliza',".$_POST["id_poliza"].", '".$_SERVER['PHP_SELF']."')");
          break;
     default:
     //edición de campos
         $query="UPDATE polizas SET numero_boleta='".$boleta."', comision_negativa='".$comisionneg."', boleta_negativa='".$boletaneg."', depositado_fecha='".$fechadeposito."', moneda_valor_cuota='".$moenda_cuota."',  rut_proponente='".$rut_prop."',  dv_proponente='".$dv_prop."',  rut_asegurado='".$rut_aseg."',  dv_asegurado='".$dv_aseg."',  compania='".$selcompania."', ramo='".$ramo."',  vigencia_inicial='".$fechainicio."',  vigencia_final='".$fechavenc."',  numero_poliza='".$nro_poliza."',  cobertura='".$cobertura."',  materia_asegurada='".$materia."',  patente_ubicacion='".$detalle_materia."', moneda_poliza='".$moneda_poliza."',  deducible='".$deducible."',  prima_afecta='".$prima_afecta."',  prima_exenta='".$prima_exenta."',  prima_neta='".$prima_neta."', prima_bruta_anual='".$prima_bruta."',  monto_asegurado='".$monto_aseg."',  numero_propuesta='".$nro_propuesta."',  fecha_envio_propuesta='".$fechaprop."', moneda_comision='".$moneda_comision."',  comision='".$comision."',  porcentaje_comision='".$porcentaje_comsion."',  comision_bruta='".$comisionbruta."', comision_neta='".$comisionneta."',  forma_pago='".$modo_pago."', nro_cuotas='".$cuotas."',  valor_cuota='".$valorcuota."',  fecha_primera_cuota='".$fechaprimer."', vendedor='".$con_vendedor."', nombre_vendedor='".$nombre_vendedor."', endoso='".$endoso."' , informacion_adicional='".$comentario."', venc_gtia ='".$venc_gtia."',fech_cancela = '".$fech_cancela."',motivo_cancela = '".$motivo_cancela."',item = '".$item."'   WHERE id=".$id_poliza.";";
-       mysqli_query($link, $query);
-       mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Actualiza póliza', '".str_replace("'","**",$query)."','poliza',".$_POST["id_poliza"].", '".$_SERVER['PHP_SELF']."')");
+       db_query($link, $query);
+       db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Actualiza póliza', '".str_replace("'","**",$query)."','poliza',".$_POST["id_poliza"].", '".$_SERVER['PHP_SELF']."')");
          break;
- mysqli_close($link);
+ db_close($link);
  echo $query;
 }
 

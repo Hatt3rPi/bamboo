@@ -9,11 +9,11 @@ if ( !isset( $_SESSION ) ) {
     {
     
       require_once "/home/gestio10/public_html/backend/config.php";
-      mysqli_set_charset( $link, 'utf8' );
-      mysqli_select_db( $link, 'gestio10_asesori1_bamboo' );
+      db_set_charset($link, 'utf8');
+      db_select_db($link, DB_NAME);
       $query = "select poliza_renovada, numero_propuesta, a.rut_proponente,a.dv_proponente, b.nombre_cliente, b.telefono, b.telefono, b.correo, b.direccion_personal, b.direccion_laboral , DATE_FORMAT(fecha_propuesta,'%d-%m-%Y') as fecha_propuesta , DATE_FORMAT(vigencia_inicial,'%d-%m-%Y') as vigencia_inicial, DATE_FORMAT(vigencia_final,'%d-%m-%Y') as vigencia_final, CONCAT(DATEDIFF(vigencia_final,vigencia_inicial),' días') as plazo_vigencia, moneda_poliza, compania, ramo, comentarios_int, comentarios_ext, vendedor, forma_pago, valor_cuota+0.0 as valor_cuota, nro_cuotas, moneda_valor_cuota, DATE_FORMAT(fecha_primera_cuota,'%d-%m-%Y') as fecha_primera_cuota,DATE_FORMAT(fecha_propuesta,'%d') as dia_pago, CONCAT_WS(' ',FORMAT(porcentaje_comision, 2, 'de_DE'),'%') as porcentaje_comision from propuesta_polizas as a left join clientes as b on a.rut_proponente=b.rut_sin_dv where numero_propuesta='".$_POST["numero_propuesta"]."'";
-      $resultado = mysqli_query( $link, $query );
-      While( $row = mysqli_fetch_object( $resultado ) ) {
+      $resultado = db_query($link, $query );
+      While( $row = db_fetch_object( $resultado ) ) {
     
         $rut_prop = $row->rut_proponente;
         $dv_prop = $row->dv_proponente;
@@ -46,8 +46,8 @@ if ( !isset( $_SESSION ) ) {
         $nro_items=0;
         
         $query_item = "SELECT numero_item, rut_asegurado, dv_asegurado, b.nombre_cliente, b.telefono, b.telefono, b.correo, b.direccion_personal, b.direccion_laboral, materia_asegurada, patente_ubicacion, cobertura, deducible, CONCAT_WS(' ',FORMAT(tasa_afecta, 2, 'de_DE'),'%') as tasa_afecta ,CONCAT_WS(' ',FORMAT(tasa_exenta, 2, 'de_DE'),'%')as tasa_exenta, prima_afecta+0.0 as prima_afecta, prima_exenta+0.0 as prima_exenta, prima_neta+0.0 as prima_neta, prima_bruta_anual+0.0 as prima_bruta_anual, monto_asegurado+0.0 as monto_asegurado,venc_gtia, prima_afecta*0.19 as prima_afecta_iva FROM `items` as a left join clientes as b on a.rut_asegurado=b.rut_sin_dv where numero_propuesta='".$_POST["numero_propuesta"]."'order by numero_item asc";
-        $resultado_item = mysqli_query( $link, $query_item );
-            While( $row_item = mysqli_fetch_object( $resultado_item ) ) {
+        $resultado_item = db_query($link, $query_item );
+            While( $row_item = db_fetch_object( $resultado_item ) ) {
                 $nro_items+=1;
                 $item[]=$row_item->numero_item;
                 $rut_aseg = $row_item->rut_asegurado;
@@ -83,7 +83,7 @@ if ( !isset( $_SESSION ) ) {
             }
         }
     }
-    mysqli_close($link);
+    db_close($link);
 ?>
 <!DOCTYPE html>
 <html lang="es">

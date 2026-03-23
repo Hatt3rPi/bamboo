@@ -11,11 +11,11 @@ function estandariza_info( $data ) {
   return $data;
 }
 require_once "/home/gestio10/public_html/backend/config.php";
-mysqli_set_charset($link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo');
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
 if ( $_SERVER[ "REQUEST_METHOD" ] == "POST" ) {
-  mysqli_set_charset( $link, 'utf8' );
-  mysqli_select_db( $link, 'gestio10_asesori1_bamboo' );
+  db_set_charset($link, 'utf8');
+  db_select_db($link, DB_NAME);
 
 $camino =  $_POST[ "tipo" ];
 
@@ -29,30 +29,30 @@ $camino =  $_POST[ "tipo" ];
       $template = estandariza_info( $_POST[ "template" ] );
       $instancia = $_POST[ "instancia" ];
       $ramo = $_POST[ "seguro" ];
-      $verif_combi = mysqli_query( $link, 'SELECT COUNT(*) AS contador FROM template_correos WHERE producto="' . $ramo . '" and instancia="' . $instancia . '"' );
-      While( $row = mysqli_fetch_object( $verif_combi ) ) {
+      $verif_combi = db_query($link, 'SELECT COUNT(*) AS contador FROM template_correos WHERE producto="' . $ramo . '" and instancia="' . $instancia . '"' );
+      While( $row = db_fetch_object( $verif_combi ) ) {
         $verif = estandariza_info( $row->contador );
       }
       if ( !$verif == 0 ) {
         $query_template_update='UPDATE template_correos SET template="' . $template . '" where producto="' . $ramo . '" and instancia="' . $instancia . '"' ;
-        mysqli_query( $link, $query_template_update);
-        mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Actualiza template', '".str_replace("'","**",$query_template_update)."','template',null, '".$_SERVER['PHP_SELF']."')");
+        db_query($link, $query_template_update);
+        db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Actualiza template', '".str_replace("'","**",$query_template_update)."','template',null, '".$_SERVER['PHP_SELF']."')");
       } else {
         $query_template='INSERT INTO template_correos(template, producto, instancia) values ("' . $template . '","' . $ramo . '", "' . $instancia . '");';
-        mysqli_query( $link, $query_template );
-        mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega template', '".str_replace("'","**",$query_template)."','template',null, '".$_SERVER['PHP_SELF']."')");
+        db_query($link, $query_template );
+        db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega template', '".str_replace("'","**",$query_template)."','template',null, '".$_SERVER['PHP_SELF']."')");
       }
       break;
     case "buscar":
       $instancia = $_POST[ "instancia" ];
       $ramo = $_POST[ "seguro" ];
-      $resultado_template = mysqli_query( $link, 'SELECT template FROM template_correos where producto="' . $ramo . '" and instancia="' . $instancia . '"' );
-      While( $row = mysqli_fetch_object( $resultado_template ) ) {
+      $resultado_template = db_query($link, 'SELECT template FROM template_correos where producto="' . $ramo . '" and instancia="' . $instancia . '"' );
+      While( $row = db_fetch_object( $resultado_template ) ) {
         $template = estandariza_info( $row->template );
       }
       break;
   }
-  mysqli_close($link);
+  db_close($link);
 
   $template_ejemplo = $template;
   $template_ejemplo = str_replace( '_[NOMBRE_CLIENTE]_', 'Juan Pérez', $template_ejemplo );

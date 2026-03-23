@@ -57,70 +57,57 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     if(empty($username_err) && empty($password_err)){
         // Prepare a select statement
         $sql = "SELECT id, username, password FROM usuarios_aplicacion WHERE username = ?";
-        
-        if($stmt = mysqli_prepare($link, $sql)){
-            // Bind variables to the prepared statement as parameters
-            mysqli_stmt_bind_param($stmt, "s", $param_username);
-            
-            // Set parameters
-            $param_username = $username;
-            
-            // Attempt to execute the prepared statement
-            if(mysqli_stmt_execute($stmt)){
-                // Store result
-                mysqli_stmt_store_result($stmt);
-                
-                // Check if username exists, if yes then verify password
-                if(mysqli_stmt_num_rows($stmt) == 1){                    
-                    // Bind result variables
-                    mysqli_stmt_bind_result($stmt, $id, $username, $hashed_password);
-                    if(mysqli_stmt_fetch($stmt)){
-                        if(password_verify($password, $hashed_password)){
-                            // Password is correct, so start a new session
-                            session_start();
-                            
-                            // Store data in session variables
-                            $_SESSION["loggedin"] = true;
-                            $_SESSION["id"] = $id;
-                            $_SESSION["username"] = $username;                            
-                            $_SESSION["auxiliar"]="";
-                            mysqli_set_charset($link, 'utf8');
-                            mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Inicia sesión', null,'usuario',null, '".$_SERVER['PHP_SELF']."')");
 
-                            // Redirect user to welcome page
-                            if (isset($_COOKIE['DOMINIO'])){
-                                header("location: ".$_COOKIE['URI']);
-                                setcookie('URI','',time() -1,"/");
-                                setcookie('DOMINIO','',time() -1,"/");
-                            }
-                            else
-                            {
-                                header("location: /bamboo/index.php");
-                            }
-                            
-                        } else{
-                            // Display an error message if password is not valid
-                            $password_err = "La contraseña ingresada no es válida.";
-                            echo '<script type="text/javascript">alerta("La contraseña ingresada no es válida." ,"warning");</script>'; 
+        $result = db_prepare_and_execute($link, $sql, "s", [$username]);
 
-                        }
+        if($result && $result['success']){
+            if($result['num_rows'] == 1){
+                $row = $result['rows'][0];
+                $id = $row->id;
+                $db_username = $row->username;
+                $hashed_password = $row->password;
+
+                if(password_verify($password, $hashed_password)){
+                    // Password is correct, so start a new session
+                    session_start();
+
+                    // Store data in session variables
+                    $_SESSION["loggedin"] = true;
+                    $_SESSION["id"] = $id;
+                    $_SESSION["username"] = $db_username;
+                    $_SESSION["auxiliar"]="";
+                    db_set_charset($link, 'utf8');
+                    db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Inicia sesión', null,'usuario',null, '".$_SERVER['PHP_SELF']."')");
+
+                    // Redirect user to welcome page
+                    if (isset($_COOKIE['DOMINIO'])){
+                        header("location: ".$_COOKIE['URI']);
+                        setcookie('URI','',time() -1,"/");
+                        setcookie('DOMINIO','',time() -1,"/");
                     }
+                    else
+                    {
+                        header("location: /bamboo/index.php");
+                    }
+
                 } else{
-                    // Display an error message if username doesn't exist
-	echo '<script type="text/javascript">alerta("El usuario y contraseña no coinciden." ,"warning");</script>'; 
+                    // Display an error message if password is not valid
+                    $password_err = "La contraseña ingresada no es válida.";
+                    echo '<script type="text/javascript">alerta("La contraseña ingresada no es válida." ,"warning");</script>';
+
                 }
             } else{
-
-	echo '<script type="text/javascript">alerta("Oops! Algo salió mal. Favor intentar más tarde." ,"warning");</script>'; 
+                // Display an error message if username doesn't exist
+	echo '<script type="text/javascript">alerta("El usuario y contraseña no coinciden." ,"warning");</script>';
             }
+        } else{
+
+	echo '<script type="text/javascript">alerta("Oops! Algo salió mal. Favor intentar más tarde." ,"warning");</script>';
         }
-        
-        // Close statement
-        mysqli_stmt_close($stmt);
     }
     
     // Close connection
-    mysqli_close($link);
+    db_close($link);
 }
 ?>
 

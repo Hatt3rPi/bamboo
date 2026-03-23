@@ -4,9 +4,9 @@ require "/home/gestio10/public_html/vendor/autoload.php";
 require_once "/home/gestio10/public_html/backend/config.php";
 
 use PhpOffice\PhpSpreadsheet\{Spreadsheet, IOFactory};
-mysqli_set_charset( $link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo_prePAP');
-mysqli_query($link, "SET @rownum=0;");
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
+db_query($link, "SET @rownum=0;");
 $query= "select @rownum := @rownum + 1 AS fila, a.estado, a.numero_propuesta, b.numero_item, a.tipo_propuesta, a.fecha_propuesta, a.fecha_envio_propuesta, CONCAT_WS('-',a.rut_proponente, a.dv_proponente) as rut_proponente, a.compania, a.vigencia_inicial, a.vigencia_final, a.ramo, a.moneda_poliza, a.vendedor, a.forma_pago, a.moneda_valor_cuota, a.valor_cuota, a.fecha_primera_cuota, a.nro_cuotas, a.comentarios_int, a.comentarios_ext, CONCAT_WS('-',b.rut_asegurado, b.dv_asegurado) as rut_asegurado, b.materia_asegurada, b.patente_ubicacion, b.cobertura, b.deducible, CONCAT(FORMAT(b.tasa_afecta, 2, 'de_DE'),'%') as tasa_afecta, CONCAT(FORMAT(b.tasa_exenta, 2, 'de_DE'),'%') as tasa_exenta, 
 FORMAT(b.prima_afecta, 2,)+0.0 as prima_afecta, 
 FORMAT(b.prima_exenta, 2,)+0.0 as prima_exenta, 
@@ -15,7 +15,7 @@ FORMAT(b.prima_bruta_anual, 2,)+0.0 as prima_bruta_anual,
 b.monto_asegurado, b.venc_gtia from propuesta_polizas as a left join items as b on a.numero_propuesta=b.numero_propuesta
 where b.id is not null
 order by a.numero_propuesta, b.numero_item";
-$resultado=mysqli_query($link, $query);
+$resultado=db_query($link, $query);
 $excel= new Spreadsheet();
 $hojaActiva=$excel->getActiveSheet();
 $hojaActiva->setTitle("Listado Propuestas de póliza");
@@ -142,7 +142,7 @@ $hojaActiva->getColumnDimension('D')->setWidth(20);
 */
 $fila=3;
 
-while ($rows = mysqli_fetch_object($resultado))
+while ($rows = db_fetch_object($resultado))
 {
     $hojaActiva->setCellValue('A'.$fila, $rows->fila);
     $hojaActiva->setCellValue('B'.$fila, $rows->estado);
@@ -186,7 +186,7 @@ $hojaActiva->setAutoFilter('A2:AG'.($fila-1));
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="Listado_propuestas '.date_format($fecha, 'd-m-Y H:i:s').'.xlsx"');
 header('Cache-Control: max-age=0');
-mysqli_close($link);
+db_close($link);
 $writer = IOFactory::createWriter($excel, 'Xlsx');
 $writer->save('php://output');
 exit;

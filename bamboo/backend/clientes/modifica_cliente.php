@@ -4,8 +4,8 @@
         session_start(); 
     } 
 require_once "/home/gestio10/public_html/backend/config.php";
-mysqli_set_charset($link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo');
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
 $rut_completo = preg_replace('/[^k0-9]/i', '', $_POST["rut2"]);
 
 $id=estandariza_info($_POST["id"]);
@@ -19,13 +19,13 @@ $direccionl=estandariza_info($_POST["direccionl"]);
 $correo=estandariza_info($_POST["correo_electronico"]);
 $referido=estandariza_info($_POST["referido"]);
 $grupo=estandariza_info($_POST["grupo"]);
-mysqli_set_charset( $link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo');
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
 $query = 'UPDATE clientes SET referido=\''.$referido.'\' , grupo=\''.$grupo.'\' , nombre_cliente=\''.$nombre.'\' ,rut_sin_dv=\''.$rut.'\' ,dv=\''.$dv.'\' ,telefono=\''.$telefono.'\' ,direccion_personal=\''.$direccionp.'\' ,direccion_laboral=\''.$direccionl.'\' ,correo=\''.$correo.'\'  WHERE id='.$id.';';
-mysqli_query($link,$query);
-mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Modifica cliente', '".str_replace("'","**",$query)."','cliente',".$id.", '".$_SERVER['PHP_SELF']."')");
+db_query($link,$query);
+db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Modifica cliente', '".str_replace("'","**",$query)."','cliente',".$id.", '".$_SERVER['PHP_SELF']."')");
 $borrar=  'DELETE from clientes_contactos  WHERE id_cliente='.$id.';';
-mysqli_query($link,$borrar);
+db_query($link,$borrar);
 foreach (array_keys($_POST['nombrecontact']) as $key) {
    
     $nombrecontact = $_POST['nombrecontact'][$key];
@@ -33,13 +33,13 @@ foreach (array_keys($_POST['nombrecontact']) as $key) {
     $emailcontact = $_POST['emailcontact'][$key];
 	
 	$agregar_contacto[$key] = 'INSERT INTO clientes_contactos (id_cliente, nombre, telefono, correo) values (\''.$id.'\', \''.$nombrecontact.'\',\''.$telefonocontact.'\',\''.$emailcontact.'\') ;';
-    mysqli_query($link, $agregar_contacto[$key]);
+    db_query($link, $agregar_contacto[$key]);
     
   }
   $vacio = "";
   $borrar2=  "DELETE from clientes_contactos  WHERE id_cliente=".$id." and nombre='".$vacio."';";
-mysqli_query($link,$borrar2);
-mysqli_close($link);
+db_query($link,$borrar2);
+db_close($link);
 /*
 ECHO "<br>".$borrar;
 ECHO "<br>".$borrar2;

@@ -4,9 +4,9 @@ require "/home/gestio10/public_html/vendor/autoload.php";
 require_once "/home/gestio10/public_html/backend/config.php";
 
 use PhpOffice\PhpSpreadsheet\{Spreadsheet, IOFactory};
-mysqli_set_charset( $link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo');
-mysqli_query($link, "SET @rownum=0;");
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
+db_query($link, "SET @rownum=0;");
 $query= "select @rownum := @rownum + 1 AS fila,
     a.id,
     fecha_prorroga,
@@ -32,7 +32,7 @@ $query= "select @rownum := @rownum + 1 AS fila,
     nombre_proponente,
     fecha_emision
     FROM endosos as a";
-$resultado=mysqli_query($link, $query);
+$resultado=db_query($link, $query);
 $excel= new Spreadsheet();
 $hojaActiva=$excel->getActiveSheet();
 $hojaActiva->setCellValue('A2', 'Fila');
@@ -93,7 +93,7 @@ $hojaActiva->getColumnDimension('T')->setWidth(15);
 $hojaActiva->getColumnDimension('U')->setWidth(10);
 $fila=3;
 
-while ($rows = mysqli_fetch_object($resultado))
+while ($rows = db_fetch_object($resultado))
 {
     $hojaActiva->setCellValue('A'.$fila, $rows->fila);
     $hojaActiva->setCellValue('B'.$fila, $rows->numero_endoso);
@@ -124,7 +124,7 @@ $hojaActiva->setAutoFilter('A2:U'.($fila-1));
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="Listado_endosos '.date_format($fecha, 'd-m-Y H:i:s').'.xlsx"');
 header('Cache-Control: max-age=0');
-mysqli_close($link);
+db_close($link);
 $writer = IOFactory::createWriter($excel, 'Xlsx');
 $writer->save('php://output');
 exit;

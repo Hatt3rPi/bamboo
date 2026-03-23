@@ -7,8 +7,8 @@ require_once "/home/gestio10/public_html/backend/config.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
-    mysqli_set_charset($link, 'utf8');
-    mysqli_select_db($link, 'gestio10_asesori1_bamboo');
+    db_set_charset($link, 'utf8');
+    db_select_db($link, DB_NAME);
     $prioridad = $_POST["prioridad"];
     $fechavencimiento = $_POST["fechavencimiento"];
     $tarea = $_POST["tarea"];
@@ -32,16 +32,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 
         if ($tarea_recurrente==0){
             $query_actualiza="update tareas set fecha_vencimiento='".$fechavencimiento."', tarea='".$tarea."', prioridad='". $prioridad . "' where id=".$id_tarea;
-            mysqli_query($link, $query_actualiza);
-            mysqli_query($link, "update tareas set estado='Activo' where estado='atrasado' and fecha_vencimiento>=CURRENT_DATE and id=".$id_tarea );
-            mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Actualiza tarea', '".str_replace("'","**",$query_actualiza)."','tarea',".$id_tarea.", '".$_SERVER['PHP_SELF']."')");
+            db_query($link, $query_actualiza);
+            db_query($link, "update tareas set estado='Activo' where estado='atrasado' and fecha_vencimiento>=CURRENT_DATE and id=".$id_tarea );
+            db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Actualiza tarea', '".str_replace("'","**",$query_actualiza)."','tarea',".$id_tarea.", '".$_SERVER['PHP_SELF']."')");
         //echo "select trazabilidad('".$_SESSION["username"]."', 'Actualiza tarea', '".str_replace("'","**",$query_actualiza)."','tarea',".$id_tarea.", '".$_SERVER['PHP_SELF']."')";
         }
         else
         {
             $query_actualiza_recurrente="update tareas_recurrentes set tarea='".$tarea."', prioridad='". $prioridad . "', fecha_fin=".$fecha." ,dia_recordatorio='".$dia."' where id=".$id_tarea;
-            mysqli_query($link, $query_actualiza_recurrente);
-            mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Actualiza tarea recurrente', '".str_replace("'","**",$query_actualiza_recurrente)."','tarea recurrente',".$id_tarea.", '".$_SERVER['PHP_SELF']."')");
+            db_query($link, $query_actualiza_recurrente);
+            db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Actualiza tarea recurrente', '".str_replace("'","**",$query_actualiza_recurrente)."','tarea recurrente',".$id_tarea.", '".$_SERVER['PHP_SELF']."')");
             //echo "select trazabilidad('".$_SESSION["username"]."', 'Actualiza tarea recurrente', '".str_replace("'","**",$query_actualiza_recurrente)."','tarea recurrente',".$id_tarea.", '".$_SERVER['PHP_SELF']."')";
         }
 
@@ -79,49 +79,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     
         //crea tarea
         $query_crea_tarea='insert into tareas(procedimiento,fecha_vencimiento, tarea, prioridad, token) values (\'Manual\' ,\'' . $fechavencimiento . '\', \'' . $tarea . '\', \'' . $prioridad . '\', \'' . $token . '\');';
-        mysqli_query($link, $query_crea_tarea);
+        db_query($link, $query_crea_tarea);
     
         //rescata id
-        $resultado = mysqli_query($link, 'select id from tareas where  token=\'' . $token . '\';');
+        $resultado = db_query($link, 'select id from tareas where  token=\'' . $token . '\';');
     
-        while ($fila = mysqli_fetch_object($resultado))
+        while ($fila = db_fetch_object($resultado))
         {
             // printf ("%s (%s)\n", $fila->id);
             $id_tarea = $fila->id;
         }
-        mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega tarea', '".str_replace("'","**",$query_crea_tarea)."','tarea',".$id_tarea.", '".$_SERVER['PHP_SELF']."')");
+        db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega tarea', '".str_replace("'","**",$query_crea_tarea)."','tarea',".$id_tarea.", '".$_SERVER['PHP_SELF']."')");
         //echo "select trazabilidad('".$_SESSION["username"]."', 'Agrega tarea', '".str_replace("'","**",$query_crea_tarea)."','tarea',".$id_tarea.", '".$_SERVER['PHP_SELF']."')";
         //recorre arreglo relaciones
         foreach ($obj as $key => $value)
         {
-            mysqli_query($link, 'insert into tareas_relaciones (id_tarea, base, id_relacion) values (' . $id_tarea . ', \'' . $value["base"] . '\',' . $value["id"] . ');');
+            db_query($link, 'insert into tareas_relaciones (id_tarea, base, id_relacion) values (' . $id_tarea . ', \'' . $value["base"] . '\',' . $value["id"] . ');');
         }
         //elimina token
-        mysqli_query($link, 'update tareas set token=null where token=\'' . $token . '\';');
+        db_query($link, 'update tareas set token=null where token=\'' . $token . '\';');
         
     }
     else
     {
         $token = bin2hex(random_bytes($largo));
         $query_crea_tarea_recurrente='insert into tareas_recurrentes( token, estado,tarea, prioridad, fecha_ingreso,recurrente,tarea_con_fecha_fin,fecha_fin,dia_recordatorio) values ( \'' . $token . '\' ,\'Activo\' , \'' . $tarea . '\', \'' . $prioridad . '\', current_date, '.$tarea_recurrente.' , '.$tarea_con_fin.' , ' .$fecha.' , '.$dia.');';
-        mysqli_query($link, $query_crea_tarea_recurrente);
-        $resultado = mysqli_query($link, 'select id from tareas_recurrentes where  token=\'' . $token . '\';');
+        db_query($link, $query_crea_tarea_recurrente);
+        $resultado = db_query($link, 'select id from tareas_recurrentes where  token=\'' . $token . '\';');
     
-        while ($fila = mysqli_fetch_object($resultado))
+        while ($fila = db_fetch_object($resultado))
         {
             // printf ("%s (%s)\n", $fila->id);
             $id_tarea = $fila->id;
         }
        // echo 'insert into tareas_recurrentes(tarea, prioridad, fecha_ingreso,recurrente,tarea_con_fecha_fin,fecha_fin,dia_recordatorio) values (\'' . $tarea . '\', \'' . $prioridad . '\', current_date, '.$tarea_recurrente.' , '.$tarea_con_fin.' , ' .$fecha.' , '.$dia.');';
-       mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega tarea recurrente', '".str_replace("'","**",$query_crea_tarea_recurrente)."','tarea recurrente',".$id_tarea.", '".$_SERVER['PHP_SELF']."')");
+       db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega tarea recurrente', '".str_replace("'","**",$query_crea_tarea_recurrente)."','tarea recurrente',".$id_tarea.", '".$_SERVER['PHP_SELF']."')");
        // echo "select trazabilidad('".$_SESSION["username"]."', 'Agrega tarea recurrente', '".str_replace("'","**",$query_crea_tarea_recurrente)."','tarea recurrente',null, '".$_SERVER['PHP_SELF']."')";
  
        foreach ($obj as $key => $value)
        {
-           mysqli_query($link, 'insert into tareas_relaciones (id_tarea_recurrente, base, id_relacion) values (' . $id_tarea . ', \'' . $value["base"] . '\',' . $value["id"] . ');');
+           db_query($link, 'insert into tareas_relaciones (id_tarea_recurrente, base, id_relacion) values (' . $id_tarea . ', \'' . $value["base"] . '\',' . $value["id"] . ');');
        }
        //elimina token
-       mysqli_query($link, 'update tareas_recurrentes set token=null where token=\'' . $token . '\';');
+       db_query($link, 'update tareas_recurrentes set token=null where token=\'' . $token . '\';');
        
     }
 

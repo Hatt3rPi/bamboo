@@ -30,33 +30,33 @@ $nro_propuesta=estandariza_info($_POST["nro_propuesta"]);
 $fechaprop=estandariza_info($_POST["fechaprop"]);
 $item  = estandariza_info($_POST["item"]);
 
-mysqli_set_charset( $link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo_prePAP');
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
 switch ($_POST["accion"]) {
     case 'elimina':
         $query="delete from propuesta_polizas where id=".$_POST["id_propuesta"];
-        mysqli_query($link, $query);
-        mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Elimina propuesta póliza', '".str_replace("'","**",$query)."','propuesta_poliza',".$_POST["id_propuesta"].", '".$_SERVER['PHP_SELF']."')");
+        db_query($link, $query);
+        db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Elimina propuesta póliza', '".str_replace("'","**",$query)."','propuesta_poliza',".$_POST["id_propuesta"].", '".$_SERVER['PHP_SELF']."')");
         break;
     case 'cancelar':
         $query= "update propuesta_polizas set estado='Cancelado', fech_cancela='".$_POST["datofecha_cancelacion"]."',motivo_cancela ='".$_POST["datomotivo_cancela"]."' where id=".$_POST["id_propuesta"];
-        mysqli_query($link, $query);
-        mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Cancela propuesta póliza', '".str_replace("'","**",$query)."','propuesta_poliza',".$_POST["id_propuesta"].", '".$_SERVER['PHP_SELF']."')");
+        db_query($link, $query);
+        db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Cancela propuesta póliza', '".str_replace("'","**",$query)."','propuesta_poliza',".$_POST["id_propuesta"].", '".$_SERVER['PHP_SELF']."')");
         break;
     case 'anular':
         $query= "update polizas set estado='Anulado' where id=".$_POST["id_propuesta"];
-        mysqli_query($link, $query);
-        mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Anula propuesta póliza', '".str_replace("'","**",$query)."','propuesta_poliza',".$_POST["id_propuesta"].", '".$_SERVER['PHP_SELF']."')");
+        db_query($link, $query);
+        db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Anula propuesta póliza', '".str_replace("'","**",$query)."','propuesta_poliza',".$_POST["id_propuesta"].", '".$_SERVER['PHP_SELF']."')");
         break;
     default:
         //edición de campos
         $query="UPDATE propuesta_polizas SET rut_proponente='".$rut_prop."',  dv_proponente='".$dv_prop."',  rut_asegurado='".$rut_aseg."',  dv_asegurado='".$dv_aseg."',  compania='".$selcompania."', ramo='".$ramo."',  vigencia_inicial='".$fechainicio."',  vigencia_final='".$fechavenc."',  cobertura='".$cobertura."',  materia_asegurada='".$materia."',  patente_ubicacion='".$detalle_materia."', moneda_poliza='".$moneda_poliza."',  deducible='".$deducible."',  prima_afecta='".$prima_afecta."',  prima_exenta='".$prima_exenta."',  prima_neta='".$prima_neta."', prima_bruta_anual='".$prima_bruta."',  monto_asegurado='".$monto_aseg."',  numero_propuesta='".$nro_propuesta."',  fecha_envio_propuesta='".$fechaprop."', item = '".$item."'   WHERE id=".$id_poliza.";";
-        mysqli_query($link, $query);
-        mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Actualiza propuesta póliza', '".str_replace("'","**",$query)."','propuesta_poliza',".$_POST["id_propuesta"].", '".$_SERVER['PHP_SELF']."')");
+        db_query($link, $query);
+        db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Actualiza propuesta póliza', '".str_replace("'","**",$query)."','propuesta_poliza',".$_POST["id_propuesta"].", '".$_SERVER['PHP_SELF']."')");
         break;
  echo $query;
 }
-mysqli_close($link);
+db_close($link);
 
 function estandariza_info($data) {
   $data = trim($data);

@@ -5,8 +5,8 @@ if ( !isset( $_SESSION ) ) {
 
       
     require_once "/home/gestio10/public_html/backend/config.php";
-    mysqli_set_charset( $link, 'utf8' );
-    mysqli_select_db( $link, 'gestio10_asesori1_bamboo' );
+    db_set_charset($link, 'utf8');
+    db_select_db($link, DB_NAME);
  $contador_contactos=0;
     $cant_contactos = 0;
 $camino='';
@@ -17,11 +17,11 @@ if ( $_SERVER[ "REQUEST_METHOD" ] == "POST" and isset( $_POST[ "id_cliente" ] ) 
 	$idcliente=$_POST["id_cliente"];
    $sql = "SELECT id,CONCAT_WS( '-',rut_sin_dv,dv) as rut, nombre_cliente , correo, direccion_laboral, direccion_personal, id, telefono, fecha_ingreso, referido, grupo FROM clientes Where id =".$idcliente.";";
 
-    $resultado=mysqli_query($link, $sql);
+    $resultado=db_query($link, $sql);
     $codigo='{
       "data": [';
     $conta=0;
-  While($row=mysqli_fetch_object($resultado))
+  While($row=db_fetch_object($resultado))
   {     $conta=$conta+1;
    		$id=$row->id;
         $rut= $row->rut;
@@ -34,15 +34,15 @@ if ( $_SERVER[ "REQUEST_METHOD" ] == "POST" and isset( $_POST[ "id_cliente" ] ) 
         $referido = $row->referido;
         $grupo = $grupo->grupo;
   
-    $resultado_contador_contactos=mysqli_query($link, "SELECT count(*) as contador FROM clientes_contactos where id_cliente='".$row->id."';");
-    while ($fila=mysqli_fetch_object($resultado_contador_contactos))
+    $resultado_contador_contactos=db_query($link, "SELECT count(*) as contador FROM clientes_contactos where id_cliente='".$row->id."';");
+    while ($fila=db_fetch_object($resultado_contador_contactos))
     {
         $contador_contactos=0;
       $cant_contactos=$fila->contador;
-      $resultado_contactos=mysqli_query($link, "SELECT  nombre, telefono, correo FROM clientes_contactos where id_cliente='".$row->id."';");
+      $resultado_contactos=db_query($link, "SELECT  nombre, telefono, correo FROM clientes_contactos where id_cliente='".$row->id."';");
         $contactos_array=array("contactos"=>& $fila->contador);
         if (!$cant_contactos=="0"){
-      while($indice=mysqli_fetch_object($resultado_contactos)){
+      while($indice=db_fetch_object($resultado_contactos)){
           $contador_contactos=$contador_contactos+1;
           $contactos_array=array_merge($contactos_array, array(
               "nombre".$contador_contactos =>& $indice->nombre,
@@ -84,7 +84,7 @@ if ( $_SERVER[ "REQUEST_METHOD" ] == "POST" and isset( $_POST[ "id_cliente" ] ) 
     
 
       
-  mysqli_close($link);
+  db_close($link);
 }
 ?>
 

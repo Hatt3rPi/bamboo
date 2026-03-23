@@ -9,8 +9,8 @@ function estandariza_info( $data ) {
   return $data;
 }
 require_once "/home/gestio10/public_html/backend/config.php";
-mysqli_set_charset($link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo_prePAP');
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
 if ( $_SERVER[ "REQUEST_METHOD" ] == "POST" ) {
 
 //poliza
@@ -23,8 +23,8 @@ if ( $_POST[ "tipo" ] == "buscar" ) {
 }
 $ramo_poliza = $ramo;
 $query_template = "SELECT template FROM template_correos where producto='" . $ramo_poliza . "' and instancia='" . $instancia . "'";
-$resultado_template = mysqli_query( $link, $query_template );
-While( $row = mysqli_fetch_object( $resultado_template ) ) {
+$resultado_template = db_query($link, $query_template );
+While( $row = db_fetch_object( $resultado_template ) ) {
   $template = $row->template;
 }
 $template = str_replace( '_[SALTO_LINEA]_', '<br>', $template );
@@ -67,7 +67,7 @@ $template = str_replace( '_[SU_ini]_', '', $template );
 $template = str_replace( '_[SU_fin]_', '', $template );
 $url = htmlspecialchars( "https://mail.google.com/mail/?view=cm&fs=1&to=$destinatario&su=$subject&body=$body" );
 }
-mysqli_close($link);
+db_close($link);
 ?>
 
 <!DOCTYPE html>

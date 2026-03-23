@@ -7,34 +7,34 @@ $resultado=$consolidado_patentes =$codigo=$conta=$nro_endosos='';
 
 require_once "/home/gestio10/public_html/backend/config.php";
 
-    mysqli_set_charset($link, 'utf8');
-    mysqli_select_db($link, 'gestio10_asesori1_bamboo');
+    db_set_charset($link, 'utf8');
+    db_select_db($link, DB_NAME);
     $sql = "SELECT a.numero_poliza, a.estado, DATE_FORMAT(a.vigencia_final,'%m-%Y') as anomes_final, DATE_FORMAT(a.vigencia_inicial,'%m-%Y')  as anomes_inicial, a.moneda_poliza, a.compania, a.ramo,  a.vigencia_inicial, a.vigencia_final,  CONCAT_WS(' ',b.nombre_cliente,  b.apellido_paterno, ' ', b.apellido_materno) as nom_clienteP, CONCAT_WS('-',b.rut_sin_dv, b.dv) as rut_clienteP,b.telefono as telefonoP, b.correo as correoP, a.id as id_poliza, b.id as idP, fecha_envio_propuesta, b.grupo, b.referido, CONCAT_WS(' ',a.moneda_poliza,FORMAT(sum(c.prima_afecta), 2, 'de_DE')) as total_prima_afecta,  CONCAT_WS(' ',a.moneda_poliza,FORMAT(sum(c.prima_exenta), 2, 'de_DE')) as total_prima_exenta, CONCAT_WS(' ',a.moneda_poliza,FORMAT(sum(c.prima_neta), 2, 'de_DE')) as total_prima_neta, CONCAT_WS(' ',a.moneda_poliza,FORMAT(sum(c.prima_bruta_anual), 2, 'de_DE')) as total_prima_bruta, count(e.id) as contador_endosos, a.fech_cancela, a.motivo_cancela FROM polizas_2 as a left join clientes as b on a.rut_proponente=b.rut_sin_dv and b.rut_sin_dv is not null left join items as c on a.numero_poliza=c.numero_poliza left join endosos as e on a.id=e.id_poliza where a.estado <> 'Rechazado' group by a.numero_poliza, a.estado, DATE_FORMAT(a.vigencia_final,'%m-%Y') , DATE_FORMAT(a.vigencia_inicial,'%m-%Y') , a.moneda_poliza, a.compania, a.ramo,  a.vigencia_inicial, a.vigencia_final,   CONCAT_WS(' ',b.nombre_cliente,  b.apellido_paterno, ' ', b.apellido_materno) , CONCAT_WS('-',b.rut_sin_dv, b.dv) ,b.telefono , b.correo , a.id , b.id , fecha_envio_propuesta, b.grupo, b.referido";
   
-$resultado=mysqli_query($link, $sql);
+$resultado=db_query($link, $sql);
     $codigo='{
       "data": [';
     $conta=0;
-  While($row=mysqli_fetch_object($resultado))
+  While($row=db_fetch_object($resultado))
     {   
         $arreglo_endosos=[];
         $conta=$conta+1;
     //$resultado contiene propuestas, a cada una de estas líneas hay que asignar un array con los ítem asociados
         //echo "primera query -> nro_propuesta: ".$row->numero_poliza."<br>";
-        $resultado_contador_contactos=mysqli_query($link, "SELECT count(numero_item) as contador FROM items where numero_poliza='".$row->numero_poliza."';");
-        while ($fila=mysqli_fetch_object($resultado_contador_contactos))
+        $resultado_contador_contactos=db_query($link, "SELECT count(numero_item) as contador FROM items where numero_poliza='".$row->numero_poliza."';");
+        while ($fila=db_fetch_object($resultado_contador_contactos))
         {
         //echo "segunda query -> contador: ".$fila->contador."<br>";
         
         $contador_contactos=0;
         $items=[];
         $cant_items=$fila->contador;
-        $resultado_items=mysqli_query($link, "select a.numero_poliza, a.numero_item, a.id as id_item, a.materia_asegurada, a.patente_ubicacion, a.cobertura , a.deducible, CONCAT_WS(' ',FORMAT(tasa_afecta, 2, 'de_DE'),'%') AS tasa_afecta, CONCAT_WS(' ',FORMAT(tasa_exenta, 2, 'de_DE'),'%') AS tasa_exenta, CONCAT_WS(' ',b.moneda_poliza,FORMAT(prima_afecta, 2, 'de_DE')) AS prima_afecta, CONCAT_WS(' ',b.moneda_poliza,FORMAT(prima_exenta, 2, 'de_DE')) AS prima_exenta, CONCAT_WS(' ',b.moneda_poliza,FORMAT(prima_bruta_anual, 2, 'de_DE')) AS prima_bruta, CONCAT_WS(' ',b.moneda_poliza,FORMAT(prima_neta, 2, 'de_DE')) AS prima_neta, CONCAT_WS(' ',b.moneda_poliza,FORMAT(a.monto_asegurado, 2, 'de_DE')) AS monto_asegurado , if(a.venc_gtia='0000-00-00','',a.venc_gtia) as venc_gtia, CONCAT_WS(' ',c.nombre_cliente,  c.apellido_paterno,  c.apellido_materno) as nom_clienteA, CONCAT_WS('-',c.rut_sin_dv, c.dv) as rut_clienteA,c.telefono as telefonoA, c.correo as correoA from items as a left join clientes as c  on a.rut_asegurado=c.rut_sin_dv and c.rut_sin_dv is not null left join polizas_2 as b on a.numero_poliza=b.numero_poliza where a.numero_poliza='".$row->numero_poliza."' order by a.numero_item asc ;");
+        $resultado_items=db_query($link, "select a.numero_poliza, a.numero_item, a.id as id_item, a.materia_asegurada, a.patente_ubicacion, a.cobertura , a.deducible, CONCAT_WS(' ',FORMAT(tasa_afecta, 2, 'de_DE'),'%') AS tasa_afecta, CONCAT_WS(' ',FORMAT(tasa_exenta, 2, 'de_DE'),'%') AS tasa_exenta, CONCAT_WS(' ',b.moneda_poliza,FORMAT(prima_afecta, 2, 'de_DE')) AS prima_afecta, CONCAT_WS(' ',b.moneda_poliza,FORMAT(prima_exenta, 2, 'de_DE')) AS prima_exenta, CONCAT_WS(' ',b.moneda_poliza,FORMAT(prima_bruta_anual, 2, 'de_DE')) AS prima_bruta, CONCAT_WS(' ',b.moneda_poliza,FORMAT(prima_neta, 2, 'de_DE')) AS prima_neta, CONCAT_WS(' ',b.moneda_poliza,FORMAT(a.monto_asegurado, 2, 'de_DE')) AS monto_asegurado , if(a.venc_gtia='0000-00-00','',a.venc_gtia) as venc_gtia, CONCAT_WS(' ',c.nombre_cliente,  c.apellido_paterno,  c.apellido_materno) as nom_clienteA, CONCAT_WS('-',c.rut_sin_dv, c.dv) as rut_clienteA,c.telefono as telefonoA, c.correo as correoA from items as a left join clientes as c  on a.rut_asegurado=c.rut_sin_dv and c.rut_sin_dv is not null left join polizas_2 as b on a.numero_poliza=b.numero_poliza where a.numero_poliza='".$row->numero_poliza."' order by a.numero_item asc ;");
             $items_array=array("total_items"=>& $fila->contador);
 
             if (!$cant_items=="0"){
                 $consolidado_patentes='';
-                while($indice=mysqli_fetch_object($resultado_items)){
+                while($indice=db_fetch_object($resultado_items)){
                     //echo "tercera query -> nropropuesta: ".$row->numero_poliza."- ítem nro: ".$indice->id_item."<br>";
                     $consolidado_patentes=$consolidado_patentes.' - '.$indice->patente_ubicacion;
                     $contador_contactos=$contador_contactos+1;
@@ -63,8 +63,8 @@ $resultado=mysqli_query($link, $sql);
     $nro_endosos=$row->contador_endosos;
     if (!$nro_endosos=="0"){
         $nro_endosos=0;
-        $resultado_contador_endosos=mysqli_query($link, "SELECT e.numero_endoso, e.fecha_ingreso_endoso, e.fecha_prorroga, e.vigencia_inicial, e.vigencia_final, e.tipo_endoso, e.descripcion_endoso, e.dice, e.debe_decir, e.comentario_endoso, e.monto_asegurado_endoso, e.tasa_afecta_endoso, e.tasa_exenta_endoso, e.prima_neta_exenta, e.prima_neta_afecta, e.IVA, e.prima_total FROM endosos as e where e.id_poliza='".$row->id_poliza."' ORDER BY CASE WHEN e.numero_endoso REGEXP '^[0-9]+$' THEN CAST(e.numero_endoso AS UNSIGNED) ELSE 999999999 END, e.numero_endoso;");
-        while($endosos=mysqli_fetch_object($resultado_contador_endosos)){
+        $resultado_contador_endosos=db_query($link, "SELECT e.numero_endoso, e.fecha_ingreso_endoso, e.fecha_prorroga, e.vigencia_inicial, e.vigencia_final, e.tipo_endoso, e.descripcion_endoso, e.dice, e.debe_decir, e.comentario_endoso, e.monto_asegurado_endoso, e.tasa_afecta_endoso, e.tasa_exenta_endoso, e.prima_neta_exenta, e.prima_neta_afecta, e.IVA, e.prima_total FROM endosos as e where e.id_poliza='".$row->id_poliza."' ORDER BY CASE WHEN e.numero_endoso REGEXP '^[0-9]+$' THEN CAST(e.numero_endoso AS UNSIGNED) ELSE 999999999 END, e.numero_endoso;");
+        while($endosos=db_fetch_object($resultado_contador_endosos)){
             array_push($arreglo_endosos, array(
                 "numero_endoso" =>& $endosos->numero_endoso,
                 "tipo_endoso" =>& $endosos->tipo_endoso,
@@ -147,7 +147,7 @@ $resultado=mysqli_query($link, $sql);
         }
     }
   $codigo.=']}';
-  mysqli_close($link);
+  db_close($link);
   echo $codigo;
 
 ?>

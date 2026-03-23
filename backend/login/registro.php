@@ -26,34 +26,18 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     } else{
         // Prepare a select statement
         $sql = "SELECT id FROM usuarios_aplicacion WHERE username = ?";
-        
-        if($stmt = mysqli_prepare($link, $sql)){
-            // Bind variables to the prepared statement as parameters
-            mysqli_stmt_bind_param($stmt, "s", $param_username);
-            
-            // Set parameters
-            $param_username = trim($_POST["username"]);
-            
-            // Attempt to execute the prepared statement
-            if(mysqli_stmt_execute($stmt)){
-                /* store result */
-                mysqli_stmt_store_result($stmt);
-                
-                if(mysqli_stmt_num_rows($stmt) == 1){
-                    $username_err = "";
-                    echo '<script type="text/javascript">alerta("El usuario ya esta utilizado." ,"warning");</script>'; 
- 
-                } else{
-                    $username = trim($_POST["username"]);
-                }
+        $check_result = db_prepare_and_execute($link, $sql, "s", [trim($_POST["username"])]);
+
+        if($check_result && $check_result['success']){
+            if($check_result['num_rows'] == 1){
+                $username_err = "";
+                echo '<script type="text/javascript">alerta("El usuario ya esta utilizado." ,"warning");</script>';
             } else{
-                echo '<script type="text/javascript">alerta("Oops! Algo salió mal. Favor intentar más tarde." ,"warning");</script>'; 
- 
+                $username = trim($_POST["username"]);
             }
+        } else{
+            echo '<script type="text/javascript">alerta("Oops! Algo salió mal. Favor intentar más tarde." ,"warning");</script>';
         }
-         
-        // Close statement
-        mysqli_stmt_close($stmt);
     }
     
     // Validate password
@@ -84,33 +68,22 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         
         // Prepare an insert statement
         $sql = "INSERT INTO usuarios_aplicacion (username, password) VALUES (?, ?)";
-         
-        if($stmt = mysqli_prepare($link, $sql)){
-            // Bind variables to the prepared statement as parameters
-            mysqli_stmt_bind_param($stmt, "ss", $param_username, $param_password);
-            mysqli_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega usuario', '".$param_username."','usuario',null, '".$_SERVER['PHP_SELF']."')");
-            // Set parameters
-            $param_username = $username;
-            $param_password = password_hash($password, PASSWORD_DEFAULT); // Creates a password hash
-            
-            // Attempt to execute the prepared statement
-            if(mysqli_stmt_execute($stmt)){
-                // Redirect to login page
-                echo '<script type="text/javascript">alerta("Usuario creado con éxito" ,"success");</script>'; 
- 
-                header("location: /bamboo/index.php");
-            } else{
-                echo '<script type="text/javascript">alerta("Oops! Algo salió mal. Favor intentar más tarde." ,"warning");</script>'; 
- 
-            }
+        $param_password = password_hash($password, PASSWORD_DEFAULT);
+
+        db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega usuario', '".$username."','usuario',null, '".$_SERVER['PHP_SELF']."')");
+
+        $insert_result = db_prepare_and_execute($link, $sql, "ss", [$username, $param_password]);
+
+        if($insert_result && $insert_result['success']){
+            echo '<script type="text/javascript">alerta("Usuario creado con éxito" ,"success");</script>';
+            header("location: /bamboo/index.php");
+        } else{
+            echo '<script type="text/javascript">alerta("Oops! Algo salió mal. Favor intentar más tarde." ,"warning");</script>';
         }
-         
-        // Close statement
-        mysqli_stmt_close($stmt);
     }
     
     // Close connection
-    mysqli_close($link);
+    db_close($link);
 }
 ?>
 <!DOCTYPE html>

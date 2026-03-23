@@ -4,12 +4,12 @@ require "/home/gestio10/public_html/vendor/autoload.php";
 require_once "/home/gestio10/public_html/backend/config.php";
 
 use PhpOffice\PhpSpreadsheet\{Spreadsheet, IOFactory};
-mysqli_set_charset( $link, 'utf8');
-mysqli_select_db($link, 'gestio10_asesori1_bamboo');
-mysqli_query($link, "SET @rownum=0;");
+db_set_charset($link, 'utf8');
+db_select_db($link, DB_NAME);
+db_query($link, "SET @rownum=0;");
 $query= "select @rownum := @rownum + 1 AS fila,
     id, comentario_endoso, fecha_prorroga, estado, tipo_endoso, compania,fecha_ingreso_endoso, ramo, vigencia_inicial, vigencia_final, numero_poliza, numero_propuesta_endoso, CONCAT_WS(' ',moneda_poliza_endoso,FORMAT(prima_neta_afecta, 2, 'de_DE')) as prima_neta_afecta, CONCAT_WS(' ',moneda_poliza_endoso,FORMAT(iva, 2, 'de_DE')) as iva, CONCAT_WS(' ',moneda_poliza_endoso,FORMAT(prima_neta_exenta, 2, 'de_DE')) as prima_neta_exenta, CONCAT_WS(' ',moneda_poliza_endoso,FORMAT(prima_total, 2, 'de_DE')) as prima_total, CONCAT_WS(' ',moneda_poliza_endoso,FORMAT(prima_neta, 2, 'de_DE')) as prima_neta, dice, debe_decir, descripcion_endoso, CONCAT_WS('-',rut_proponente,dv_proponente) AS rut_proponente, nombre_proponente, motivo_rechazo FROM propuesta_endosos as a";
-$resultado=mysqli_query($link, $query);
+$resultado=db_query($link, $query);
 $excel= new Spreadsheet();
 $hojaActiva=$excel->getActiveSheet();
 $hojaActiva->setCellValue('A2', 'Fila');
@@ -70,7 +70,7 @@ $hojaActiva->getColumnDimension('T')->setWidth(15);
 $hojaActiva->getColumnDimension('U')->setWidth(15);
 $fila=3;
 
-while ($rows = mysqli_fetch_object($resultado))
+while ($rows = db_fetch_object($resultado))
 {
     $hojaActiva->setCellValue('A'.$fila, $rows->fila);
     $hojaActiva->setCellValue('B'.$fila, '');
@@ -101,7 +101,7 @@ $hojaActiva->setAutoFilter('A2:T'.($fila-1));
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="Listado_propuesta_endosos '.date_format($fecha, 'd-m-Y H:i:s').'.xlsx"');
 header('Cache-Control: max-age=0');
-mysqli_close($link);
+db_close($link);
 $writer = IOFactory::createWriter($excel, 'Xlsx');
 $writer->save('php://output');
 exit;
