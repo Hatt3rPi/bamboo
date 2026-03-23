@@ -1,6 +1,7 @@
 <?php
 /**
  * Capa de abstracción dual MySQL/PostgreSQL
+ * v2 - pooler compatible
  * Toggle via DB_ENGINE en .env (mysql|pgsql)
  */
 
