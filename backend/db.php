@@ -19,7 +19,7 @@ function db_connect() {
             $pg_user = PG_USERNAME . '.' . $ref;
             $pg_port = '5432';
         }
-        $conn_string = "host=" . $pg_host . " port=" . $pg_port . " dbname=" . PG_DATABASE . " user=" . $pg_user . " password=" . PG_PASSWORD . " sslmode=require options='--client_encoding=UTF8'";
+        $conn_string = "host=" . $pg_host . " port=" . $pg_port . " dbname=" . PG_DATABASE . " user=" . $pg_user . " password=" . PG_PASSWORD . " sslmode=require";
         $link = pg_connect($conn_string);
         if (!$link) {
             die("ERROR: No se pudo conectar al servidor PostgreSQL.");
