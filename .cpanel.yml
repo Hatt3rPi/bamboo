@@ -9,4 +9,4 @@ deployment:
     - /bin/cp -R backend/login $DEPLOYPATH/backend/
     - /bin/cp -R vendor $DEPLOYPATH/
     - /bin/cp index.php $DEPLOYPATH/
-    - find $DEPLOYPATH/bamboo $DEPLOYPATH/bambooQA $DEPLOYPATH/backend/login -name "*.php" -exec sed -i 's|/home/gestio10/public_html|/home/customw2/public_html|g' {} +
+    - find $DEPLOYPATH/bamboo $DEPLOYPATH/bambooQA $DEPLOYPATH/backend/login -name "*.php" -exec sed -i "s|/home/gestio10/public_html|/home/customw2/public_html|g" {} +
