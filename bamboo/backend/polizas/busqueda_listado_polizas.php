@@ -72,10 +72,10 @@ $sql = "SELECT a.numero_poliza, a.estado, a.tipo_propuesta, a.moneda_poliza,
     a.vigencia_inicial, a.vigencia_final, a.compania, a.ramo,
     DATE_FORMAT(a.vigencia_final, '%m-%Y') as anomes_final,
     DATE_FORMAT(a.vigencia_inicial, '%m-%Y') as anomes_inicial,
-    CONCAT_WS(' ', b.nombre_cliente, b.apellido_paterno, b.apellido_materno) as nom_clienteP,
-    CONCAT_WS('-', b.rut_sin_dv, b.dv) as rut_clienteP,
-    b.telefono as telefonoP, b.correo as correoP,
-    a.id as id_poliza, b.id as idP, b.grupo, b.referido,
+    CONCAT_WS(' ', b.nombre_cliente, b.apellido_paterno, b.apellido_materno) as "nom_clienteP",
+    CONCAT_WS('-', b.rut_sin_dv, b.dv) as "rut_clienteP",
+    b.telefono as "telefonoP", b.correo as "correoP",
+    a.id as id_poliza, b.id as "idP", b.grupo, b.referido,
     a.fech_cancela, a.motivo_cancela
     FROM polizas_2 a
     LEFT JOIN clientes b ON a.rut_proponente = b.rut_sin_dv AND b.rut_sin_dv IS NOT NULL
