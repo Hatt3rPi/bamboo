@@ -11,14 +11,14 @@ require_once "/home/gestio10/public_html/backend/config.php";
 // Query 1: Pre-cargar relaciones de polizas agrupadas por id_tarea_recurrente
 $rel_polizas_sql = "SELECT tr.id_tarea_recurrente,
     json_agg(json_build_object(
-        'id_poliza',        p.id::text,
+        'id_poliza',        p.id,
         'numero_poliza',    p.numero_poliza,
         'estado',           p.estado,
         'vigencia_inicial', TO_CHAR(p.vigencia_inicial, 'DD-MM-YYYY'),
         'vigencia_final',   TO_CHAR(p.vigencia_final,   'DD-MM-YYYY')
     ) ORDER BY p.estado, p.vigencia_final) as polizas_json
     FROM tareas_relaciones tr
-    INNER JOIN polizas_2 p ON tr.id_relacion = p.id::text
+    INNER JOIN polizas_2 p ON tr.id_relacion = p.id
     WHERE tr.base = 'polizas'
     GROUP BY tr.id_tarea_recurrente";
 $rel_polizas_result = db_query($link, $rel_polizas_sql);
@@ -30,13 +30,13 @@ while ($row = db_fetch_object($rel_polizas_result)) {
 // Query 2: Pre-cargar relaciones de clientes agrupadas por id_tarea_recurrente
 $rel_clientes_sql = "SELECT tr.id_tarea_recurrente,
     json_agg(json_build_object(
-        'id_cliente', c.id::text,
+        'id_cliente', c.id,
         'nombre',     CONCAT_WS(' ', c.nombre_cliente, c.apellido_paterno, c.apellido_materno),
         'telefono',   c.telefono,
         'correo',     c.correo
     )) as clientes_json
     FROM tareas_relaciones tr
-    INNER JOIN clientes c ON tr.id_relacion = c.id::text
+    INNER JOIN clientes c ON tr.id_relacion = c.id
     WHERE tr.base = 'clientes'
     GROUP BY tr.id_tarea_recurrente";
 $rel_clientes_result = db_query($link, $rel_clientes_sql);
@@ -54,7 +54,7 @@ $rel_propuestas_sql = "SELECT tr.id_tarea_recurrente,
         'vigencia_final',   TO_CHAR(pp.vigencia_final,   'DD-MM-YYYY')
     ) ORDER BY pp.estado, pp.vigencia_final) as propuestas_json
     FROM tareas_relaciones tr
-    INNER JOIN propuesta_polizas pp ON tr.id_relacion = pp.id::text
+    INNER JOIN propuesta_polizas pp ON tr.id_relacion = pp.id
     WHERE tr.base = 'propuestas'
     GROUP BY tr.id_tarea_recurrente";
 $rel_propuestas_result = db_query($link, $rel_propuestas_sql);
