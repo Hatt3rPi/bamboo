@@ -11,7 +11,7 @@ if ( !isset( $_SESSION[ "loggedin" ] ) || $_SESSION[ "loggedin" ] !== true ) {
 header( "location: /backend/login/login.php" );
 exit;
 }
-if ($_COOKIE['valida_arreglo']==1){
+if (isset($_COOKIE['valida_arreglo']) && $_COOKIE['valida_arreglo']==1){
     //setcookie('valida_arreglo',"",time() - (10),"/");
     $arreglo=json_decode(html_entity_decode($_COOKIE['arreglo']),true);
     $arreglo=stripslashes($_COOKIE['arreglo']);
@@ -41,7 +41,13 @@ else
 }
 function retrocede()
 {
+    if (!isset($_COOKIE['historial']) || empty($_COOKIE['historial'])) {
+        return json_encode(array('-','-','-'));
+    }
     $historial=json_decode($_COOKIE['historial'],true);
+    if (!is_array($historial) || !isset($historial['data']) || empty($historial['data'])) {
+        return json_encode(array('-','-','-'));
+    }
     $contador=count($historial['data'])-1;
     $cookie_url=$historial['data'][$contador]['url'];
     $cookie_id=$historial['data'][$contador]['id'];
@@ -63,7 +69,7 @@ function retrocede()
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Gestión IPN - Bamboo Seguros</title>
-    <link rel="icon" href="/bambooQA/images/bamboo.png">
+    <link rel="icon" href="/bamboo/images/bamboo.png">
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
@@ -82,7 +88,7 @@ function retrocede()
         <div class="card-header-tabs-p10" style="background-color:#536656;vertical-align: middle; padding:0px ;">
             <div class="form-inline">
                 <div class="col-2">
-                    <p><img src="/bambooQA/images/logo_bamboo.png" width="100" class="img-fluid"
+                    <p><img src="/bamboo/images/logo_bamboo.png" width="100" class="img-fluid"
                             style="float: left;vertical-align: middle "></p>
                 </div>
                 <div class="col-8">
@@ -115,23 +121,23 @@ function retrocede()
                     class="navbar-toggler-icon"></span> </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
-                    <li class="nav-item active"> <a class="nav-link" href="/bambooQA/index.php">Inicio <span
+                    <li class="nav-item active"> <a class="nav-link" href="/bamboo/index.php">Inicio <span
                                 class="sr-only">(current)</span></a> </li>
                     <li class="dropdown"> <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Clientes </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown"> <a class="dropdown-item"
-                                type="button" href="/bambooQA/creacion_cliente.php">Creación</a>
-                            <a class="dropdown-item" type="button" href="/bambooQA/listado_clientes.php"
+                                type="button" href="/bamboo/creacion_cliente.php">Creación</a>
+                            <a class="dropdown-item" type="button" href="/bamboo/listado_clientes.php"
                                 onclick="<?php $_SESSION["auxiliar"]="header";?>">Listado de clientes</a> </div>
                     </li>
                     <li class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2"
                             role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Pólizas
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="/bambooQA/creacion_propuesta_poliza.php">Creación Propuesta </a>
-                            <a class="dropdown-item" href="/bambooQA/listado_propuesta_polizas.php">Listado Propuesta </a>
+                            <a class="dropdown-item" href="/bamboo/creacion_propuesta_poliza.php">Creación Propuesta </a>
+                            <a class="dropdown-item" href="/bamboo/listado_propuesta_polizas.php">Listado Propuesta </a>
                             <a class="dropdown-item"  onclick = "crear_poliza_web()" style="cursor: pointer;" >Creación Póliza Web </a>
-                            <a class="dropdown-item" href="/bambooQA/listado_polizas.php">Listado de pólizas</a>
+                            <a class="dropdown-item" href="/bamboo/listado_polizas.php">Listado de pólizas</a>
                         </div>
                     </li>
                     <li class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2"
@@ -139,24 +145,31 @@ function retrocede()
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                             
-                            <a class="dropdown-item" href="/bambooQA/listado_propuesta_endosos.php">Listado Propuesta Endosos</a>
-                            <a class="dropdown-item" href="/bambooQA/listado_endosos.php">Listado de Endosos</a>
+                            <a class="dropdown-item" href="/bamboo/listado_propuesta_endosos.php">Listado Propuesta Endosos</a>
+                            <a class="dropdown-item" href="/bamboo/listado_endosos.php">Listado de Endosos</a>
                         </div>
                     </li>
                     <li class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown4"
                             role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Tareas</a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="/bambooQA/creacion_actividades.php">Creación</a>
-                            <a class="dropdown-item" href="/bambooQA/listado_tareas.php">Listado de tareas</a>
-                            <a class="dropdown-item" href="/bambooQA/listado_tareas_recurrentes.php">Listado de tareas
+                            <a class="dropdown-item" href="/bamboo/creacion_actividades.php">Creación</a>
+                            <a class="dropdown-item" href="/bamboo/listado_tareas.php">Listado de tareas</a>
+                            <a class="dropdown-item" href="/bamboo/listado_tareas_recurrentes.php">Listado de tareas
                                 recurrentes</a>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownSiniestros"
+                            role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Siniestros</a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownSiniestros">
+                            <a class="dropdown-item" href="/bamboo/creacion_siniestro.php">Creación</a>
+                            <a class="dropdown-item" href="/bamboo/listado_siniestros.php">Listado de siniestros</a>
                         </div>
                     </li>
                     <li class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown3"
                             role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Correos</a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="/bambooQA/solicitar_info.php">Ver Tipos de Correos</a>
-                            <a class="dropdown-item" href="/bambooQA/creacion_template.php">Editar Templates</a>
+                            <a class="dropdown-item" href="/bamboo/solicitar_info.php">Ver Tipos de Correos</a>
+                            <a class="dropdown-item" href="/bamboo/creacion_template.php">Editar Templates</a>
                         </div>
                     </li>
                 </ul>
@@ -176,7 +189,7 @@ function retrocede()
                         </li>
                     </ul>
                 </form>
-                <form class="form-inline" action="/bambooQA/resumen2.php" method="POST">
+                <form class="form-inline" action="/bamboo/resumen2.php" method="POST">
                     <input class="form-control mr-sm-2" name="busqueda" type="text" placeholder="Buscar"
                         aria-label="Buscar">
                     <button class="btn btn-outline-success my-2 my-sm-0" type="submit"
@@ -277,8 +290,8 @@ function crear_poliza_web(){
     
     console.log("direct crear poliza web");
 
-    $.redirect('/bambooQA/creacion_propuesta_poliza.php', {
-          //$.redirect('/bambooQA/test_felipe2.php', { 
+    $.redirect('/bamboo/creacion_propuesta_poliza.php', {
+          //$.redirect('/bamboo/test_felipe2.php', { 
             'accion': 'crear_poliza_web'
 
           }, 'post');
