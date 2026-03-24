@@ -195,10 +195,6 @@ function sql_translate($sql) {
     $sql = preg_replace('/=\s*NULL\b/i', ' IS NULL', $sql);
     $sql = preg_replace('/<>\s*NULL\b/i', ' IS NOT NULL', $sql);
 
-    // '' como valor en CASE/comparaciones → NULL (PG no acepta '' para date/numeric)
-    $sql = str_replace("THEN ''", "THEN NULL", $sql);
-    $sql = str_replace("ELSE ''", "ELSE NULL", $sql);
-
     // CAST(x AS UNSIGNED) → CAST(x AS INTEGER)
     $sql = preg_replace('/CAST\s*\((.+?)\s+AS\s+UNSIGNED\s*\)/i', 'CAST($1 AS INTEGER)', $sql);
 
@@ -315,6 +311,10 @@ function sql_translate($sql) {
 
     // MATCH(cols) AGAINST ('term') → to_tsvector('spanish', cols) @@ plainto_tsquery('spanish', 'term')
     // Se maneja como caso especial en busca_cliente.php
+
+    // '' en CASE WHEN → NULL (PG no acepta '' para date/numeric) - al final para capturar IF→CASE WHEN
+    $sql = str_replace("THEN ''", "THEN NULL", $sql);
+    $sql = str_replace("ELSE ''", "ELSE NULL", $sql);
 
     return $sql;
 }
