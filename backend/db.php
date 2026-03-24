@@ -195,8 +195,9 @@ function sql_translate($sql) {
     $sql = preg_replace('/=\s*NULL\b/i', ' IS NULL', $sql);
     $sql = preg_replace('/<>\s*NULL\b/i', ' IS NOT NULL', $sql);
 
-    // THEN '' en contexto date → THEN NULL (PG no acepta '' como date)
-    $sql = preg_replace("/THEN\s+''\s+ELSE/i", "THEN NULL ELSE", $sql);
+    // '' como valor en CASE/comparaciones → NULL (PG no acepta '' para date/numeric)
+    $sql = str_replace("THEN ''", "THEN NULL", $sql);
+    $sql = str_replace("ELSE ''", "ELSE NULL", $sql);
 
     // CAST(x AS UNSIGNED) → CAST(x AS INTEGER)
     $sql = preg_replace('/CAST\s*\((.+?)\s+AS\s+UNSIGNED\s*\)/i', 'CAST($1 AS INTEGER)', $sql);
