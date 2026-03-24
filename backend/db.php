@@ -188,6 +188,13 @@ function sql_translate($sql) {
     // Eliminar backticks
     $sql = str_replace('`', '', $sql);
 
+    // SET @rownum=0 → ignorar (no-op en PG)
+    if (preg_match('/^\s*SET\s+@/i', $sql)) {
+        return 'SELECT 1';
+    }
+    // @rownum := @rownum + 1 AS fila → ROW_NUMBER() OVER() AS fila
+    $sql = preg_replace('/@\w+\s*:=\s*@\w+\s*\+\s*1\s+AS\s+(\w+)/i', 'ROW_NUMBER() OVER() AS $1', $sql);
+
     // '0000-00-00' → NULL
     $sql = str_replace("'0000-00-00'", "NULL", $sql);
 
