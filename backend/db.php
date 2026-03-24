@@ -191,6 +191,13 @@ function sql_translate($sql) {
     // '0000-00-00' → NULL
     $sql = str_replace("'0000-00-00'", "NULL", $sql);
 
+    // =NULL → IS NULL, <>NULL → IS NOT NULL (MySQL quirk)
+    $sql = preg_replace('/=\s*NULL\b/i', 'IS NULL', $sql);
+    $sql = preg_replace('/<>\s*NULL\b/i', 'IS NOT NULL', $sql);
+
+    // THEN '' en contexto date → THEN NULL (PG no acepta '' como date)
+    $sql = preg_replace("/THEN\s+''\s+ELSE/i", "THEN NULL ELSE", $sql);
+
     // CAST(x AS UNSIGNED) → CAST(x AS INTEGER)
     $sql = preg_replace('/CAST\s*\((.+?)\s+AS\s+UNSIGNED\s*\)/i', 'CAST($1 AS INTEGER)', $sql);
 
