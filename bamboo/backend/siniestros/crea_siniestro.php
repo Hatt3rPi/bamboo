@@ -55,6 +55,22 @@ function parse_items_csv($csv) {
     return array_values(array_unique($out));
 }
 
+// Obtiene datos de vehículo por ítem desde el POST: vehiculo_patente[1], vehiculo_marca[1], ...
+function veh_por_item($numero_item) {
+    $sanitize = function($v) {
+        $v = trim($v);
+        $v = stripslashes($v);
+        $v = htmlspecialchars($v);
+        return $v;
+    };
+    return array(
+        'patente'       => isset($_POST['vehiculo_patente'][$numero_item])       ? $sanitize($_POST['vehiculo_patente'][$numero_item])       : '',
+        'marca'         => isset($_POST['vehiculo_marca'][$numero_item])         ? $sanitize($_POST['vehiculo_marca'][$numero_item])         : '',
+        'modelo'        => isset($_POST['vehiculo_modelo'][$numero_item])        ? $sanitize($_POST['vehiculo_modelo'][$numero_item])        : '',
+        'anio_vehiculo' => isset($_POST['vehiculo_anio'][$numero_item])          ? $sanitize($_POST['vehiculo_anio'][$numero_item])          : ''
+    );
+}
+
 db_set_charset($link, 'utf8');
 db_select_db($link, DB_NAME);
 
@@ -106,13 +122,19 @@ switch ($accion) {
                 : 'S' . str_pad($fila->id, 6, '0', STR_PAD_LEFT);
         }
 
-        // Insertar ítems asociados
+        // Insertar ítems asociados + datos de vehículo por ítem
         if ($id_nuevo > 0) {
             $items = parse_items_csv($items_seleccionados);
             foreach ($items as $ni) {
-                db_query($link, "INSERT INTO siniestros_items (id_siniestro, numero_item)
-                                 VALUES ('$id_nuevo', '$ni')
-                                 ON CONFLICT (id_siniestro, numero_item) DO NOTHING");
+                $veh = veh_por_item($ni);
+                $anio_sql = ($veh['anio_vehiculo'] !== '' && ctype_digit($veh['anio_vehiculo'])) ? "'" . $veh['anio_vehiculo'] . "'" : "NULL";
+                db_query($link, "INSERT INTO siniestros_items (id_siniestro, numero_item, patente, marca, modelo, anio_vehiculo)
+                                 VALUES ('$id_nuevo', '$ni', '" . $veh['patente'] . "', '" . $veh['marca'] . "', '" . $veh['modelo'] . "', $anio_sql)
+                                 ON CONFLICT (id_siniestro, numero_item) DO UPDATE SET
+                                    patente = EXCLUDED.patente,
+                                    marca = EXCLUDED.marca,
+                                    modelo = EXCLUDED.modelo,
+                                    anio_vehiculo = EXCLUDED.anio_vehiculo");
             }
 
             // Bitácora inicial
@@ -166,13 +188,19 @@ switch ($accion) {
                              VALUES ('$id', '$estado_anterior', '$estado', '$usuario', 'Edición')");
         }
 
-        // Resincronizar ítems (DELETE + INSERT)
+        // Resincronizar ítems (DELETE + INSERT) con datos de vehículo por ítem
         db_query($link, "DELETE FROM siniestros_items WHERE id_siniestro = '$id'");
         $items = parse_items_csv($items_seleccionados);
         foreach ($items as $ni) {
-            db_query($link, "INSERT INTO siniestros_items (id_siniestro, numero_item)
-                             VALUES ('$id', '$ni')
-                             ON CONFLICT (id_siniestro, numero_item) DO NOTHING");
+            $veh = veh_por_item($ni);
+            $anio_sql = ($veh['anio_vehiculo'] !== '' && ctype_digit($veh['anio_vehiculo'])) ? "'" . $veh['anio_vehiculo'] . "'" : "NULL";
+            db_query($link, "INSERT INTO siniestros_items (id_siniestro, numero_item, patente, marca, modelo, anio_vehiculo)
+                             VALUES ('$id', '$ni', '" . $veh['patente'] . "', '" . $veh['marca'] . "', '" . $veh['modelo'] . "', $anio_sql)
+                             ON CONFLICT (id_siniestro, numero_item) DO UPDATE SET
+                                patente = EXCLUDED.patente,
+                                marca = EXCLUDED.marca,
+                                modelo = EXCLUDED.modelo,
+                                anio_vehiculo = EXCLUDED.anio_vehiculo");
         }
 
         db_query($link, "SELECT trazabilidad('$usuario', 'Actualización siniestro', '" .

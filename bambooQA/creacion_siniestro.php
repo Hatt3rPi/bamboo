@@ -94,15 +94,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["accion"]) && $_POST["a
         $compania                  = $row->compania;
     }
 
-    // Ítems asociados
+    // Ítems asociados + datos de vehículo por ítem
     $items_pre = array();
-    $res_items = db_query($link, "SELECT numero_item FROM siniestros_items WHERE id_siniestro = '$id_siniestro' ORDER BY numero_item");
+    $vehiculos_pre = array(); // map numero_item => {patente, marca, modelo, anio}
+    $res_items = db_query($link, "SELECT numero_item, patente, marca, modelo, anio_vehiculo FROM siniestros_items WHERE id_siniestro = '$id_siniestro' ORDER BY numero_item");
     while ($row = db_fetch_object($res_items)) {
         $items_pre[] = $row->numero_item;
+        $vehiculos_pre[$row->numero_item] = array(
+            'patente' => $row->patente,
+            'marca'   => $row->marca,
+            'modelo'  => $row->modelo,
+            'anio'    => $row->anio_vehiculo
+        );
     }
     $items_seleccionados_csv = implode(',', $items_pre);
     db_close($link);
 }
+if (!isset($vehiculos_pre)) $vehiculos_pre = array();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -291,32 +299,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["accion"]) && $_POST["a
       </div>
     </div>
 
-    <!-- ==================== SECCIÓN 6: VEHÍCULO ==================== -->
+    <!-- ==================== SECCIÓN 6: VEHÍCULOS (dinámico, 1 bloque por ítem marcado) ==================== -->
     <div id="seccion_vehiculo" style="display:none">
       <hr>
-      <h5 class="form-row">&nbsp;Vehículo</h5><br>
-      <div class="form-row">
-        <div class="col-md-2 mb-3">
-          <label for="patente">Patente</label>
-          <input type="text" class="form-control" id="patente" name="patente"
-            value="<?php echo $patente; ?>" maxlength="8" placeholder="XXXX00">
-        </div>
-        <div class="col-md-3 mb-3">
-          <label for="marca">Marca</label>
-          <input type="text" class="form-control" id="marca" name="marca"
-            value="<?php echo $marca; ?>">
-        </div>
-        <div class="col-md-4 mb-3">
-          <label for="modelo">Modelo</label>
-          <input type="text" class="form-control" id="modelo" name="modelo"
-            value="<?php echo $modelo; ?>">
-        </div>
-        <div class="col-md-3 mb-3">
-          <label for="anio_vehiculo">Año</label>
-          <input type="number" class="form-control" id="anio_vehiculo" name="anio_vehiculo"
-            value="<?php echo $anio_vehiculo; ?>" min="1990" max="2030">
-        </div>
-      </div>
+      <h5 class="form-row">&nbsp;Vehículos afectados</h5><br>
+      <div id="contenedor_vehiculos"></div>
     </div>
 
     <!-- ==================== SECCIÓN 7: TALLER ==================== -->
@@ -432,6 +419,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["accion"]) && $_POST["a
 <script src="/assets/js/js.cookie.min.js"></script>
 
 <script>
+// ---- Datos pre-cargados desde servidor ----
+var vehiculosPre   = <?php echo json_encode($vehiculos_pre); ?>;  // map numero_item → {patente,marca,modelo,anio}
+var itemsCache     = [];                                           // datos de items crudos de la póliza actual (de busqueda_items_poliza)
+var esRamoVehiculo = false;
+
 // ---- Sanitización client-side ----
 function estandariza_info(val) {
     return $.trim(val);
@@ -440,13 +432,69 @@ function estandariza_info(val) {
 // ---- Toggle secciones vehículo y taller ----
 function toggleVehiculo(ramo) {
     var ramo_upper = (ramo || '').toUpperCase();
-    if (ramo_upper.indexOf('VEH') !== -1 || ramo_upper.indexOf('AUTO') !== -1) {
-        document.getElementById('seccion_vehiculo').style.display = 'block';
-        document.getElementById('seccion_taller').style.display = 'block';
-    } else {
-        document.getElementById('seccion_vehiculo').style.display = 'none';
-        document.getElementById('seccion_taller').style.display = 'none';
+    esRamoVehiculo = (ramo_upper.indexOf('VEH') !== -1 || ramo_upper.indexOf('AUTO') !== -1);
+    document.getElementById('seccion_vehiculo').style.display = esRamoVehiculo ? 'block' : 'none';
+    document.getElementById('seccion_taller').style.display   = esRamoVehiculo ? 'block' : 'none';
+    renderVehiculos();
+}
+
+// ---- Renderiza un bloque Vehículo por cada ítem marcado ----
+function renderVehiculos() {
+    var cont = $('#contenedor_vehiculos');
+    if (!esRamoVehiculo) { cont.empty(); return; }
+    var seleccionados = [];
+    $('.chk_item:checked').each(function() { seleccionados.push(String($(this).val())); });
+
+    // Conservar valores actuales que el usuario pueda haber editado
+    var valoresActuales = {};
+    $('.veh-block').each(function() {
+        var ni = $(this).data('item');
+        valoresActuales[ni] = {
+            patente: $(this).find('.veh-patente').val(),
+            marca:   $(this).find('.veh-marca').val(),
+            modelo:  $(this).find('.veh-modelo').val(),
+            anio:    $(this).find('.veh-anio').val()
+        };
+    });
+
+    cont.empty();
+    if (seleccionados.length === 0) {
+        cont.html('<em>Seleccione al menos un ítem afectado.</em>');
+        return;
     }
+    $.each(seleccionados, function(i, ni) {
+        // Prioridad: valores editados > vehiculosPre (modo edición) > itemsCache (parsed de materia)
+        var datos = valoresActuales[ni] || vehiculosPre[ni] || null;
+        if (!datos) {
+            var it = itemsCache.find(function(x) { return String(x.numero_item) === ni; });
+            if (it) datos = { patente: it.patente || '', marca: it.marca || '', modelo: it.modelo || '', anio: it.anio || '' };
+        }
+        datos = datos || { patente: '', marca: '', modelo: '', anio: '' };
+
+        var bloque = '' +
+            '<div class="veh-block border rounded p-2 mb-3" data-item="' + ni + '">' +
+              '<strong>Vehículo — Ítem ' + ni + '</strong>' +
+              '<div class="form-row mt-2">' +
+                '<div class="col-md-2 mb-2">' +
+                  '<label>Patente</label>' +
+                  '<input type="text" class="form-control veh-patente" name="vehiculo_patente[' + ni + ']" value="' + (datos.patente || '') + '" maxlength="8" placeholder="XXXX00">' +
+                '</div>' +
+                '<div class="col-md-3 mb-2">' +
+                  '<label>Marca</label>' +
+                  '<input type="text" class="form-control veh-marca" name="vehiculo_marca[' + ni + ']" value="' + (datos.marca || '') + '">' +
+                '</div>' +
+                '<div class="col-md-4 mb-2">' +
+                  '<label>Modelo</label>' +
+                  '<input type="text" class="form-control veh-modelo" name="vehiculo_modelo[' + ni + ']" value="' + (datos.modelo || '') + '">' +
+                '</div>' +
+                '<div class="col-md-3 mb-2">' +
+                  '<label>Año</label>' +
+                  '<input type="number" class="form-control veh-anio" name="vehiculo_anio[' + ni + ']" value="' + (datos.anio || '') + '" min="1990" max="2030">' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+        cont.append(bloque);
+    });
 }
 
 // ---- Cargar ítems de la póliza en checkboxes ----
@@ -489,8 +537,13 @@ function cargarItemsPoliza(id_poliza, items_csv_pre) {
                         '</div>';
             });
             $('#lista_items_checkboxes').html(html);
+            itemsCache = data;
             actualizarItemsSeleccionados();
-            $('.chk_item').on('change', actualizarItemsSeleccionados);
+            renderVehiculos();
+            $('.chk_item').on('change', function() {
+                actualizarItemsSeleccionados();
+                renderVehiculos();
+            });
         },
         error: function() {
             $('#lista_items_checkboxes').html('<em style="color:darkred">Error cargando ítems.</em>');
@@ -546,7 +599,7 @@ function registraSiniestro() {
 
     var presentado = $('#no_presentado').is(':checked') ? '0' : '1';
 
-    $.redirect('/bambooQA/backend/siniestros/crea_siniestro.php', {
+    var payload = {
         'accion':                    accion,
         'id_siniestro':              estandariza_info($('#id_siniestro').val()),
         'id_poliza':                 estandariza_info($('#id_poliza').val()),
@@ -568,14 +621,20 @@ function registraSiniestro() {
         'liquidador_telefono':       estandariza_info($('#liquidador_telefono').val()),
         'liquidador_correo':         estandariza_info($('#liquidador_correo').val()),
         'numero_carpeta_liquidador': estandariza_info($('#numero_carpeta_liquidador').val()),
-        'patente':                   estandariza_info($('#patente').val()),
-        'marca':                     estandariza_info($('#marca').val()),
-        'modelo':                    estandariza_info($('#modelo').val()),
-        'anio_vehiculo':             estandariza_info($('#anio_vehiculo').val()),
         'taller_nombre':             estandariza_info($('#taller_nombre').val()),
         'taller_telefono':           estandariza_info($('#taller_telefono').val()),
         'estado':                    estandariza_info($('#estado').val())
-    }, 'post');
+    };
+    // Arrays de vehículo por ítem (claves vehiculo_patente[N])
+    $('.veh-block').each(function() {
+        var ni = $(this).data('item');
+        payload['vehiculo_patente[' + ni + ']'] = estandariza_info($(this).find('.veh-patente').val());
+        payload['vehiculo_marca['   + ni + ']'] = estandariza_info($(this).find('.veh-marca').val());
+        payload['vehiculo_modelo['  + ni + ']'] = estandariza_info($(this).find('.veh-modelo').val());
+        payload['vehiculo_anio['    + ni + ']'] = estandariza_info($(this).find('.veh-anio').val());
+    });
+
+    $.redirect('/bambooQA/backend/siniestros/crea_siniestro.php', payload, 'post');
 }
 
 // ---- Reabrir siniestro ----

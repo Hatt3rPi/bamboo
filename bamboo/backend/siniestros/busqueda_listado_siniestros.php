@@ -26,7 +26,9 @@ FROM siniestros s
 LEFT JOIN clientes c ON s.rut_asegurado = c.rut_sin_dv AND c.rut_sin_dv IS NOT NULL
 LEFT JOIN polizas_2 p ON s.id_poliza = p.id
 LEFT JOIN (
-    SELECT id_siniestro, string_agg(numero_item::text, ', ' ORDER BY numero_item) as items_afectados
+    SELECT id_siniestro,
+           string_agg(numero_item::text, ', ' ORDER BY numero_item) as items_afectados,
+           string_agg(NULLIF(patente, ''), ', ' ORDER BY numero_item) as patentes_items
     FROM siniestros_items GROUP BY id_siniestro
 ) si ON si.id_siniestro = s.id
 WHERE COALESCE(s.estado, '') <> 'Eliminado'
@@ -56,7 +58,7 @@ while ($row = db_fetch_object($resultado)) {
         "liquidador_correo"    => $row->liquidador_correo,
         "numero_carpeta_liquidador" => $row->numero_carpeta_liquidador,
         "items_afectados"      => $row->items_afectados,
-        "patente"              => $row->patente,
+        "patente"              => $row->patentes_items ?: $row->patente,
         "marca"                => $row->marca,
         "modelo"               => $row->modelo,
         "anio_vehiculo"        => $row->anio_vehiculo,

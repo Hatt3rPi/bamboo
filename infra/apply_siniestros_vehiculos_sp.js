@@ -1,0 +1,51 @@
+// Agrega columnas de vehículo (patente/marca/modelo/anio_vehiculo) a siniestros_items
+// para soportar N vehículos por siniestro.
+//
+// Uso:
+//   PG_HOST=... PG_USER=... PG_PASSWORD=... node infra/apply_siniestros_vehiculos_sp.js
+const { Client } = require('pg');
+
+const required = ['PG_HOST', 'PG_USER', 'PG_PASSWORD'];
+for (const k of required) {
+  if (!process.env[k]) {
+    console.error(`Falta variable de entorno: ${k}`);
+    process.exit(1);
+  }
+}
+
+const client = new Client({
+  host: process.env.PG_HOST,
+  port: parseInt(process.env.PG_PORT || '5432', 10),
+  user: process.env.PG_USER,
+  password: process.env.PG_PASSWORD,
+  database: process.env.PG_DATABASE || 'postgres',
+  ssl: { rejectUnauthorized: false }
+});
+
+const migration = `
+ALTER TABLE siniestros_items ADD COLUMN IF NOT EXISTS patente TEXT NULL;
+ALTER TABLE siniestros_items ADD COLUMN IF NOT EXISTS marca TEXT NULL;
+ALTER TABLE siniestros_items ADD COLUMN IF NOT EXISTS modelo TEXT NULL;
+ALTER TABLE siniestros_items ADD COLUMN IF NOT EXISTS anio_vehiculo INTEGER NULL;
+`;
+
+(async () => {
+  try {
+    await client.connect();
+    console.log(`Conectado a ${process.env.PG_HOST}.`);
+    await client.query(migration);
+    console.log('Migración aplicada OK.');
+
+    const check = await client.query(`
+      SELECT column_name FROM information_schema.columns
+      WHERE table_name='siniestros_items' AND column_name IN ('patente','marca','modelo','anio_vehiculo')
+      ORDER BY column_name
+    `);
+    console.log('Columnas nuevas:', check.rows.map(r => r.column_name));
+  } catch (e) {
+    console.error('ERROR:', e.message);
+    process.exit(1);
+  } finally {
+    await client.end();
+  }
+})();
