@@ -21,7 +21,8 @@ $sql = "SELECT s.id, s.numero_siniestro, s.numero_poliza, s.ramo, s.tipo_siniest
     CONCAT_WS('-', c.rut_sin_dv, c.dv) as \"rut_cliente\",
     c.telefono as \"tel_cliente\", c.correo as \"correo_cliente\",
     p.compania,
-    si.items_afectados
+    si.items_afectados,
+    si.patentes_items
 FROM siniestros s
 LEFT JOIN clientes c ON s.rut_asegurado = c.rut_sin_dv AND c.rut_sin_dv IS NOT NULL
 LEFT JOIN polizas_2 p ON s.id_poliza = p.id
