@@ -147,14 +147,8 @@ if (!isset($vehiculos_pre)) $vehiculos_pre = array();
     <div class="form-row">
       <div class="col-md-4 mb-3">
         <label for="numero_poliza">N° Póliza <span style="color:darkred">*</span></label>
-        <div class="input-group">
-          <input type="text" class="form-control" id="numero_poliza" name="numero_poliza"
-            value="<?php echo $numero_poliza; ?>" placeholder="Ej: 7621783">
-          <div class="input-group-append">
-            <button class="btn btn-outline-secondary" type="button"
-              onclick="$('#modal_poliza').modal('show')">Buscar</button>
-          </div>
-        </div>
+        <input type="text" class="form-control" id="numero_poliza" name="numero_poliza"
+          value="<?php echo $numero_poliza; ?>" readonly>
       </div>
       <div class="col-md-4 mb-3">
         <label for="ramo_display">Ramo</label>
@@ -361,50 +355,6 @@ if (!isset($vehiculos_pre)) $vehiculos_pre = array();
   </table>
   <br><br>
   <?php endif; ?>
-</div>
-
-<!-- =============================================================== -->
-<!-- MODAL BÚSQUEDA DE PÓLIZA -->
-<!-- =============================================================== -->
-<div class="modal fade" id="modal_poliza" tabindex="-1" role="dialog" aria-labelledby="modal_poliza_label" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modal_poliza_label">Buscar Póliza</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-row mb-3">
-          <div class="col-md-8">
-            <input type="text" class="form-control" id="busqueda_poliza"
-              placeholder="Ingrese N° de póliza o RUT del asegurado">
-          </div>
-          <div class="col-md-4">
-            <button class="btn btn-primary" type="button" onclick="buscarPoliza()">Buscar</button>
-          </div>
-        </div>
-        <div id="resultado_busqueda_poliza">
-          <table class="table table-hover table-sm" id="tabla_polizas" style="display:none">
-            <thead>
-              <tr>
-                <th>N° Póliza</th>
-                <th>Ramo</th>
-                <th>Compañía</th>
-                <th>Asegurado</th>
-                <th>Vigencia</th>
-                <th>Estado</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="filas_polizas"></tbody>
-          </table>
-          <p id="sin_resultados" style="display:none">No se encontraron pólizas.</p>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- =============================================================== -->
@@ -695,66 +645,6 @@ function cargarBitacora(id_siniestro) {
     });
 }
 
-// ---- Modal: buscar póliza ----
-function buscarPoliza() {
-    var busqueda = estandariza_info($('#busqueda_poliza').val());
-    if (busqueda === '') {
-        alert('Ingrese un número de póliza o RUT para buscar.');
-        return;
-    }
-    $.ajax({
-        type: 'POST',
-        url: '/bamboo/backend/siniestros/busca_poliza_siniestro.php',
-        data: { busqueda: busqueda },
-        dataType: 'json',
-        success: function(response) {
-            var filas = '';
-            if (response && response.data && response.data.length > 0) {
-                $.each(response.data, function(i, p) {
-                    filas += '<tr>' +
-                        '<td>' + (p.numero_poliza || '') + '</td>' +
-                        '<td>' + (p.ramo || '') + '</td>' +
-                        '<td>' + (p.compania || '') + '</td>' +
-                        '<td>' + (p.nombre_cliente || '') + '</td>' +
-                        '<td>' + (p.vigencia_inicial || '') + ' / ' + (p.vigencia_final || '') + '</td>' +
-                        '<td>' + (p.estado || '') + '</td>' +
-                        '<td><button type="button" class="btn btn-sm btn-success" ' +
-                            'onclick="seleccionarPoliza(' +
-                            JSON.stringify(p).replace(/"/g, '&quot;') + ')">Seleccionar</button></td>' +
-                        '</tr>';
-                });
-                $('#filas_polizas').html(filas);
-                $('#tabla_polizas').show();
-                $('#sin_resultados').hide();
-            } else {
-                $('#tabla_polizas').hide();
-                $('#sin_resultados').show();
-            }
-        },
-        error: function() {
-            alert('Error al buscar pólizas. Intente nuevamente.');
-        }
-    });
-}
-
-function seleccionarPoliza(poliza) {
-    $('#id_poliza').val(poliza.id);
-    $('#numero_poliza').val(poliza.numero_poliza);
-    $('#ramo').val(poliza.ramo);
-    $('#ramo_display').val(poliza.ramo);
-    $('#compania_display').val(poliza.compania);
-    var rut_completo = (poliza.rut_sin_dv || '') + (poliza.dv ? '-' + poliza.dv : '');
-    $('#rut_asegurado').val(rut_completo);
-    $('#nombre_asegurado').val(poliza.nombre_cliente || '');
-    $('#telefono_asegurado').val(poliza.telefono || '');
-    $('#correo_asegurado').val(poliza.correo || '');
-    toggleVehiculo(poliza.ramo);
-    // Limpiar ítems previos y cargar los de la nueva póliza
-    $('#items_seleccionados').val('');
-    cargarItemsPoliza(poliza.id, '');
-    $('#modal_poliza').modal('hide');
-}
-
 // ---- Al cargar: inicializar ----
 $(document).ready(function() {
     var ramo_inicial = '<?php echo addslashes($ramo); ?>';
@@ -772,10 +662,6 @@ $(document).ready(function() {
     if (id_siniestro_inicial) {
         cargarBitacora(id_siniestro_inicial);
     }
-    // Enter en búsqueda de póliza
-    $('#busqueda_poliza').on('keypress', function(e) {
-        if (e.which === 13) buscarPoliza();
-    });
 });
 </script>
 </body>
