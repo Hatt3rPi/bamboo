@@ -13,7 +13,7 @@ require_once "/home/gestio10/public_html/bamboo/backend/funciones.php";
 db_set_charset($link, 'utf8');
 db_select_db($link, DB_NAME);
 $buscar = $base = $id = $nombre_base = '';
-$id_clientes = $id_polizas = $endosos = $propuestas =$propuestas_endosos= 'busqueda dummy';
+$id_clientes = $id_polizas = $endosos = $propuestas = $propuestas_endosos = $id_siniestros = 'busqueda dummy';
 $num = 0;
 $busqueda = $busqueda_err = $data = $query= $resultado_poliza= '';
 $rut = $nombre = $telefono = $correo = $lista = '';
@@ -32,20 +32,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
     switch ($base)
     {
         case 'poliza':
-            $query = "select distinct a.numero_poliza, a.id as id_poliza, b.id as idP, d.id as idA from polizas_2 as a left join clientes as b on a.rut_proponente=b.rut_sin_dv left join items as c on a.numero_poliza=c.numero_poliza left join clientes as d on c.rut_asegurado= d.rut_sin_dv where a.id=" . $id;
+            $query = "select distinct a.numero_poliza, a.id as id_poliza, b.id as \"idP\", d.id as \"idA\" from polizas_2 as a left join clientes as b on a.rut_proponente=b.rut_sin_dv left join items as c on a.numero_poliza=c.numero_poliza left join clientes as d on c.rut_asegurado= d.rut_sin_dv where a.id=" . $id;
             $resultado_poliza = db_query($link, $query);
             while ($row = db_fetch_object($resultado_poliza))
             {
-                if ($row->idA == $row->idP)
+                $idA = $row->idA ?? null;
+                $idP = $row->idP ?? null;
+                if ($idA !== null && $idA == $idP)
                 {
-                    $id_clientes = "^" . $row->idA . "$";
+                    $id_clientes = "^" . $idA . "$";
                 }
-                else
+                elseif ($idA !== null && $idP !== null)
                 {
-                    $id_clientes = "^" . $row->idA . "$" . "|" . "^" . $row->idP . "$";
+                    $id_clientes = "^" . $idA . "$" . "|" . "^" . $idP . "$";
+                }
+                elseif ($idP !== null)
+                {
+                    $id_clientes = "^" . $idP . "$";
+                }
+                elseif ($idA !== null)
+                {
+                    $id_clientes = "^" . $idA . "$";
                 }
                 $nombre_base = $row->numero_poliza;
+                $id_polizas  = $row->numero_poliza;
             }
+
+            // Siniestros asociados a la póliza
+            $query = "select numero_siniestro, id from siniestros where id_poliza=" . $id . " and COALESCE(estado,'') <> 'Eliminado'";
+            $resultado_sin = db_query($link, $query);
+            $ids_sin = array();
+            while ($row = db_fetch_object($resultado_sin))
+            {
+                $ids_sin[] = "^" . $row->id . "$";
+            }
+            if (count($ids_sin) > 0) { $id_siniestros = implode('|', $ids_sin); }
 
             $query = "select distinct b.numero_propuesta from polizas_2 as a left join propuesta_polizas as b on a.numero_propuesta=b.numero_propuesta where a.id=" . $id;
             $resultado_poliza = db_query($link, $query);
@@ -62,18 +83,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
             
         break;
         case 'propuesta':
-            $query = "select distinct a.numero_propuesta, b.id as idP, d.id as idA from propuesta_polizas as a left join clientes as b on a.rut_proponente=b.rut_sin_dv left join items as c on a.numero_propuesta=c.numero_propuesta left join clientes as d on c.rut_asegurado= d.rut_sin_dv where a.numero_propuesta='" . $id . "';";
+            $query = "select distinct a.numero_propuesta, b.id as \"idP\", d.id as \"idA\" from propuesta_polizas as a left join clientes as b on a.rut_proponente=b.rut_sin_dv left join items as c on a.numero_propuesta=c.numero_propuesta left join clientes as d on c.rut_asegurado= d.rut_sin_dv where a.numero_propuesta='" . $id . "';";
 
             $resultado_poliza = db_query($link, $query);
             while ($row = db_fetch_object($resultado_poliza))
             {
-                if ($row->idA == $row->idP)
+                $idA = $row->idA ?? null;
+                $idP = $row->idP ?? null;
+                if ($idA !== null && $idA == $idP)
                 {
-                    $id_clientes = "^" . $row->idA . "$";
+                    $id_clientes = "^" . $idA . "$";
                 }
-                else
+                elseif ($idA !== null && $idP !== null)
                 {
-                    $id_clientes = "^" . $row->idA . "$" . "|" . "^" . $row->idP . "$";
+                    $id_clientes = "^" . $idA . "$" . "|" . "^" . $idP . "$";
+                }
+                elseif ($idP !== null)
+                {
+                    $id_clientes = "^" . $idP . "$";
+                }
+                elseif ($idA !== null)
+                {
+                    $id_clientes = "^" . $idA . "$";
                 }
                 $nombre_base = $row->numero_propuesta;
             }
@@ -228,6 +259,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
                 <a class="nav-item nav-link" id="tarea_rec" data-toggle="tab" href="#nav-tarea_rec" role="tab" aria-controls="nav-tarea_rec" aria-selected="false" style="color: grey;border-color:#dee2e6" onclick="cambiacolor(this.id)">Tarea Recurrente</a>
                 <a class="nav-item nav-link" id="propuestas" data-toggle="tab" href="#nav-propuestas" role="tab" aria-controls="nav-propuestas" aria-selected="false" style="color: grey;border-color:#dee2e6" onclick="cambiacolor(this.id)">Propuestas póliza</a>
                 <a class="nav-item nav-link" id="propuestas_endosos" data-toggle="tab" href="#nav-propuestas_endosos" role="tab" aria-controls="nav-propuestas_endosos" aria-selected="false" style="color: grey;border-color:#dee2e6" onclick="cambiacolor(this.id)">Propuestas endosos</a>
+                <a class="nav-item nav-link" id="siniestros" data-toggle="tab" href="#nav-siniestros" role="tab" aria-controls="nav-siniestros" aria-selected="false" style="color: grey;border-color:#dee2e6" onclick="cambiacolor(this.id)">Siniestros</a>
 
             </div>
         </nav>
@@ -401,7 +433,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
                                     <th>Inicio Vigencia</th>
                                     <th>Fin Vigencia</th>
                                 </tr>
-                
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="nav-siniestros" role="tabpanel" aria-labelledby="nav-siniestros-tab">
+                    <div class="card">
+                        <div class="card-body">
+                            <br><br>
+                            <table class="display" style="width:100%" id="listado_siniestros_resumen">
+                                <tr>
+                                    <th></th>
+                                    <th>Estado</th>
+                                    <th>N° Siniestro</th>
+                                    <th>N° Póliza</th>
+                                    <th>Fecha Ocurrencia</th>
+                                    <th>Ramo</th>
+                                    <th>Tipo Siniestro</th>
+                                    <th>Ítems</th>
+                                    <th>Cliente</th>
+                                    <th>Compañía</th>
+                                    <th>id</th>
+                                </tr>
                             </table>
                         </div>
                     </div>
@@ -420,6 +474,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
                 <input id="var5_propuesta" value="<?php echo htmlspecialchars($propuestas);?>">
                 <input id="var6_endoso" value="<?php echo htmlspecialchars($endosos);?>">
                 <input id="var7_propuesta_endoso" value="<?php echo htmlspecialchars($propuestas_endosos);?>">
+                <input id="var8_siniestro" value="<?php echo htmlspecialchars($id_siniestros);?>">
             </div>
         </div>
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
@@ -464,7 +519,10 @@ function cambiacolor(id) {
     document.getElementById("propuestas_endosos").style.backgroundColor = "white"
     document.getElementById("propuestas_endosos").style.color = "grey"
     document.getElementById("propuestas_endosos").style.borderColor = "#dee2e6"
-    
+    document.getElementById("siniestros").style.backgroundColor = "white"
+    document.getElementById("siniestros").style.color = "grey"
+    document.getElementById("siniestros").style.borderColor = "#dee2e6"
+
     document.getElementById(id).style.backgroundColor = "#536656"
     document.getElementById(id).style.color = "white"
 }
@@ -1490,7 +1548,61 @@ $(document).ready(function() {
     $('#listado_propuesta_endosos').dataTable().fnFilter(document.getElementById("var1").value);
  
     // fin propuesta endosos
-    
+
+    // inicio siniestros
+    var table_siniestros = $('#listado_siniestros_resumen').DataTable({
+        "ajax": "/bamboo/backend/siniestros/busqueda_listado_siniestros.php",
+        "initComplete": function(settings, json) {
+            document.getElementById("siniestros").innerHTML = "Siniestros (" + $('#listado_siniestros_resumen').DataTable().page.info().recordsDisplay + ")";
+        },
+        "columns": [
+            { "className": 'details-control', "orderable": false, "data": null, "defaultContent": '<i class="fas fa-search-plus"></i>' },
+            { "data": "estado" },
+            { "data": "numero_siniestro" },
+            { "data": "numero_poliza" },
+            { "data": "fecha_ocurrencia" },
+            { "data": "ramo" },
+            { "data": "tipo_siniestro" },
+            { "data": "items_afectados", defaultContent: "" },
+            { "data": "nom_cliente" },
+            { "data": "compania" },
+            { "data": "id_siniestro" }
+        ],
+        "columnDefs": [
+            { "targets": [10], "visible": false },
+            { targets: 1, render: function(data, type, row) {
+                var est = '';
+                switch (data) {
+                    case 'Abierto':          est = '<span class="badge badge-primary">'+data+'</span>'; break;
+                    case 'Número pendiente': est = '<span class="badge badge-info">'+data+'</span>'; break;
+                    case 'En proceso':       est = '<span class="badge badge-warning">'+data+'</span>'; break;
+                    case 'Cerrado':          est = '<span class="badge badge-secondary">'+data+'</span>'; break;
+                    case 'Rechazado':        est = '<span class="badge badge-danger">'+data+'</span>'; break;
+                    default:                 est = '<span class="badge badge-light">'+data+'</span>';
+                }
+                if (row.presentado === false || row.presentado === 'f' || row.presentado === 0 || row.presentado === '0') {
+                    est += ' <span class="badge badge-dark">No presentado</span>';
+                }
+                return est;
+            }},
+            { targets: 4, render: function(data) {
+                if (!data || data == "0000-00-00") return '';
+                return moment(data).format('YYYY/MM/DD');
+            }}
+        ],
+        "order": [[4, "desc"]],
+        "oLanguage": {
+            "sSearch": "Búsqueda rápida",
+            "sZeroRecords": "Se están cargando los registros. Espera unos segundos más.",
+            "sInfo": "Mostrando página _PAGE_ de _PAGES_",
+            "sInfoEmpty": "No hay registros disponibles",
+            "sInfoFiltered": "(Resultado búsqueda: _TOTAL_ de _MAX_ registros totales)",
+            "oPaginate": { "sNext": "Siguiente", "sPrevious": "Anterior", "sLast": "Última" }
+        }
+    });
+    $('#listado_siniestros_resumen').dataTable().fnFilter(document.getElementById("var1").value);
+    // fin siniestros
+
 switch (document.getElementById("aux_base").value) {
         case 'propuesta_endoso': {
             document.getElementById("titulo").innerHTML = " Resumen / Búsqueda asociada a Propuesta Endoso número: ".concat("<b>" + document.getElementById("var4_titulo").value + "</b>");
@@ -1509,6 +1621,7 @@ switch (document.getElementById("aux_base").value) {
                 //endosos
                 table_endosos.column(1).search(document.getElementById("var6_endoso").value, true).draw();
                 table_propuestas_endosos.column(2).search(document.getElementById("var4_titulo").value, true).draw();
+                table_siniestros.column(10).search("busqueda dummy").draw();
                 break;
         }
         case 'endoso': {
@@ -1528,6 +1641,7 @@ switch (document.getElementById("aux_base").value) {
                 //endosos
             table_endosos.column(1).search(document.getElementById("var4_titulo").value, true).draw();
             table_propuestas_endosos.column(2).search(document.getElementById("var7_propuesta_endoso").value, true).draw();
+            table_siniestros.column(10).search("busqueda dummy").draw();
                 break;
         }
         case 'cliente': {
@@ -1539,6 +1653,7 @@ switch (document.getElementById("aux_base").value) {
             table_propuesta_poliza.search(document.getElementById("var5_propuesta").value.replaceAll('$', '_').replaceAll('^', '_'), true).draw()
             table_tareas.search(document.getElementById("var3_poliza").value.replaceAll('$', '_').replaceAll('^', '_'), true).draw();
             table_tareas_recurrentes.search(document.getElementById("var3_poliza").value, true).draw();
+            table_siniestros.column(10).search("busqueda dummy").draw();
             break;
         }
         case 'poliza': {
@@ -1558,6 +1673,8 @@ switch (document.getElementById("aux_base").value) {
             //endosos
             table_endosos.column(4).search(document.getElementById("var4_titulo").value, true).draw();
             table_propuestas_endosos.column(4).search(document.getElementById("var4_titulo").value, true).draw();
+            //siniestros (filtra por N° póliza = var4_titulo)
+            table_siniestros.column(3).search(document.getElementById("var4_titulo").value, true).draw();
             break;
         }
         case 'propuesta': {
@@ -1577,6 +1694,7 @@ switch (document.getElementById("aux_base").value) {
                         //endosos
             table_endosos.column(4).search("busqueda", true).draw();
             table_propuestas_endosos.column(4).search("busqueda", true).draw();
+            table_siniestros.column(10).search("busqueda dummy").draw();
             break;
         }
         case 'tarea': {
@@ -1594,6 +1712,7 @@ switch (document.getElementById("aux_base").value) {
             table_tareas_recurrentes.column(9).search("busqueda dummy").draw();
             table_endosos.column(4).search("busqueda", true).draw();
             table_propuestas_endosos.column(4).search("busqueda", true).draw();
+            table_siniestros.column(10).search("busqueda dummy").draw();
             break;
         }
         case 'tarea recurrente': {
@@ -1612,6 +1731,7 @@ switch (document.getElementById("aux_base").value) {
             table_tareas_recurrentes.column(1).search(document.getElementById("aux_id").value, true).draw();
             table_endosos.column(4).search("busqueda", true).draw();
             table_propuestas_endosos.column(4).search("busqueda", true).draw();
+            table_siniestros.column(10).search("busqueda dummy").draw();
             break;
         }
         case 'header': {
