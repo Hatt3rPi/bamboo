@@ -112,14 +112,15 @@ switch ($accion) {
                     )";
         db_query($link, $query);
 
-        // Obtener ID generado para armar número de siniestro legible y asociar ítems
+        // Obtener ID generado y definir término de búsqueda post-redirect.
+        // Si tiene N° compañía, filtramos por ese. Si no, por N° póliza para que
+        // el listado muestre el siniestro recién creado (numero_siniestro vacío
+        // no es filtrable directamente).
         $id_nuevo = 0;
         $res = db_query($link, "SELECT id, numero_siniestro FROM siniestros WHERE token='$token'");
         while ($fila = db_fetch_object($res)) {
             $id_nuevo = $fila->id;
-            $busqueda = $fila->numero_siniestro
-                ? $fila->numero_siniestro
-                : 'S' . str_pad($fila->id, 6, '0', STR_PAD_LEFT);
+            $busqueda = $fila->numero_siniestro ? $fila->numero_siniestro : $numero_poliza;
         }
 
         // Insertar ítems asociados + datos de vehículo por ítem
