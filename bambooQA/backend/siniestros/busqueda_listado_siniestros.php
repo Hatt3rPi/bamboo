@@ -22,14 +22,22 @@ $sql = "SELECT s.id, s.numero_siniestro, s.numero_poliza, s.ramo, s.tipo_siniest
     c.telefono as \"tel_cliente\", c.correo as \"correo_cliente\",
     p.compania,
     si.items_afectados,
-    si.patentes_items
+    si.patentes_items,
+    si.vehiculos_json
 FROM siniestros s
 LEFT JOIN clientes c ON s.rut_asegurado = c.rut_sin_dv AND c.rut_sin_dv IS NOT NULL
 LEFT JOIN polizas_2 p ON s.id_poliza = p.id
 LEFT JOIN (
     SELECT id_siniestro,
            string_agg(numero_item::text, ', ' ORDER BY numero_item) as items_afectados,
-           string_agg(NULLIF(patente, ''), ', ' ORDER BY numero_item) as patentes_items
+           string_agg(NULLIF(patente, ''), ', ' ORDER BY numero_item) as patentes_items,
+           json_agg(json_build_object(
+               'numero_item', numero_item,
+               'patente', COALESCE(patente, ''),
+               'marca', COALESCE(marca, ''),
+               'modelo', COALESCE(modelo, ''),
+               'anio_vehiculo', anio_vehiculo
+           ) ORDER BY numero_item) as vehiculos_json
     FROM siniestros_items GROUP BY id_siniestro
 ) si ON si.id_siniestro = s.id
 WHERE COALESCE(s.estado, '') <> 'Eliminado'
@@ -59,6 +67,7 @@ while ($row = db_fetch_object($resultado)) {
         "liquidador_correo"    => $row->liquidador_correo,
         "numero_carpeta_liquidador" => $row->numero_carpeta_liquidador,
         "items_afectados"      => $row->items_afectados,
+        "vehiculos"            => $row->vehiculos_json ? json_decode($row->vehiculos_json, true) : array(),
         "patente"              => $row->patentes_items ?: $row->patente,
         "marca"                => $row->marca,
         "modelo"               => $row->modelo,

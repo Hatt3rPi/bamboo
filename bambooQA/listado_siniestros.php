@@ -269,28 +269,28 @@ function format_siniestro(d) {
     // `d` is the original data object for the row
 
     var seccion_vehiculo = '';
-    if (d.patente) {
+    if (d.vehiculos && d.vehiculos.length > 0) {
+        var filas_veh = '';
+        for (var vi = 0; vi < d.vehiculos.length; vi++) {
+            var v = d.vehiculos[vi];
+            filas_veh +=
+                '<tr>' +
+                    '<td>Ítem ' + v.numero_item + '</td>' +
+                    '<td>' + (v.patente || '') + '</td>' +
+                    '<td>' + (v.marca || '') + '</td>' +
+                    '<td>' + (v.modelo || '') + '</td>' +
+                    '<td>' + (v.anio_vehiculo || '') + '</td>' +
+                '</tr>';
+        }
         seccion_vehiculo =
             '<tr>' +
-                '<td VALIGN=TOP>Vehículo: </td>' +
+                '<td VALIGN=TOP>Vehículos: </td>' +
                 '<td>' +
                     '<table class="table table-striped" style="width:100%">' +
-                        '<tr>' +
-                            '<td>Patente:</td>' +
-                            '<td>' + (d.patente || '') + '</td>' +
-                        '</tr>' +
-                        '<tr>' +
-                            '<td>Marca:</td>' +
-                            '<td>' + (d.marca || '') + '</td>' +
-                        '</tr>' +
-                        '<tr>' +
-                            '<td>Modelo:</td>' +
-                            '<td>' + (d.modelo || '') + '</td>' +
-                        '</tr>' +
-                        '<tr>' +
-                            '<td>Año:</td>' +
-                            '<td>' + (d.anio_vehiculo || '') + '</td>' +
-                        '</tr>' +
+                        '<thead><tr>' +
+                            '<th>Ítem</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th>' +
+                        '</tr></thead>' +
+                        '<tbody>' + filas_veh + '</tbody>' +
                     '</table>' +
                 '</td>' +
             '</tr>';
