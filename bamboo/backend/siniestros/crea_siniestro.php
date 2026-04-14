@@ -159,11 +159,13 @@ switch ($accion) {
             $estado_anterior = $row->estado;
         }
 
+        // NULLIF(...,'')::tipo evita el literal '= NULL' que sql_translate
+        // reemplaza por 'IS NULL' y rompería el UPDATE SET.
         $query = "UPDATE siniestros SET
                         numero_siniestro          = '$numero_siniestro',
                         tipo_siniestro            = '$tipo_siniestro',
-                        fecha_ocurrencia          = " . ($fecha_ocurrencia ? "'$fecha_ocurrencia'" : "NULL") . ",
-                        fecha_denuncia            = " . ($fecha_denuncia   ? "'$fecha_denuncia'"   : "NULL") . ",
+                        fecha_ocurrencia          = NULLIF('$fecha_ocurrencia', '')::date,
+                        fecha_denuncia            = NULLIF('$fecha_denuncia', '')::date,
                         nombre_asegurado          = '$nombre_asegurado',
                         telefono_asegurado        = '$telefono_asegurado',
                         correo_asegurado          = '$correo_asegurado',
@@ -175,7 +177,7 @@ switch ($accion) {
                         patente                   = '$patente',
                         marca                     = '$marca',
                         modelo                    = '$modelo',
-                        anio_vehiculo             = " . ($anio_vehiculo ? "'$anio_vehiculo'" : "NULL") . ",
+                        anio_vehiculo             = NULLIF('$anio_vehiculo', '')::integer,
                         taller_nombre             = '$taller_nombre',
                         taller_telefono           = '$taller_telefono',
                         estado                    = '$estado',
