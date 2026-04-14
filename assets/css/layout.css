@@ -1,0 +1,8 @@
+/* Override de max-width de Bootstrap 4 .container para aprovechar pantallas anchas.
+   Default de Bootstrap en ≥1200px es 1140px — desperdicia espacio en monitores FHD+. */
+@media (min-width: 1200px) {
+  .container { max-width: 1500px; }
+}
+@media (min-width: 1600px) {
+  .container { max-width: 1800px; }
+}
