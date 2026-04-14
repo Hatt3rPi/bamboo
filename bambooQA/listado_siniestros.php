@@ -67,6 +67,7 @@ $buscar= estandariza_info($_POST["busqueda"]);
                     <th>Fecha Ocurrencia</th>
                     <th>Ramo</th>
                     <th>Tipo Siniestro</th>
+                    <th>Ítems</th>
                     <th>Cliente</th>
                     <th>Liquidador</th>
                     <th>Patente</th>
@@ -143,21 +144,26 @@ $(document).ready(function() {
                 title: "Tipo Siniestro"
             }, //6
             {
+                "data": "items_afectados",
+                title: "Ítems",
+                defaultContent: ""
+            }, //7
+            {
                 "data": "nom_cliente",
                 title: "Cliente"
-            }, //7
+            }, //8
             {
                 "data": "liquidador_nombre",
                 title: "Liquidador"
-            }, //8
+            }, //9
             {
                 "data": "patente",
                 title: "Patente"
-            }, //9
+            }, //10
             {
                 "data": "compania",
                 title: "Compañía"
-            } //10
+            } //11
         ],
         "columnDefs": [
             {
@@ -168,18 +174,25 @@ $(document).ready(function() {
                         case 'Abierto':
                             estado = '<span class="badge badge-primary">' + data + '</span>';
                             break;
-                        case 'En Proceso':
+                        case 'Número pendiente':
+                            estado = '<span class="badge badge-info">' + data + '</span>';
+                            break;
+                        case 'En proceso':
                             estado = '<span class="badge badge-warning">' + data + '</span>';
                             break;
                         case 'Cerrado':
                             estado = '<span class="badge badge-secondary">' + data + '</span>';
                             break;
-                        case 'No Presentado':
-                            estado = '<span class="badge badge-dark">' + data + '</span>';
+                        case 'Rechazado':
+                            estado = '<span class="badge badge-danger">' + data + '</span>';
                             break;
                         default:
                             estado = '<span class="badge badge-light">' + data + '</span>';
                             break;
+                    }
+                    // Badge extra si siniestro no fue presentado
+                    if (row.presentado === false || row.presentado === 'f' || row.presentado === 0 || row.presentado === '0') {
+                        estado += ' <span class="badge badge-dark">No presentado</span>';
                     }
                     return estado;
                 }
@@ -372,7 +385,7 @@ function botones(id, accion) {
         case "editar_siniestro": {
             $.redirect('/bambooQA/creacion_siniestro.php', {
                 'id_siniestro': id,
-                'accion': accion
+                'accion': 'modifica_siniestro'
             }, 'post');
             break;
         }

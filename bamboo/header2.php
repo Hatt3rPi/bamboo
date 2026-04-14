@@ -161,7 +161,6 @@ function retrocede()
                     <li class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownSiniestros"
                             role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Siniestros</a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownSiniestros">
-                            <a class="dropdown-item" href="/bamboo/creacion_siniestro.php">Creación</a>
                             <a class="dropdown-item" href="/bamboo/listado_siniestros.php">Listado de siniestros</a>
                         </div>
                     </li>

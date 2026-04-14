@@ -13,16 +13,23 @@ $sql = "SELECT s.id, s.numero_siniestro, s.numero_poliza, s.ramo, s.tipo_siniest
     s.nombre_asegurado, s.rut_asegurado, s.dv_asegurado,
     s.telefono_asegurado, s.correo_asegurado,
     s.descripcion, s.liquidador_nombre, s.liquidador_telefono, s.liquidador_correo,
+    s.numero_carpeta_liquidador,
     s.patente, s.marca, s.modelo, s.anio_vehiculo,
     s.taller_nombre, s.taller_telefono,
     s.fecha_ingreso,
     CONCAT_WS(' ', c.nombre_cliente, c.apellido_paterno, c.apellido_materno) as \"nom_cliente\",
     CONCAT_WS('-', c.rut_sin_dv, c.dv) as \"rut_cliente\",
     c.telefono as \"tel_cliente\", c.correo as \"correo_cliente\",
-    p.compania
+    p.compania,
+    si.items_afectados
 FROM siniestros s
 LEFT JOIN clientes c ON s.rut_asegurado = c.rut_sin_dv AND c.rut_sin_dv IS NOT NULL
 LEFT JOIN polizas_2 p ON s.id_poliza = p.id
+LEFT JOIN (
+    SELECT id_siniestro, string_agg(numero_item::text, ', ' ORDER BY numero_item) as items_afectados
+    FROM siniestros_items GROUP BY id_siniestro
+) si ON si.id_siniestro = s.id
+WHERE COALESCE(s.estado, '') <> 'Eliminado'
 ORDER BY s.fecha_ingreso DESC";
 
 $resultado = db_query($link, $sql);
@@ -47,6 +54,8 @@ while ($row = db_fetch_object($resultado)) {
         "liquidador_nombre"    => $row->liquidador_nombre,
         "liquidador_telefono"  => $row->liquidador_telefono,
         "liquidador_correo"    => $row->liquidador_correo,
+        "numero_carpeta_liquidador" => $row->numero_carpeta_liquidador,
+        "items_afectados"      => $row->items_afectados,
         "patente"              => $row->patente,
         "marca"                => $row->marca,
         "modelo"               => $row->modelo,

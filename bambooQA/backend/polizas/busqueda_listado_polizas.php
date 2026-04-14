@@ -67,7 +67,31 @@ while ($erow = db_fetch_object($endosos_result)) {
     $endosos_map[$erow->id_poliza] = $erow;
 }
 
-// Query 3: Polizas principales
+// Query 3: Siniestros agrupados por poliza (con ítems afectados)
+$siniestros_sql = "SELECT s.id_poliza,
+    COUNT(*) as total_siniestros,
+    json_agg(json_build_object(
+        'id_siniestro', s.id::text,
+        'numero_siniestro', COALESCE(s.numero_siniestro, ''),
+        'estado', s.estado,
+        'fecha_ocurrencia', s.fecha_ocurrencia::text,
+        'tipo_siniestro', COALESCE(s.tipo_siniestro, ''),
+        'presentado', s.presentado,
+        'items_afectados', COALESCE((
+            SELECT string_agg(si.numero_item::text, ', ' ORDER BY si.numero_item)
+            FROM siniestros_items si WHERE si.id_siniestro = s.id
+        ), '')
+    ) ORDER BY s.fecha_ocurrencia DESC NULLS LAST) as siniestros_json
+    FROM siniestros s
+    WHERE COALESCE(s.estado, '') <> 'Eliminado'
+    GROUP BY s.id_poliza";
+$siniestros_result = db_query($link, $siniestros_sql);
+$siniestros_map = array();
+while ($srow = db_fetch_object($siniestros_result)) {
+    $siniestros_map[$srow->id_poliza] = $srow;
+}
+
+// Query 4: Polizas principales
 $sql = "SELECT a.numero_poliza, a.estado, a.tipo_propuesta, a.moneda_poliza,
     a.vigencia_inicial, a.vigencia_final, a.compania, a.ramo,
     DATE_FORMAT(a.vigencia_final, '%m-%Y') as anomes_final,
@@ -102,6 +126,11 @@ while ($row = db_fetch_object($resultado)) {
     $endosos = $has_endosos ? json_decode($endosos_map[$ip]->endosos_json, true) : array();
     $nro_endosos = $has_endosos ? $endosos_map[$ip]->nro_endosos : 0;
 
+    // Siniestros desde el mapa pre-cargado
+    $has_siniestros = isset($siniestros_map[$ip]);
+    $siniestros = $has_siniestros ? json_decode($siniestros_map[$ip]->siniestros_json, true) : array();
+    $total_siniestros = $has_siniestros ? $siniestros_map[$ip]->total_siniestros : 0;
+
     $data[] = array(
         "numero_poliza" => $row->numero_poliza,
         "estado" => $row->estado,
@@ -131,7 +160,9 @@ while ($row = db_fetch_object($resultado)) {
         "fecha_cancelacion" => $row->fech_cancela,
         "motivo_cancelacion" => $row->motivo_cancela,
         "consolidado_patentes" => $consolidado,
-        "total_items" => $total_items
+        "total_items" => $total_items,
+        "siniestros" => $siniestros,
+        "total_siniestros" => $total_siniestros
     );
 }
 

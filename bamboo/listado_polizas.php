@@ -83,8 +83,29 @@ $buscar= estandariza_info($_POST["busqueda"]);
             </div>
 
         <div id="auxiliar" style="display: none;">
-            <input id="var1" value="<?php 
+            <input id="var1" value="<?php
         echo htmlspecialchars($buscar);?>">
+        </div>
+
+        <!-- Modal selección múltiple de ítems para siniestro -->
+        <div class="modal fade" id="modal_seleccion_items" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Seleccionar ítems afectados</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+              </div>
+              <div class="modal-body">
+                <p>Marque los ítems afectados por el siniestro:</p>
+                <div id="lista_items_modal"></div>
+                <input type="hidden" id="modal_poliza_id" value="">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="confirmarSeleccionItems()">Continuar</button>
+              </div>
+            </div>
+          </div>
         </div>
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
@@ -305,6 +326,7 @@ function format_poliza(d) {
         '<button title="Editar Póliza"  type="button" id="' + d.numero_poliza + '" name="modifica_poliza" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-edit"></i></button><a> </a>' +
         '<button title="Renovar póliza" type="button" id="' + d.numero_poliza + '" name="renovar" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-redo"></i></button><a> - </a>' +
         '<button title="Asignar tarea"  type="button" id=' + d.id_poliza +' name="tarea" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-clipboard-list"></i></button><a> </a>' +
+        '<button title="Registrar siniestro" type="button" id="' + d.id_poliza + '" name="registrar_siniestro" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-file-medical"></i></button><a> </a>' +
         '<button title="WIP Generar correo"  type="button"' + 'id='+ d.id_poliza + ' name="correo" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-envelope-open-text"></i></button><a> - </a>' +
         '<button title="Generar propuesta de endoso"  type="button"' + 'id='+ d.id_poliza + ' name="crea_propuesta_endoso" onclick="botones(this.id, this.name, \'poliza\')"><i>E</i></button><a> - </a>' +
         '<button style="background-color: #FF0000" title="Rehabilitar póliza"  type="button" id=' + d.id_poliza + ' name="reactivar_poliza" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-sync"></i></button>';
@@ -313,6 +335,7 @@ function format_poliza(d) {
         '<button title="Editar Póliza"  type="button" id="' + d.numero_poliza + '" name="modifica_poliza" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-edit"></i></button><a> </a>' +
         '<button title="Renovar póliza" type="button" id="' + d.numero_poliza + '" name="renovar" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-redo"></i></button><a> - </a>' +
         '<button title="Asignar tarea"  type="button" id=' + d.id_poliza +' name="tarea" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-clipboard-list"></i></button><a> </a>' +
+        '<button title="Registrar siniestro" type="button" id="' + d.id_poliza + '" name="registrar_siniestro" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-file-medical"></i></button><a> </a>' +
         '<button title="WIP Generar correo"  type="button"' + 'id='+ d.id_poliza + ' name="correo" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-envelope-open-text"></i></button><a> - </a>' +
         '<button title="Generar propuesta de endoso"  type="button"' + 'id='+ d.id_poliza + ' name="crea_propuesta_endoso" onclick="botones(this.id, this.name, \'poliza\')"><i>E</i></button><a> - </a>' +
         '<button style="background-color: #FF0000" title="Cancelar póliza"  type="button" id=' + d.id_poliza + ' name="cancelar_poliza" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-backspace"></i></button><a> </a>' +
@@ -414,51 +437,73 @@ function format_poliza(d) {
             '</table>' ;
 
     }
-    return '<table background-color:#F6F6F6; color:#FFF; cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
-
+    return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;background-color:#F6F6F6;">' +
+        ext_cancelado +
         '<tr>' +
-        ext_cancelado + 
             '<td VALIGN=TOP>Primas: </td>' +
-            '<td>'+
-                '<table class="table table-striped" style="width:100%">'+
-                    '<tr>' +
-                        '<td>Total Prima afecta:</td>' +
-                        '<td>' + d.total_prima_afecta + '</td>' +
-                    '</tr>' +
-                    '<tr>' +
-                        '<td>Total Prima exenta:</td>' +
-                        '<td>' + d.total_prima_exenta + '</td>' +
-                    '</tr>' +
-                    '<tr>' +
-                        '<td>Total Prima neta anual:</td>' +
-                        '<td>' + d.total_prima_neta + '</td>' +
-                    '</tr>' +
-                    '<tr>' +
-                        '<td>Total Prima bruta anual:</td>' +
-                        '<td>' + d.total_prima_bruta + '</td>' +
-                    '</tr>' +
-                '</table>'+
+            '<td>' +
+                '<table class="table table-striped" style="width:100%">' +
+                    '<tr><td>Total Prima afecta:</td><td>' + d.total_prima_afecta + '</td></tr>' +
+                    '<tr><td>Total Prima exenta:</td><td>' + d.total_prima_exenta + '</td></tr>' +
+                    '<tr><td>Total Prima neta anual:</td><td>' + d.total_prima_neta + '</td></tr>' +
+                    '<tr><td>Total Prima bruta anual:</td><td>' + d.total_prima_bruta + '</td></tr>' +
+                '</table>' +
             '</td>' +
         '</tr>' +
-        '<tr>' +
-        '<td></td>' +
-        '<td></td>' +
-        '<tr>' +
         '<tr>' +
             '<td VALIGN=TOP>Ítems: </td>' +
             '<td>' + items + '</td>' +
         '</tr>' +
-         '<tr>' +
-        '<td></td>' +
-        '<td></td>' +
-        '<tr>' + endosos +      
+        endosos +
         '<tr>' +
-        '<td VALIGN=TOP>Acciones: </td>' +
-        '<td>' +
-        botones +
-        '</td>' +
+            '<td VALIGN=TOP>Siniestros: </td>' +
+            '<td>' + siniestros_html(d) + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td VALIGN=TOP>Acciones: </td>' +
+            '<td>' + botones + '</td>' +
         '</tr>' +
         '</table>';
+}
+
+function badge_estado_siniestro(estado) {
+    switch (estado) {
+        case 'Abierto':         return '<span class="badge badge-primary">' + estado + '</span>';
+        case 'Número pendiente':return '<span class="badge badge-info">' + estado + '</span>';
+        case 'En proceso':      return '<span class="badge badge-warning">' + estado + '</span>';
+        case 'Cerrado':         return '<span class="badge badge-secondary">' + estado + '</span>';
+        case 'Rechazado':       return '<span class="badge badge-danger">' + estado + '</span>';
+        default:                return '<span class="badge badge-light">' + (estado || '') + '</span>';
+    }
+}
+
+function siniestros_html(d) {
+    if (!d.total_siniestros || d.total_siniestros == '0' || !d.siniestros || d.siniestros.length === 0) {
+        return '<em>Sin siniestros registrados</em>';
+    }
+    var filas = '';
+    for (var i = 0; i < d.siniestros.length; i++) {
+        var s = d.siniestros[i];
+        var no_pres = (s.presentado === false || s.presentado === 'f' || s.presentado === 0) ?
+            ' <span class="badge badge-dark">No presentado</span>' : '';
+        filas += '<tr>' +
+            '<td>' + (s.numero_siniestro || '—') + '</td>' +
+            '<td>' + badge_estado_siniestro(s.estado) + no_pres + '</td>' +
+            '<td>' + (s.fecha_ocurrencia || '') + '</td>' +
+            '<td>' + (s.tipo_siniestro || '') + '</td>' +
+            '<td>' + (s.items_afectados || '') + '</td>' +
+            '<td><button title="Editar siniestro" type="button" id="' + s.id_siniestro + '" name="editar_siniestro_poliza" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-edit"></i></button></td>' +
+            '</tr>';
+    }
+    return '<table class="table table-striped table-sm" style="width:100%">' +
+        '<thead><tr>' +
+        '<th>N° Siniestro</th>' +
+        '<th>Estado</th>' +
+        '<th>Fecha Ocurrencia</th>' +
+        '<th>Tipo</th>' +
+        '<th>Ítems afectados</th>' +
+        '<th></th>' +
+        '</tr></thead><tbody>' + filas + '</tbody></table>';
 }
 function estandariza_fecha(fecha){
     let partes = (fecha || '').split('/'), fechaGenerada = (partes[2] + '-' + partes[1] + '-' + partes[0]);
@@ -595,6 +640,55 @@ function botones(id, accion, base) {
                 }, 'post');
             break;
         }
+        case "registrar_siniestro": {
+            // id aquí corresponde a id_poliza; buscar fila en DataTable para conocer ítems
+            var fila = null;
+            table.rows().every(function() {
+                var d = this.data();
+                if (String(d.id_poliza) === String(id)) {
+                    fila = d;
+                    return false;
+                }
+            });
+            if (!fila) {
+                alert('No se encontró la póliza seleccionada.');
+                break;
+            }
+            if (!fila.total_items || fila.total_items == '0' || !fila.items || fila.items.length === 0) {
+                alert('La póliza no tiene ítems registrados. No es posible crear un siniestro.');
+                break;
+            }
+            if (fila.items.length === 1) {
+                // Redirect directo con único ítem
+                $.redirect('/bamboo/creacion_siniestro.php', {
+                    'id_poliza': fila.id_poliza,
+                    'items_seleccionados': String(fila.items[0].numero_item)
+                }, 'post');
+            } else {
+                // Abrir modal de selección múltiple
+                var html = '';
+                $.each(fila.items, function(i, it) {
+                    var label = 'Ítem ' + it.numero_item;
+                    if (it.materia_asegurada) label += ' — ' + String(it.materia_asegurada).substring(0, 80);
+                    if (it.patente_ubicacion) label += ' (' + it.patente_ubicacion + ')';
+                    html += '<div class="form-check">' +
+                            '<input class="form-check-input chk_item_poliza" type="checkbox" value="' + it.numero_item + '" id="chk_item_poliza_' + it.numero_item + '">' +
+                            '<label class="form-check-label" for="chk_item_poliza_' + it.numero_item + '">' + label + '</label>' +
+                            '</div>';
+                });
+                $('#lista_items_modal').html(html);
+                $('#modal_poliza_id').val(fila.id_poliza);
+                $('#modal_seleccion_items').modal('show');
+            }
+            break;
+        }
+        case "editar_siniestro_poliza": {
+            $.redirect('/bamboo/creacion_siniestro.php', {
+                'id_siniestro': id,
+                'accion': 'modifica_siniestro'
+            }, 'post');
+            break;
+        }
         case "renovar":{
             var motivo = window.prompt('Ingresa la vía por donde quieres renovar esta póliza:\r\n 1) Vía Propuesta WEB\r\n 2) Vía Propuesta tradicional', 'digita 1 o 2');
             switch (motivo){
@@ -621,8 +715,25 @@ function botones(id, accion, base) {
         }
     }
 }
+function confirmarSeleccionItems() {
+    var id_poliza = $('#modal_poliza_id').val();
+    var seleccionados = [];
+    $('.chk_item_poliza:checked').each(function() {
+        seleccionados.push($(this).val());
+    });
+    if (seleccionados.length === 0) {
+        alert('Debe seleccionar al menos un ítem.');
+        return;
+    }
+    $('#modal_seleccion_items').modal('hide');
+    $.redirect('/bamboo/creacion_siniestro.php', {
+        'id_poliza': id_poliza,
+        'items_seleccionados': seleccionados.join(',')
+    }, 'post');
+}
+
 (function(){
- 
+
  function removeAccents ( data ) {
      if ( data.normalize ) {
          // Use I18n API if avaiable to split characters and accents, then remove
