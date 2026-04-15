@@ -20,7 +20,7 @@ $descripcion = '';
 $liquidador_nombre = $liquidador_telefono = $liquidador_correo = $numero_carpeta_liquidador = '';
 $patente = $marca = $modelo = $anio_vehiculo = '';
 $taller_nombre = $taller_telefono = '';
-$estado = 'Abierto';
+$estado = 'Número pendiente';
 $presentado = true;
 $compania = '';
 $id_siniestro = '';
@@ -111,6 +111,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["accion"]) && $_POST["a
     db_close($link);
 }
 if (!isset($vehiculos_pre)) $vehiculos_pre = array();
+
+// Defensa: si el ramo no es vehicular, limpiar datos de vehículo/taller
+// arrastrados desde BD (previene data leakage en edición y guardado inadvertido).
+$ramo_upper_php = strtoupper($ramo);
+$es_ramo_vehiculo_php = (strpos($ramo_upper_php, 'VEH') !== false || strpos($ramo_upper_php, 'AUTO') !== false);
+if (!$es_ramo_vehiculo_php) {
+    $vehiculos_pre = array();
+    $patente = $marca = $modelo = $anio_vehiculo = '';
+    $taller_nombre = $taller_telefono = '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -199,7 +209,7 @@ if (!isset($vehiculos_pre)) $vehiculos_pre = array();
         <label for="estado">Estado</label>
         <select class="form-control" id="estado" name="estado">
           <?php
-          $estados = ['Abierto', 'Número pendiente', 'En proceso', 'Cerrado', 'Rechazado'];
+          $estados = ['Número pendiente', 'Abierto', 'Cerrado', 'Rechazado'];
           foreach ($estados as $e) {
               $sel = ($estado == $e) ? 'selected' : '';
               echo "<option value=\"$e\" $sel>$e</option>";
@@ -385,6 +395,11 @@ function toggleVehiculo(ramo) {
     esRamoVehiculo = (ramo_upper.indexOf('VEH') !== -1 || ramo_upper.indexOf('AUTO') !== -1);
     document.getElementById('seccion_vehiculo').style.display = esRamoVehiculo ? 'block' : 'none';
     document.getElementById('seccion_taller').style.display   = esRamoVehiculo ? 'block' : 'none';
+    if (!esRamoVehiculo) {
+        vehiculosPre = {};
+        $('#contenedor_vehiculos').empty();
+        $('#taller_nombre, #taller_telefono').val('');
+    }
     renderVehiculos();
 }
 

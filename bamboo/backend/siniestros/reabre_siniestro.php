@@ -35,9 +35,9 @@ if ($id_siniestro === '' || $motivo === '') {
     } elseif ($estado_anterior !== 'Cerrado') {
         $mensaje = 'Solo se pueden reabrir siniestros en estado Cerrado.';
     } else {
-        db_query($link, "UPDATE siniestros SET estado = 'En proceso' WHERE id = '$id_siniestro'");
+        db_query($link, "UPDATE siniestros SET estado = 'Abierto' WHERE id = '$id_siniestro'");
         db_query($link, "INSERT INTO siniestros_bitacora (id_siniestro, estado_anterior, estado_nuevo, usuario, motivo)
-                         VALUES ('$id_siniestro', '$estado_anterior', 'En proceso', '$usuario', '$motivo')");
+                         VALUES ('$id_siniestro', '$estado_anterior', 'Abierto', '$usuario', '$motivo')");
         db_query($link, "SELECT trazabilidad('$usuario', 'Reapertura siniestro', 'Motivo: $motivo', 'siniestros', '$id_siniestro', '{$_SERVER['PHP_SELF']}')");
         $mensaje = 'Siniestro reabierto correctamente.';
         $ok = true;

@@ -38,7 +38,16 @@ $modelo                    = estandariza_info($_POST["modelo"]                  
 $anio_vehiculo             = estandariza_info($_POST["anio_vehiculo"]             ?? '');
 $taller_nombre             = estandariza_info($_POST["taller_nombre"]             ?? '');
 $taller_telefono           = estandariza_info($_POST["taller_telefono"]           ?? '');
-$estado                    = estandariza_info($_POST["estado"]                    ?? 'Abierto');
+$estado                    = estandariza_info($_POST["estado"]                    ?? 'Número pendiente');
+
+// Neutralizar campos vehículo si el ramo no es vehicular (defensa backend).
+$ramo_upper = strtoupper($ramo);
+$es_ramo_vehiculo = (strpos($ramo_upper, 'VEH') !== false || strpos($ramo_upper, 'AUTO') !== false);
+if (!$es_ramo_vehiculo) {
+    $patente = $marca = $modelo = $anio_vehiculo = '';
+    $taller_nombre = $taller_telefono = '';
+    $_POST['vehiculo_patente'] = $_POST['vehiculo_marca'] = $_POST['vehiculo_modelo'] = $_POST['vehiculo_anio'] = array();
+}
 $items_seleccionados       = estandariza_info($_POST["items_seleccionados"]       ?? '');
 
 $usuario = $_SESSION['username'] ?? '';
@@ -83,6 +92,14 @@ switch ($accion) {
     case 'crear_siniestro':
         $mensaje = 'Siniestro registrado correctamente';
         $token   = bin2hex(random_bytes(6));
+
+        // Auto-ajuste estado según N° compañía al momento de crear
+        if ($numero_siniestro === '') {
+            $estado = 'Número pendiente';
+        } elseif ($estado === 'Número pendiente') {
+            $estado = 'Abierto';
+        }
+
         $query   = "INSERT INTO siniestros (
                         numero_siniestro, id_poliza, numero_poliza, ramo,
                         tipo_siniestro, fecha_ocurrencia, fecha_denuncia,
@@ -157,6 +174,11 @@ switch ($accion) {
         $res = db_query($link, "SELECT estado FROM siniestros WHERE id = '$id'");
         while ($row = db_fetch_object($res)) {
             $estado_anterior = $row->estado;
+        }
+
+        // Auto-promoción: si seguía en 'Número pendiente' y ahora llega N° compañía, pasa a 'Abierto'
+        if ($estado_anterior === 'Número pendiente' && $numero_siniestro !== '' && $estado === 'Número pendiente') {
+            $estado = 'Abierto';
         }
 
         // NULLIF(...,'')::tipo evita el literal '= NULL' que sql_translate

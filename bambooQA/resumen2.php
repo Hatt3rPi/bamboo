@@ -1643,7 +1643,6 @@ $(document).ready(function() {
                 switch (data) {
                     case 'Abierto':          est = '<span class="badge badge-primary">'+data+'</span>'; break;
                     case 'Número pendiente': est = '<span class="badge badge-info">'+data+'</span>'; break;
-                    case 'En proceso':       est = '<span class="badge badge-warning">'+data+'</span>'; break;
                     case 'Cerrado':          est = '<span class="badge badge-secondary">'+data+'</span>'; break;
                     case 'Rechazado':        est = '<span class="badge badge-danger">'+data+'</span>'; break;
                     default:                 est = '<span class="badge badge-light">'+data+'</span>';

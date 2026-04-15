@@ -177,9 +177,6 @@ $(document).ready(function() {
                         case 'Número pendiente':
                             estado = '<span class="badge badge-info">' + data + '</span>';
                             break;
-                        case 'En proceso':
-                            estado = '<span class="badge badge-warning">' + data + '</span>';
-                            break;
                         case 'Cerrado':
                             estado = '<span class="badge badge-secondary">' + data + '</span>';
                             break;

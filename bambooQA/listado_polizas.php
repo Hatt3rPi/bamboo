@@ -470,7 +470,6 @@ function badge_estado_siniestro(estado) {
     switch (estado) {
         case 'Abierto':         return '<span class="badge badge-primary">' + estado + '</span>';
         case 'Número pendiente':return '<span class="badge badge-info">' + estado + '</span>';
-        case 'En proceso':      return '<span class="badge badge-warning">' + estado + '</span>';
         case 'Cerrado':         return '<span class="badge badge-secondary">' + estado + '</span>';
         case 'Rechazado':       return '<span class="badge badge-danger">' + estado + '</span>';
         default:                return '<span class="badge badge-light">' + (estado || '') + '</span>';
