@@ -13,13 +13,13 @@ if (!isset($_SESSION)) { session_start(); }
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 <link rel="stylesheet" href="/assets/css/datatables.min.css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
-<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
 <script src="https://kit.fontawesome.com/7011384382.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <div id="header"><?php include 'header2.php' ?></div>
+<!-- jQuery full (sobreescribe al slim que carga header2) y DataTables -->
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
 
 <div class="container">
   <p>Siniestros / Seguimiento bienes afectados</p>
