@@ -116,6 +116,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
                     $id_polizas = $row->id_poliza;
                 }
             }
+
+            // Siniestros asociados (sólo si la propuesta ya fue emitida como póliza)
+            if (is_numeric($id_polizas))
+            {
+                $query = "select id from siniestros where id_poliza = " . $id_polizas . " and COALESCE(estado,'') <> 'Eliminado'";
+                $resultado_sin = db_query($link, $query);
+                $ids_sin = array();
+                while ($row = db_fetch_object($resultado_sin))
+                {
+                    $ids_sin[] = "^" . $row->id . "$";
+                }
+                if (count($ids_sin) > 0) { $id_siniestros = implode('|', $ids_sin); }
+            }
         break;
         case 'cliente':
             $query = "SELECT nombre_cliente FROM clientes where id=" . $id;
@@ -126,6 +139,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
             }
             $propuestas=$nombre_base;
             $id_polizas=$nombre_base;
+
+            // Siniestros asociados al cliente (como proponente o asegurado en items)
+            $query = "select distinct si.id from siniestros si "
+                   . "join polizas_2 p on si.id_poliza = p.id "
+                   . "left join clientes bp on p.rut_proponente = bp.rut_sin_dv "
+                   . "left join items i on p.numero_poliza = i.numero_poliza "
+                   . "left join clientes ba on i.rut_asegurado = ba.rut_sin_dv "
+                   . "where (bp.id = " . $id . " or ba.id = " . $id . ") "
+                   . "and COALESCE(si.estado,'') <> 'Eliminado'";
+            $resultado_sin = db_query($link, $query);
+            $ids_sin = array();
+            while ($row = db_fetch_object($resultado_sin))
+            {
+                $ids_sin[] = "^" . $row->id . "$";
+            }
+            if (count($ids_sin) > 0) { $id_siniestros = implode('|', $ids_sin); }
+
             /* funciona para 0 y 1 póliza. cuando hay más de 1 se debe armar array
             $query = "select distinct a.numero_poliza, a.id as id_poliza, b.id as idP, d.id as idA from polizas_2 as a left join clientes as b on a.rut_proponente=b.rut_sin_dv left join items as c on a.numero_poliza=c.numero_poliza left join clientes as d on c.rut_asegurado= d.rut_sin_dv where d.id=" . $id;
             $resultado_poliza = db_query($link, $query);
@@ -157,6 +187,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
                 }
                 $id_polizas = $id_polizas . "^" . $row->id_relacion . "$ | ";
             }
+
+            // Siniestros de las pólizas asociadas a la tarea
+            $query = "select id from siniestros where id_poliza in ("
+                   . "select id_relacion from tareas_relaciones where base='polizas' and id_tarea=" . $id
+                   . ") and COALESCE(estado,'') <> 'Eliminado'";
+            $resultado_sin = db_query($link, $query);
+            $ids_sin = array();
+            while ($row = db_fetch_object($resultado_sin))
+            {
+                $ids_sin[] = "^" . $row->id . "$";
+            }
+            if (count($ids_sin) > 0) { $id_siniestros = implode('|', $ids_sin); }
         break;
         case 'tarea recurrente':
             $nombre_base = $id;
@@ -182,24 +224,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
             }
             break;
         case 'endoso':
+            $endoso_id_poliza = null;
             $query = "select id_poliza, numero_endoso, numero_propuesta_endoso, numero_poliza, nombre_proponente from endosos where numero_endoso='" . $id."'";
             $resultado_endoso = db_query($link, $query);
             while ($row = db_fetch_object($resultado_endoso))
-            {   
+            {
                 if($row->id_poliza!==null)
                 {
                     $id_polizas = $row->numero_poliza;
                     $nombre_base=$row->numero_endoso;
                     $propuestas_endosos=$row->numero_propuesta_endoso;
                     $id_clientes=$row->nombre_proponente;
+                    $endoso_id_poliza = $row->id_poliza;
                 }
+            }
+            if ($endoso_id_poliza !== null)
+            {
+                $query = "select id from siniestros where id_poliza = " . $endoso_id_poliza . " and COALESCE(estado,'') <> 'Eliminado'";
+                $resultado_sin = db_query($link, $query);
+                $ids_sin = array();
+                while ($row = db_fetch_object($resultado_sin))
+                {
+                    $ids_sin[] = "^" . $row->id . "$";
+                }
+                if (count($ids_sin) > 0) { $id_siniestros = implode('|', $ids_sin); }
             }
             break;
         case 'propuesta_endoso':
+            $pend_id_poliza = null;
             $query = "select a.id_poliza, a.numero_propuesta_endoso, a.numero_poliza, a.nombre_proponente, b.numero_endoso from propuesta_endosos as a left join endosos as b on a.numero_propuesta_endoso=b.numero_propuesta_endoso where a.numero_propuesta_endoso='" . $id."'";
             $resultado_endoso = db_query($link, $query);
             while ($row = db_fetch_object($resultado_endoso))
-            {   
+            {
                 if($row->id_poliza!==null)
                 {
                     $id_polizas = $row->numero_poliza;
@@ -209,7 +265,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
                     }
                     $nombre_base=$row->numero_propuesta_endoso;
                     $id_clientes=$row->nombre_proponente;
+                    $pend_id_poliza = $row->id_poliza;
                 }
+            }
+            if ($pend_id_poliza !== null)
+            {
+                $query = "select id from siniestros where id_poliza = " . $pend_id_poliza . " and COALESCE(estado,'') <> 'Eliminado'";
+                $resultado_sin = db_query($link, $query);
+                $ids_sin = array();
+                while ($row = db_fetch_object($resultado_sin))
+                {
+                    $ids_sin[] = "^" . $row->id . "$";
+                }
+                if (count($ids_sin) > 0) { $id_siniestros = implode('|', $ids_sin); }
             }
             break;
     }
@@ -1621,7 +1689,7 @@ switch (document.getElementById("aux_base").value) {
                 //endosos
                 table_endosos.column(1).search(document.getElementById("var6_endoso").value, true).draw();
                 table_propuestas_endosos.column(2).search(document.getElementById("var4_titulo").value, true).draw();
-                table_siniestros.column(10).search("busqueda dummy").draw();
+                table_siniestros.column(10).search(document.getElementById("var8_siniestro").value, true).draw();
                 break;
         }
         case 'endoso': {
@@ -1641,7 +1709,7 @@ switch (document.getElementById("aux_base").value) {
                 //endosos
             table_endosos.column(1).search(document.getElementById("var4_titulo").value, true).draw();
             table_propuestas_endosos.column(2).search(document.getElementById("var7_propuesta_endoso").value, true).draw();
-            table_siniestros.column(10).search("busqueda dummy").draw();
+            table_siniestros.column(10).search(document.getElementById("var8_siniestro").value, true).draw();
                 break;
         }
         case 'cliente': {
@@ -1653,7 +1721,7 @@ switch (document.getElementById("aux_base").value) {
             table_propuesta_poliza.search(document.getElementById("var5_propuesta").value.replaceAll('$', '_').replaceAll('^', '_'), true).draw()
             table_tareas.search(document.getElementById("var3_poliza").value.replaceAll('$', '_').replaceAll('^', '_'), true).draw();
             table_tareas_recurrentes.search(document.getElementById("var3_poliza").value, true).draw();
-            table_siniestros.column(10).search("busqueda dummy").draw();
+            table_siniestros.column(10).search(document.getElementById("var8_siniestro").value, true).draw();
             break;
         }
         case 'poliza': {
@@ -1694,7 +1762,7 @@ switch (document.getElementById("aux_base").value) {
                         //endosos
             table_endosos.column(4).search("busqueda", true).draw();
             table_propuestas_endosos.column(4).search("busqueda", true).draw();
-            table_siniestros.column(10).search("busqueda dummy").draw();
+            table_siniestros.column(10).search(document.getElementById("var8_siniestro").value, true).draw();
             break;
         }
         case 'tarea': {
@@ -1712,7 +1780,7 @@ switch (document.getElementById("aux_base").value) {
             table_tareas_recurrentes.column(9).search("busqueda dummy").draw();
             table_endosos.column(4).search("busqueda", true).draw();
             table_propuestas_endosos.column(4).search("busqueda", true).draw();
-            table_siniestros.column(10).search("busqueda dummy").draw();
+            table_siniestros.column(10).search(document.getElementById("var8_siniestro").value, true).draw();
             break;
         }
         case 'tarea recurrente': {
@@ -1731,7 +1799,7 @@ switch (document.getElementById("aux_base").value) {
             table_tareas_recurrentes.column(1).search(document.getElementById("aux_id").value, true).draw();
             table_endosos.column(4).search("busqueda", true).draw();
             table_propuestas_endosos.column(4).search("busqueda", true).draw();
-            table_siniestros.column(10).search("busqueda dummy").draw();
+            table_siniestros.column(10).search(document.getElementById("var8_siniestro").value, true).draw();
             break;
         }
         case 'header': {
