@@ -23,7 +23,9 @@ $sql = "SELECT s.id, s.numero_siniestro, s.numero_poliza, s.ramo, s.tipo_siniest
     p.compania,
     si.items_afectados,
     si.patentes_items,
-    si.vehiculos_json
+    si.vehiculos_json,
+    COALESCE(ba.bienes_propios, 0) as bienes_propios,
+    COALESCE(ba.bienes_terceros, 0) as bienes_terceros
 FROM siniestros s
 LEFT JOIN clientes c ON s.rut_asegurado = c.rut_sin_dv AND c.rut_sin_dv IS NOT NULL
 LEFT JOIN polizas_2 p ON s.id_poliza = p.id
@@ -40,6 +42,12 @@ LEFT JOIN (
            ) ORDER BY numero_item) as vehiculos_json
     FROM siniestros_items GROUP BY id_siniestro
 ) si ON si.id_siniestro = s.id
+LEFT JOIN (
+    SELECT id_siniestro,
+           SUM(CASE WHEN tipo = 'propio'  THEN 1 ELSE 0 END) as bienes_propios,
+           SUM(CASE WHEN tipo = 'tercero' THEN 1 ELSE 0 END) as bienes_terceros
+    FROM siniestros_bienes_afectados GROUP BY id_siniestro
+) ba ON ba.id_siniestro = s.id
 WHERE COALESCE(s.estado, '') <> 'Eliminado'
 ORDER BY s.fecha_ingreso DESC";
 
@@ -79,7 +87,9 @@ while ($row = db_fetch_object($resultado)) {
         "rut_cliente"          => $row->rut_cliente,
         "tel_cliente"          => $row->tel_cliente,
         "correo_cliente"       => $row->correo_cliente,
-        "compania"             => $row->compania
+        "compania"             => $row->compania,
+        "bienes_propios"       => (int)$row->bienes_propios,
+        "bienes_terceros"      => (int)$row->bienes_terceros
     );
 }
 db_close($link);

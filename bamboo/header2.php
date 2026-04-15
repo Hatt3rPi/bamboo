@@ -163,6 +163,8 @@ function retrocede()
                             role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Siniestros</a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownSiniestros">
                             <a class="dropdown-item" href="/bamboo/listado_siniestros.php">Listado de siniestros</a>
+                            <a class="dropdown-item" href="/bamboo/seguimiento_bienes_afectados.php">Seguimiento bienes afectados</a>
+                            <a class="dropdown-item" href="/bamboo/admin_catalogo_documentos.php">Administrar catálogo documentos</a>
                         </div>
                     </li>
                     <li class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown3"

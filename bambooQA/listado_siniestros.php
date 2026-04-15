@@ -68,6 +68,7 @@ $buscar= estandariza_info($_POST["busqueda"]);
                     <th>Ramo</th>
                     <th>Tipo Siniestro</th>
                     <th>Ítems</th>
+                    <th>Bienes</th>
                     <th>Cliente</th>
                     <th>Liquidador</th>
                     <th>Patente</th>
@@ -149,9 +150,20 @@ $(document).ready(function() {
                 defaultContent: ""
             }, //7
             {
+                "data": null,
+                title: "Bienes",
+                orderable: false,
+                render: function(r) {
+                    var p = r.bienes_propios || 0, t = r.bienes_terceros || 0;
+                    if (p === 0 && t === 0) return '<em>—</em>';
+                    return '<span class="badge badge-info">' + p + ' propio' + (p===1?'':'s') + '</span> ' +
+                           '<span class="badge badge-warning">' + t + ' tercero' + (t===1?'':'s') + '</span>';
+                }
+            }, //8
+            {
                 "data": "nom_cliente",
                 title: "Cliente"
-            }, //8
+            }, //9
             {
                 "data": "liquidador_nombre",
                 title: "Liquidador"

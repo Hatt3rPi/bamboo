@@ -303,30 +303,49 @@ if (!$es_ramo_vehiculo_php) {
       </div>
     </div>
 
-    <!-- ==================== SECCIÓN 6: VEHÍCULOS (dinámico, 1 bloque por ítem marcado) ==================== -->
-    <div id="seccion_vehiculo" style="display:none">
-      <hr>
-      <h5 class="form-row">&nbsp;Vehículos afectados</h5><br>
-      <div id="contenedor_vehiculos"></div>
-    </div>
-
-    <!-- ==================== SECCIÓN 7: TALLER ==================== -->
-    <div id="seccion_taller" style="display:none">
-      <hr>
-      <h5 class="form-row">&nbsp;Taller</h5><br>
-      <div class="form-row">
-        <div class="col-md-6 mb-3">
-          <label for="taller_nombre">Nombre Taller</label>
-          <input type="text" class="form-control" id="taller_nombre" name="taller_nombre"
-            value="<?php echo $taller_nombre; ?>">
-        </div>
-        <div class="col-md-6 mb-3">
-          <label for="taller_telefono">Teléfono Taller</label>
-          <input type="text" class="form-control" id="taller_telefono" name="taller_telefono"
-            value="<?php echo $taller_telefono; ?>" placeholder="56 9 XXXX XXXX">
-        </div>
+    <!-- ==================== SECCIÓN 5b: BIENES AFECTADOS ==================== -->
+    <?php if ($camino == 'modifica_siniestro'): ?>
+    <hr>
+    <h5 class="form-row">&nbsp;Bienes afectados</h5><br>
+    <ul class="nav nav-tabs" id="tabsBienes" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="tab-propios-tab" data-toggle="tab" href="#tab-propios" role="tab">
+          Daño propio (<span id="cnt_propios">0</span>)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="tab-terceros-tab" data-toggle="tab" href="#tab-terceros" role="tab">
+          Daño a terceros (<span id="cnt_terceros">0</span>)
+        </a>
+      </li>
+    </ul>
+    <div class="tab-content pt-3">
+      <div class="tab-pane fade show active" id="tab-propios" role="tabpanel">
+        <button type="button" class="btn btn-sm btn-primary mb-2" onclick="nuevoBien('propio')">+ Agregar bien propio</button>
+        <table class="table table-sm table-bordered" id="tabla_bienes_propios">
+          <thead><tr><th style="width:35%">Descripción</th><th>Estado</th><th>Alarma</th><th>Docs</th><th>Acciones</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="tab-pane fade" id="tab-terceros" role="tabpanel">
+        <button type="button" class="btn btn-sm btn-primary mb-2" onclick="nuevoBien('tercero')">+ Agregar bien tercero</button>
+        <table class="table table-sm table-bordered" id="tabla_bienes_terceros">
+          <thead><tr><th style="width:35%">Descripción</th><th>Estado</th><th>Alarma</th><th>Docs</th><th>Acciones</th></tr></thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
+    <br>
+    <?php else: ?>
+    <hr>
+    <h5 class="form-row">&nbsp;Bienes afectados</h5>
+    <div class="alert alert-info mt-2">Guarda el siniestro primero y vuelve a editarlo para agregar bienes afectados.</div>
+    <br>
+    <?php endif; ?>
+
+    <!-- Secciones legacy "Vehículos afectados" y "Taller" eliminadas tras refactor
+         de bienes afectados. La patente/marca/modelo ahora va en la descripción
+         del bien propio (tab Bienes afectados). -->
 
     <!-- ==================== BOTONES ==================== -->
     <hr>
@@ -390,17 +409,15 @@ function estandariza_info(val) {
 }
 
 // ---- Toggle secciones vehículo y taller ----
+// Legacy no-op: las secciones Vehículo/Taller fueron removidas. Mantenido
+// para que llamadas antiguas no fallen.
 function toggleVehiculo(ramo) {
     var ramo_upper = (ramo || '').toUpperCase();
     esRamoVehiculo = (ramo_upper.indexOf('VEH') !== -1 || ramo_upper.indexOf('AUTO') !== -1);
-    document.getElementById('seccion_vehiculo').style.display = esRamoVehiculo ? 'block' : 'none';
-    document.getElementById('seccion_taller').style.display   = esRamoVehiculo ? 'block' : 'none';
-    if (!esRamoVehiculo) {
-        vehiculosPre = {};
-        $('#contenedor_vehiculos').empty();
-        $('#taller_nombre, #taller_telefono').val('');
-    }
-    renderVehiculos();
+    var sv = document.getElementById('seccion_vehiculo');
+    var st = document.getElementById('seccion_taller');
+    if (sv) sv.style.display = 'none';
+    if (st) st.style.display = 'none';
 }
 
 // ---- Renderiza un bloque Vehículo por cada ítem marcado ----
@@ -676,8 +693,256 @@ $(document).ready(function() {
     var id_siniestro_inicial = $('#id_siniestro').val();
     if (id_siniestro_inicial) {
         cargarBitacora(id_siniestro_inicial);
+        cargarBienesAfectados(id_siniestro_inicial);
     }
 });
+
+// =========================================================================
+// BIENES AFECTADOS (solo en modo edición)
+// =========================================================================
+function cargarBienesAfectados(id_siniestro) {
+    $.getJSON('/bamboo/backend/siniestros/busqueda_bienes_siniestro.php', { id_siniestro: id_siniestro }, function(resp) {
+        var propios = [], terceros = [];
+        (resp.data || []).forEach(function(b) {
+            (b.tipo === 'propio' ? propios : terceros).push(b);
+        });
+        renderTablaBienes('#tabla_bienes_propios tbody', propios);
+        renderTablaBienes('#tabla_bienes_terceros tbody', terceros);
+        $('#cnt_propios').text(propios.length);
+        $('#cnt_terceros').text(terceros.length);
+    });
+}
+function renderTablaBienes(selector, lista) {
+    var tbody = $(selector);
+    tbody.empty();
+    if (lista.length === 0) {
+        tbody.append('<tr><td colspan="5"><em>Sin bienes registrados.</em></td></tr>');
+        return;
+    }
+    lista.forEach(function(b) {
+        var badge = badgeBien(b.estado);
+        var alarma = b.fecha_alarma ? b.fecha_alarma : '<em>—</em>';
+        var docs = b.total_docs > 0 ? (b.entregados + '/' + b.total_docs + ' entregados') : '<em>sin marcar</em>';
+        var fila = '<tr data-id="' + b.id + '">' +
+            '<td>' + escHtml(b.descripcion) + '</td>' +
+            '<td>' + badge + '</td>' +
+            '<td>' + alarma + '</td>' +
+            '<td>' + docs + '</td>' +
+            '<td>' +
+              '<button type="button" class="btn btn-sm btn-info" onclick="editarBien(' + b.id + ')"><i class="fas fa-edit"></i></button> ' +
+              '<button type="button" class="btn btn-sm btn-secondary" onclick="abrirChecklist(' + b.id + ',\'' + escAttr(b.descripcion) + '\')"><i class="fas fa-list-check"></i> Checklist</button> ' +
+              '<button type="button" class="btn btn-sm btn-danger" onclick="eliminarBien(' + b.id + ')"><i class="fas fa-trash"></i></button>' +
+            '</td>' +
+        '</tr>';
+        tbody.append(fila);
+    });
+}
+function badgeBien(estado) {
+    var cls = 'badge-secondary';
+    if (estado === 'Abierto')   cls = 'badge-primary';
+    if (estado === 'Cerrado')   cls = 'badge-secondary';
+    if (estado === 'Rechazado') cls = 'badge-danger';
+    return '<span class="badge ' + cls + '">' + estado + '</span>';
+}
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+function nuevoBien(tipo) {
+    $('#bien_id').val('');
+    $('#bien_tipo').val(tipo);
+    $('#bien_descripcion').val('');
+    $('#bien_estado').val('Abierto');
+    $('#bien_fecha_alarma').val('');
+    $('#bien_observaciones').val('');
+    $('#bien_motivo').val('');
+    $('#bien_motivo_wrap').hide();
+    $('#modalBienTitle').text('Nuevo bien ' + (tipo === 'propio' ? 'propio' : 'de tercero'));
+    $('#modalBien').modal('show');
+}
+function editarBien(id) {
+    $.getJSON('/bamboo/backend/siniestros/busqueda_bienes_siniestro.php', { id_siniestro: $('#id_siniestro').val() }, function(resp) {
+        var b = (resp.data || []).find(function(x){ return x.id == id; });
+        if (!b) { alert('Bien no encontrado.'); return; }
+        $('#bien_id').val(b.id);
+        $('#bien_tipo').val(b.tipo);
+        $('#bien_descripcion').val(b.descripcion);
+        $('#bien_estado').val(b.estado);
+        $('#bien_fecha_alarma').val(b.fecha_alarma || '');
+        $('#bien_observaciones').val(b.observaciones || '');
+        $('#bien_motivo').val('');
+        $('#bien_estado_original').val(b.estado);
+        $('#bien_motivo_wrap').hide();
+        $('#modalBienTitle').text('Editar bien ' + (b.tipo === 'propio' ? 'propio' : 'de tercero'));
+        $('#modalBien').modal('show');
+    });
+}
+$(document).on('change', '#bien_estado', function() {
+    var original = $('#bien_estado_original').val();
+    var actual = $(this).val();
+    if (original && original !== actual) {
+        $('#bien_motivo_wrap').show();
+    } else {
+        $('#bien_motivo_wrap').hide();
+    }
+});
+function guardarBien() {
+    var id = $('#bien_id').val();
+    var data = {
+        accion: id ? 'actualizar_bien' : 'crear_bien',
+        id: id,
+        id_siniestro: $('#id_siniestro').val(),
+        tipo: $('#bien_tipo').val(),
+        descripcion: $('#bien_descripcion').val(),
+        estado: $('#bien_estado').val(),
+        fecha_alarma: $('#bien_fecha_alarma').val(),
+        observaciones: $('#bien_observaciones').val(),
+        motivo: $('#bien_motivo').val()
+    };
+    if (!data.descripcion.trim()) { alert('La descripción es obligatoria.'); return; }
+    $.post('/bamboo/backend/siniestros/crea_bien_afectado.php', data, function(resp) {
+        if (resp.ok) {
+            $('#modalBien').modal('hide');
+            cargarBienesAfectados($('#id_siniestro').val());
+        } else {
+            alert(resp.mensaje || 'Error al guardar.');
+        }
+    }, 'json');
+}
+function eliminarBien(id) {
+    if (!confirm('¿Eliminar este bien? Se borrarán también su checklist y bitácora.')) return;
+    $.post('/bamboo/backend/siniestros/crea_bien_afectado.php', { accion: 'eliminar_bien', id: id }, function(resp) {
+        if (resp.ok) {
+            cargarBienesAfectados($('#id_siniestro').val());
+        } else {
+            alert(resp.mensaje || 'Error al eliminar.');
+        }
+    }, 'json');
+}
+
+// =========================================================================
+// CHECKLIST (modal)
+// =========================================================================
+function abrirChecklist(id_bien, descripcion) {
+    $('#checklistTitle').text('Checklist — ' + descripcion);
+    $('#checklist_id_bien').val(id_bien);
+    $('#checklist_body').html('<tr><td colspan="4"><em>Cargando…</em></td></tr>');
+    $.getJSON('/bamboo/backend/siniestros/busqueda_checklist_bien.php', { id_bien: id_bien }, function(resp) {
+        var body = $('#checklist_body');
+        body.empty();
+        (resp.data || []).forEach(function(d) {
+            var estados = ['Pendiente','En revisión','Entregado','Rechazado','No aplica'];
+            var opts = estados.map(function(e) {
+                return '<option value="' + e + '"' + (e === d.estado ? ' selected' : '') + '>' + e + '</option>';
+            }).join('');
+            var fila =
+                '<tr data-id-doc="' + d.id_documento + '">' +
+                  '<td>' + escHtml(d.nombre) + '</td>' +
+                  '<td><select class="form-control form-control-sm cl-estado">' + opts + '</select></td>' +
+                  '<td><input type="date" class="form-control form-control-sm cl-fecha" value="' + (d.fecha_entrega || '') + '"></td>' +
+                  '<td><input type="text" class="form-control form-control-sm cl-notas" value="' + escAttr(d.notas || '') + '"></td>' +
+                '</tr>';
+            body.append(fila);
+        });
+        if ((resp.data || []).length === 0) {
+            body.html('<tr><td colspan="4"><em>No hay documentos activos en el catálogo.</em></td></tr>');
+        }
+    });
+    $('#modalChecklist').modal('show');
+}
+function guardarChecklist() {
+    var id_bien = $('#checklist_id_bien').val();
+    var filas = $('#checklist_body tr[data-id-doc]');
+    if (filas.length === 0) { $('#modalChecklist').modal('hide'); return; }
+    var promesas = [];
+    filas.each(function() {
+        var $tr = $(this);
+        promesas.push($.post('/bamboo/backend/siniestros/actualiza_documento_bien.php', {
+            id_bien: id_bien,
+            id_documento: $tr.data('id-doc'),
+            estado: $tr.find('.cl-estado').val(),
+            fecha_entrega: $tr.find('.cl-fecha').val(),
+            notas: $tr.find('.cl-notas').val()
+        }));
+    });
+    $.when.apply($, promesas).done(function() {
+        $('#modalChecklist').modal('hide');
+        cargarBienesAfectados($('#id_siniestro').val());
+    }).fail(function() {
+        alert('Hubo errores al guardar algunos documentos.');
+    });
+}
 </script>
+
+<!-- ==================== MODALES ==================== -->
+<div class="modal fade" id="modalBien" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalBienTitle">Bien afectado</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="bien_id">
+        <input type="hidden" id="bien_tipo">
+        <input type="hidden" id="bien_estado_original">
+        <div class="form-group">
+          <label>Descripción <span style="color:darkred">*</span></label>
+          <textarea class="form-control" id="bien_descripcion" rows="2" placeholder="Ej: Dpto 304, Pasillo 2° piso, Auto patente XX-1234, Sr. Juan Pérez…"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="col-md-6 form-group">
+            <label>Estado</label>
+            <select class="form-control" id="bien_estado">
+              <option value="Abierto">Abierto</option>
+              <option value="Cerrado">Cerrado</option>
+              <option value="Rechazado">Rechazado</option>
+            </select>
+          </div>
+          <div class="col-md-6 form-group">
+            <label>Fecha alarma / próxima revisión</label>
+            <input type="date" class="form-control" id="bien_fecha_alarma">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Observaciones</label>
+          <textarea class="form-control" id="bien_observaciones" rows="2"></textarea>
+        </div>
+        <div class="form-group" id="bien_motivo_wrap" style="display:none">
+          <label>Motivo del cambio de estado</label>
+          <input type="text" class="form-control" id="bien_motivo">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="guardarBien()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalChecklist" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="checklistTitle">Checklist</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="checklist_id_bien">
+        <table class="table table-sm table-bordered">
+          <thead>
+            <tr><th>Documento</th><th style="width:18%">Estado</th><th style="width:18%">Fecha entrega</th><th style="width:30%">Notas</th></tr>
+          </thead>
+          <tbody id="checklist_body"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="guardarChecklist()">Guardar checklist</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
