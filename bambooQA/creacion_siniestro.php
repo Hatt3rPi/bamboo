@@ -197,7 +197,7 @@ if (!$es_ramo_vehiculo_php) {
         <select class="form-control" id="tipo_siniestro" name="tipo_siniestro">
           <option value="">-- Seleccione --</option>
           <?php
-          $tipos = ['Robo', 'Choque', 'Colisión', 'Incendio', 'Daño', 'Otro'];
+          $tipos = ['Robo', 'Choque/Colisión', 'Incendio', 'Daño', 'Otro'];
           foreach ($tipos as $t) {
               $sel = ($tipo_siniestro == $t) ? 'selected' : '';
               echo "<option value=\"$t\" $sel>$t</option>";
