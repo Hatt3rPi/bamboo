@@ -819,21 +819,70 @@ function categoriaDefaultSegunRamo() {
     return 'otro';
 }
 
+// Fecha ISO (YYYY-MM-DD) a N días desde hoy
+function fechaEnDiasDesdeHoy(dias) {
+    var d = new Date();
+    d.setDate(d.getDate() + dias);
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + dd;
+}
+
+// Para bien PROPIO categoría vehículo: toma el siguiente ítem marcado sin bien asociado aún.
+// Matcheamos por patente (lo más identificable) y caemos back al orden de marca.
+function siguienteItemVehiculoSinBien() {
+    var csv = ($('#items_seleccionados').val() || '').split(',').map(function(x){ return $.trim(x); }).filter(Boolean);
+    if (!csv.length || !itemsCache.length) return null;
+    // Números ya usados por bienes propios (de vehículo) en memoria
+    var patentesUsadas = bienesMem
+        .filter(function(b){ return b.tipo === 'propio' && b.categoria === 'vehiculo' && b.patente; })
+        .map(function(b){ return String(b.patente).toUpperCase(); });
+    for (var i = 0; i < csv.length; i++) {
+        var ni = csv[i];
+        var it = itemsCache.find(function(x){ return String(x.numero_item) === ni; });
+        if (!it) continue;
+        var pat = String(it.patente || it.patente_ubicacion || '').toUpperCase();
+        if (pat && patentesUsadas.indexOf(pat) === -1) return it;
+        if (!pat) {
+            // si el ítem no tiene patente (p.ej. inmueble mezclado), saltar
+            continue;
+        }
+    }
+    return null;
+}
+
 function nuevoBien(tipo) {
     $('#bien_id').val('');
     $('#bien_memkey').val('');
     $('#bien_tipo').val(tipo);
-    $('#bien_categoria').val(tipo === 'propio' ? categoriaDefaultSegunRamo() : 'otro');
+    var cat = (tipo === 'propio') ? categoriaDefaultSegunRamo() : 'otro';
+    $('#bien_categoria').val(cat);
     $('#bien_descripcion').val('');
     $('#bien_patente').val(''); $('#bien_marca').val(''); $('#bien_modelo').val(''); $('#bien_anio').val('');
     $('#bien_taller_nombre').val(''); $('#bien_taller_telefono').val('');
     $('#bien_estado').val('Abierto');
     $('#bien_estado_original').val('');
-    $('#bien_fecha_alarma').val('');
+    $('#bien_fecha_alarma').val(fechaEnDiasDesdeHoy(7));
     $('#bien_observaciones').val('');
     $('#bien_motivo').val('');
     $('#bien_motivo_wrap').hide();
     toggleCamposVehiculoBien();
+
+    // Pre-poblar datos del próximo ítem marcado (solo para bien propio + vehículo)
+    if (tipo === 'propio' && cat === 'vehiculo') {
+        var it = siguienteItemVehiculoSinBien();
+        if (it) {
+            $('#bien_patente').val(it.patente || it.patente_ubicacion || '');
+            $('#bien_marca').val(it.marca || '');
+            $('#bien_modelo').val(it.modelo || '');
+            $('#bien_anio').val(it.anio || '');
+            // Descripción sugerida para que el usuario no quede con el campo obligatorio vacío
+            var descSugerida = [it.marca, it.modelo, it.anio ? '(' + it.anio + ')' : '']
+                .filter(Boolean).join(' ').trim();
+            if (descSugerida) $('#bien_descripcion').val(descSugerida);
+        }
+    }
+
     $('#modalBienTitle').text('Nuevo bien ' + (tipo === 'propio' ? 'propio' : 'de tercero'));
     $('#modalBien').modal('show');
 }
