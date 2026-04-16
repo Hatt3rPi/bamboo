@@ -10,8 +10,11 @@ if ($id_siniestro === '') { echo json_encode(array('data' => array())); exit; }
 db_set_charset($link, 'utf8');
 db_select_db($link, DB_NAME);
 
-$res = db_query($link, "SELECT b.id, b.id_siniestro, b.tipo, b.descripcion, b.estado,
-                               b.observaciones, b.fecha_alarma, b.created_at, b.updated_at,
+$res = db_query($link, "SELECT b.id, b.id_siniestro, b.tipo, b.categoria, b.descripcion, b.estado,
+                               b.observaciones, b.fecha_alarma,
+                               b.patente, b.marca, b.modelo, b.anio_vehiculo,
+                               b.taller_nombre, b.taller_telefono,
+                               b.created_at, b.updated_at,
                                COALESCE(d.total, 0) AS total_docs,
                                COALESCE(d.pendientes, 0) AS pendientes,
                                COALESCE(d.entregados, 0) AS entregados
@@ -29,18 +32,25 @@ $res = db_query($link, "SELECT b.id, b.id_siniestro, b.tipo, b.descripcion, b.es
 $data = array();
 while ($row = db_fetch_object($res)) {
     $data[] = array(
-        'id'            => $row->id,
-        'id_siniestro'  => $row->id_siniestro,
-        'tipo'          => $row->tipo,
-        'descripcion'   => $row->descripcion,
-        'estado'        => $row->estado,
-        'observaciones' => $row->observaciones,
-        'fecha_alarma'  => $row->fecha_alarma,
-        'total_docs'    => (int)$row->total_docs,
-        'pendientes'    => (int)$row->pendientes,
-        'entregados'    => (int)$row->entregados,
-        'created_at'    => $row->created_at,
-        'updated_at'    => $row->updated_at
+        'id'              => $row->id,
+        'id_siniestro'    => $row->id_siniestro,
+        'tipo'            => $row->tipo,
+        'categoria'       => $row->categoria,
+        'descripcion'     => $row->descripcion,
+        'estado'          => $row->estado,
+        'observaciones'   => $row->observaciones,
+        'fecha_alarma'    => $row->fecha_alarma,
+        'patente'         => $row->patente,
+        'marca'           => $row->marca,
+        'modelo'          => $row->modelo,
+        'anio_vehiculo'   => $row->anio_vehiculo,
+        'taller_nombre'   => $row->taller_nombre,
+        'taller_telefono' => $row->taller_telefono,
+        'total_docs'      => (int)$row->total_docs,
+        'pendientes'      => (int)$row->pendientes,
+        'entregados'      => (int)$row->entregados,
+        'created_at'      => $row->created_at,
+        'updated_at'      => $row->updated_at
     );
 }
 db_close($link);

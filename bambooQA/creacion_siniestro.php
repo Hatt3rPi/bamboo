@@ -304,7 +304,6 @@ if (!$es_ramo_vehiculo_php) {
     </div>
 
     <!-- ==================== SECCIÓN 5b: BIENES AFECTADOS ==================== -->
-    <?php if ($camino == 'modifica_siniestro'): ?>
     <hr>
     <h5 class="form-row">&nbsp;Bienes afectados</h5><br>
     <ul class="nav nav-tabs" id="tabsBienes" role="tablist">
@@ -323,29 +322,20 @@ if (!$es_ramo_vehiculo_php) {
       <div class="tab-pane fade show active" id="tab-propios" role="tabpanel">
         <button type="button" class="btn btn-sm btn-primary mb-2" onclick="nuevoBien('propio')">+ Agregar bien propio</button>
         <table class="table table-sm table-bordered" id="tabla_bienes_propios">
-          <thead><tr><th style="width:35%">Descripción</th><th>Estado</th><th>Alarma</th><th>Docs</th><th>Acciones</th></tr></thead>
+          <thead><tr><th style="width:14%">Categoría</th><th style="width:30%">Descripción</th><th>Estado</th><th>Alarma</th><th>Docs</th><th>Acciones</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
       <div class="tab-pane fade" id="tab-terceros" role="tabpanel">
         <button type="button" class="btn btn-sm btn-primary mb-2" onclick="nuevoBien('tercero')">+ Agregar bien tercero</button>
         <table class="table table-sm table-bordered" id="tabla_bienes_terceros">
-          <thead><tr><th style="width:35%">Descripción</th><th>Estado</th><th>Alarma</th><th>Docs</th><th>Acciones</th></tr></thead>
+          <thead><tr><th style="width:14%">Categoría</th><th style="width:30%">Descripción</th><th>Estado</th><th>Alarma</th><th>Docs</th><th>Acciones</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </div>
-    <br>
-    <?php else: ?>
-    <hr>
-    <h5 class="form-row">&nbsp;Bienes afectados</h5>
-    <div class="alert alert-info mt-2">Guarda el siniestro primero y vuelve a editarlo para agregar bienes afectados.</div>
-    <br>
-    <?php endif; ?>
-
-    <!-- Secciones legacy "Vehículos afectados" y "Taller" eliminadas tras refactor
-         de bienes afectados. La patente/marca/modelo ahora va en la descripción
-         del bien propio (tab Bienes afectados). -->
+    <small class="text-muted">Los bienes se guardan junto con el siniestro al presionar <em>Registrar Siniestro</em>. El Checklist de documentos requiere un bien ya persistido.</small>
+    <br><br>
 
     <!-- ==================== BOTONES ==================== -->
     <hr>
@@ -616,6 +606,25 @@ function registraSiniestro() {
         payload['vehiculo_anio['    + ni + ']'] = estandariza_info($(this).find('.veh-anio').val());
     });
 
+    // Bienes afectados serializados (incluye id si ya existen para update/delete sync)
+    payload['bienes_json'] = JSON.stringify(bienesMem.map(function(b) {
+        return {
+            id:              b.id || null,
+            tipo:            b.tipo,
+            categoria:       b.categoria,
+            descripcion:     b.descripcion,
+            estado:          b.estado,
+            fecha_alarma:    b.fecha_alarma,
+            observaciones:   b.observaciones,
+            patente:         b.patente,
+            marca:           b.marca,
+            modelo:          b.modelo,
+            anio_vehiculo:   b.anio_vehiculo,
+            taller_nombre:   b.taller_nombre,
+            taller_telefono: b.taller_telefono
+        };
+    }));
+
     $.redirect('/bambooQA/backend/siniestros/crea_siniestro.php', payload, 'post');
 }
 
@@ -693,49 +702,89 @@ $(document).ready(function() {
     var id_siniestro_inicial = $('#id_siniestro').val();
     if (id_siniestro_inicial) {
         cargarBitacora(id_siniestro_inicial);
-        cargarBienesAfectados(id_siniestro_inicial);
     }
+    // Bienes afectados: cargar desde BD (modo edición) o inicializar vacío (modo creación)
+    cargarBienesAfectados(id_siniestro_inicial);
 });
 
 // =========================================================================
-// BIENES AFECTADOS (solo en modo edición)
+// BIENES AFECTADOS — se mantienen en memoria y se serializan al submit
 // =========================================================================
+var bienesMem = [];  // cada bien: { memkey, id?, tipo, categoria, descripcion, estado, fecha_alarma, observaciones, patente, marca, modelo, anio_vehiculo, taller_nombre, taller_telefono, total_docs?, entregados? }
+var bienMemSeq = 0;
+
 function cargarBienesAfectados(id_siniestro) {
+    if (!id_siniestro) { bienesMem = []; renderTodosBienes(); return; }
+    // Preservar bienes nuevos sin id (el usuario pudo haberlos agregado antes)
+    var pendientesSinId = bienesMem.filter(function(b){ return !b.id; });
     $.getJSON('/bambooQA/backend/siniestros/busqueda_bienes_siniestro.php', { id_siniestro: id_siniestro }, function(resp) {
-        var propios = [], terceros = [];
-        (resp.data || []).forEach(function(b) {
-            (b.tipo === 'propio' ? propios : terceros).push(b);
+        var fromDb = (resp.data || []).map(function(b) {
+            return {
+                memkey: ++bienMemSeq,
+                id: b.id,
+                tipo: b.tipo,
+                categoria: b.categoria || 'otro',
+                descripcion: b.descripcion || '',
+                estado: b.estado || 'Abierto',
+                fecha_alarma: b.fecha_alarma || '',
+                observaciones: b.observaciones || '',
+                patente: b.patente || '',
+                marca: b.marca || '',
+                modelo: b.modelo || '',
+                anio_vehiculo: b.anio_vehiculo || '',
+                taller_nombre: b.taller_nombre || '',
+                taller_telefono: b.taller_telefono || '',
+                total_docs: b.total_docs || 0,
+                entregados: b.entregados || 0
+            };
         });
-        renderTablaBienes('#tabla_bienes_propios tbody', propios);
-        renderTablaBienes('#tabla_bienes_terceros tbody', terceros);
-        $('#cnt_propios').text(propios.length);
-        $('#cnt_terceros').text(terceros.length);
+        bienesMem = fromDb.concat(pendientesSinId);
+        renderTodosBienes();
     });
+}
+function renderTodosBienes() {
+    var propios = bienesMem.filter(function(b){ return b.tipo === 'propio'; });
+    var terceros = bienesMem.filter(function(b){ return b.tipo === 'tercero'; });
+    renderTablaBienes('#tabla_bienes_propios tbody', propios);
+    renderTablaBienes('#tabla_bienes_terceros tbody', terceros);
+    $('#cnt_propios').text(propios.length);
+    $('#cnt_terceros').text(terceros.length);
 }
 function renderTablaBienes(selector, lista) {
     var tbody = $(selector);
     tbody.empty();
     if (lista.length === 0) {
-        tbody.append('<tr><td colspan="5"><em>Sin bienes registrados.</em></td></tr>');
+        tbody.append('<tr><td colspan="6"><em>Sin bienes registrados.</em></td></tr>');
         return;
     }
     lista.forEach(function(b) {
         var badge = badgeBien(b.estado);
         var alarma = b.fecha_alarma ? b.fecha_alarma : '<em>—</em>';
-        var docs = b.total_docs > 0 ? (b.entregados + '/' + b.total_docs + ' entregados') : '<em>sin marcar</em>';
-        var fila = '<tr data-id="' + b.id + '">' +
+        var catLabel = catBienLabel(b.categoria);
+        var docs = b.id && b.total_docs > 0 ? (b.entregados + '/' + b.total_docs + ' entregados') :
+                   (b.id ? '<em>sin marcar</em>' : '<em>sin guardar</em>');
+        var btnChecklist = b.id ?
+            '<button type="button" class="btn btn-sm btn-secondary" onclick="abrirChecklist(' + b.id + ',\'' + escAttr(b.descripcion) + '\')"><i class="fas fa-list-check"></i> Checklist</button> ' :
+            '';
+        var fila = '<tr data-memkey="' + b.memkey + '">' +
+            '<td>' + catLabel + '</td>' +
             '<td>' + escHtml(b.descripcion) + '</td>' +
             '<td>' + badge + '</td>' +
             '<td>' + alarma + '</td>' +
             '<td>' + docs + '</td>' +
             '<td>' +
-              '<button type="button" class="btn btn-sm btn-info" onclick="editarBien(' + b.id + ')"><i class="fas fa-edit"></i></button> ' +
-              '<button type="button" class="btn btn-sm btn-secondary" onclick="abrirChecklist(' + b.id + ',\'' + escAttr(b.descripcion) + '\')"><i class="fas fa-list-check"></i> Checklist</button> ' +
-              '<button type="button" class="btn btn-sm btn-danger" onclick="eliminarBien(' + b.id + ')"><i class="fas fa-trash"></i></button>' +
+              '<button type="button" class="btn btn-sm btn-info" onclick="editarBien(' + b.memkey + ')"><i class="fas fa-edit"></i></button> ' +
+              btnChecklist +
+              '<button type="button" class="btn btn-sm btn-danger" onclick="eliminarBien(' + b.memkey + ')"><i class="fas fa-trash"></i></button>' +
             '</td>' +
         '</tr>';
         tbody.append(fila);
     });
+}
+function catBienLabel(cat) {
+    if (cat === 'vehiculo') return '<span class="badge badge-info">Vehículo</span>';
+    if (cat === 'inmueble') return '<span class="badge badge-warning">Inmueble</span>';
+    return '<span class="badge badge-light">Otro</span>';
 }
 function badgeBien(estado) {
     var cls = 'badge-secondary';
@@ -747,34 +796,60 @@ function badgeBien(estado) {
 function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escAttr(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 
+function toggleCamposVehiculoBien() {
+    var esVeh = $('#bien_categoria').val() === 'vehiculo';
+    $('#bien_campos_vehiculo').toggle(esVeh);
+}
+
+// Sugerir categoría default según ramo de la póliza (la primera vez que se abre un bien propio)
+function categoriaDefaultSegunRamo() {
+    var ramo = ($('#ramo').val() || '').toUpperCase();
+    if (ramo.indexOf('VEH') !== -1 || ramo.indexOf('AUTO') !== -1) return 'vehiculo';
+    if (ramo.indexOf('INCENDIO') !== -1 || ramo.indexOf('HOGAR') !== -1) return 'inmueble';
+    return 'otro';
+}
+
 function nuevoBien(tipo) {
     $('#bien_id').val('');
+    $('#bien_memkey').val('');
     $('#bien_tipo').val(tipo);
+    $('#bien_categoria').val(tipo === 'propio' ? categoriaDefaultSegunRamo() : 'otro');
     $('#bien_descripcion').val('');
+    $('#bien_patente').val(''); $('#bien_marca').val(''); $('#bien_modelo').val(''); $('#bien_anio').val('');
+    $('#bien_taller_nombre').val(''); $('#bien_taller_telefono').val('');
     $('#bien_estado').val('Abierto');
+    $('#bien_estado_original').val('');
     $('#bien_fecha_alarma').val('');
     $('#bien_observaciones').val('');
     $('#bien_motivo').val('');
     $('#bien_motivo_wrap').hide();
+    toggleCamposVehiculoBien();
     $('#modalBienTitle').text('Nuevo bien ' + (tipo === 'propio' ? 'propio' : 'de tercero'));
     $('#modalBien').modal('show');
 }
-function editarBien(id) {
-    $.getJSON('/bambooQA/backend/siniestros/busqueda_bienes_siniestro.php', { id_siniestro: $('#id_siniestro').val() }, function(resp) {
-        var b = (resp.data || []).find(function(x){ return x.id == id; });
-        if (!b) { alert('Bien no encontrado.'); return; }
-        $('#bien_id').val(b.id);
-        $('#bien_tipo').val(b.tipo);
-        $('#bien_descripcion').val(b.descripcion);
-        $('#bien_estado').val(b.estado);
-        $('#bien_fecha_alarma').val(b.fecha_alarma || '');
-        $('#bien_observaciones').val(b.observaciones || '');
-        $('#bien_motivo').val('');
-        $('#bien_estado_original').val(b.estado);
-        $('#bien_motivo_wrap').hide();
-        $('#modalBienTitle').text('Editar bien ' + (b.tipo === 'propio' ? 'propio' : 'de tercero'));
-        $('#modalBien').modal('show');
-    });
+function editarBien(memkey) {
+    var b = bienesMem.find(function(x){ return x.memkey === memkey; });
+    if (!b) { alert('Bien no encontrado.'); return; }
+    $('#bien_id').val(b.id || '');
+    $('#bien_memkey').val(b.memkey);
+    $('#bien_tipo').val(b.tipo);
+    $('#bien_categoria').val(b.categoria || 'otro');
+    $('#bien_descripcion').val(b.descripcion);
+    $('#bien_patente').val(b.patente || '');
+    $('#bien_marca').val(b.marca || '');
+    $('#bien_modelo').val(b.modelo || '');
+    $('#bien_anio').val(b.anio_vehiculo || '');
+    $('#bien_taller_nombre').val(b.taller_nombre || '');
+    $('#bien_taller_telefono').val(b.taller_telefono || '');
+    $('#bien_estado').val(b.estado);
+    $('#bien_estado_original').val(b.estado);
+    $('#bien_fecha_alarma').val(b.fecha_alarma || '');
+    $('#bien_observaciones').val(b.observaciones || '');
+    $('#bien_motivo').val('');
+    $('#bien_motivo_wrap').hide();
+    toggleCamposVehiculoBien();
+    $('#modalBienTitle').text('Editar bien ' + (b.tipo === 'propio' ? 'propio' : 'de tercero'));
+    $('#modalBien').modal('show');
 }
 $(document).on('change', '#bien_estado', function() {
     var original = $('#bien_estado_original').val();
@@ -786,37 +861,45 @@ $(document).on('change', '#bien_estado', function() {
     }
 });
 function guardarBien() {
-    var id = $('#bien_id').val();
-    var data = {
-        accion: id ? 'actualizar_bien' : 'crear_bien',
-        id: id,
-        id_siniestro: $('#id_siniestro').val(),
-        tipo: $('#bien_tipo').val(),
-        descripcion: $('#bien_descripcion').val(),
-        estado: $('#bien_estado').val(),
-        fecha_alarma: $('#bien_fecha_alarma').val(),
-        observaciones: $('#bien_observaciones').val(),
-        motivo: $('#bien_motivo').val()
+    var desc = $.trim($('#bien_descripcion').val());
+    if (!desc) { alert('La descripción es obligatoria.'); return; }
+    var memkey = $('#bien_memkey').val();
+    var categoria = $('#bien_categoria').val();
+    var datos = {
+        tipo:            $('#bien_tipo').val(),
+        categoria:       categoria,
+        descripcion:     desc,
+        estado:          $('#bien_estado').val(),
+        fecha_alarma:    $('#bien_fecha_alarma').val(),
+        observaciones:   $('#bien_observaciones').val(),
+        patente:         categoria === 'vehiculo' ? $('#bien_patente').val() : '',
+        marca:           categoria === 'vehiculo' ? $('#bien_marca').val() : '',
+        modelo:          categoria === 'vehiculo' ? $('#bien_modelo').val() : '',
+        anio_vehiculo:   categoria === 'vehiculo' ? $('#bien_anio').val() : '',
+        taller_nombre:   categoria === 'vehiculo' ? $('#bien_taller_nombre').val() : '',
+        taller_telefono: categoria === 'vehiculo' ? $('#bien_taller_telefono').val() : ''
     };
-    if (!data.descripcion.trim()) { alert('La descripción es obligatoria.'); return; }
-    $.post('/bambooQA/backend/siniestros/crea_bien_afectado.php', data, function(resp) {
-        if (resp.ok) {
-            $('#modalBien').modal('hide');
-            cargarBienesAfectados($('#id_siniestro').val());
-        } else {
-            alert(resp.mensaje || 'Error al guardar.');
-        }
-    }, 'json');
+
+    if (memkey) {
+        // Actualización en memoria
+        var idx = bienesMem.findIndex(function(x){ return x.memkey == memkey; });
+        if (idx >= 0) { Object.assign(bienesMem[idx], datos); }
+    } else {
+        // Nuevo
+        bienesMem.push(Object.assign({ memkey: ++bienMemSeq }, datos));
+    }
+    $('#modalBien').modal('hide');
+    renderTodosBienes();
 }
-function eliminarBien(id) {
-    if (!confirm('¿Eliminar este bien? Se borrarán también su checklist y bitácora.')) return;
-    $.post('/bambooQA/backend/siniestros/crea_bien_afectado.php', { accion: 'eliminar_bien', id: id }, function(resp) {
-        if (resp.ok) {
-            cargarBienesAfectados($('#id_siniestro').val());
-        } else {
-            alert(resp.mensaje || 'Error al eliminar.');
-        }
-    }, 'json');
+function eliminarBien(memkey) {
+    var b = bienesMem.find(function(x){ return x.memkey === memkey; });
+    if (!b) return;
+    var msg = b.id
+        ? '¿Eliminar este bien? Al guardar el siniestro se borrarán también su checklist y bitácora.'
+        : '¿Quitar este bien del formulario?';
+    if (!confirm(msg)) return;
+    bienesMem = bienesMem.filter(function(x){ return x.memkey !== memkey; });
+    renderTodosBienes();
 }
 
 // =========================================================================
@@ -883,12 +966,56 @@ function guardarChecklist() {
       </div>
       <div class="modal-body">
         <input type="hidden" id="bien_id">
+        <input type="hidden" id="bien_memkey">
         <input type="hidden" id="bien_tipo">
         <input type="hidden" id="bien_estado_original">
-        <div class="form-group">
-          <label>Descripción <span style="color:darkred">*</span></label>
-          <textarea class="form-control" id="bien_descripcion" rows="2" placeholder="Ej: Dpto 304, Pasillo 2° piso, Auto patente XX-1234, Sr. Juan Pérez…"></textarea>
+        <div class="form-row">
+          <div class="col-md-4 form-group">
+            <label>Categoría <span style="color:darkred">*</span></label>
+            <select class="form-control" id="bien_categoria" onchange="toggleCamposVehiculoBien()">
+              <option value="vehiculo">Vehículo</option>
+              <option value="inmueble">Inmueble</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="col-md-8 form-group">
+            <label>Descripción <span style="color:darkred">*</span></label>
+            <textarea class="form-control" id="bien_descripcion" rows="2" placeholder="Ej: Dpto 304, Pasillo 2° piso, Auto del Sr. Pérez…"></textarea>
+          </div>
         </div>
+
+        <!-- Campos específicos de Vehículo -->
+        <div id="bien_campos_vehiculo">
+          <div class="form-row">
+            <div class="col-md-3 form-group">
+              <label>Patente</label>
+              <input type="text" class="form-control" id="bien_patente" maxlength="8" placeholder="XXXX00">
+            </div>
+            <div class="col-md-3 form-group">
+              <label>Marca</label>
+              <input type="text" class="form-control" id="bien_marca">
+            </div>
+            <div class="col-md-4 form-group">
+              <label>Modelo</label>
+              <input type="text" class="form-control" id="bien_modelo">
+            </div>
+            <div class="col-md-2 form-group">
+              <label>Año</label>
+              <input type="number" class="form-control" id="bien_anio" min="1990" max="2030">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col-md-6 form-group">
+              <label>Taller (nombre)</label>
+              <input type="text" class="form-control" id="bien_taller_nombre">
+            </div>
+            <div class="col-md-6 form-group">
+              <label>Taller (teléfono)</label>
+              <input type="text" class="form-control" id="bien_taller_telefono" placeholder="56 9 XXXX XXXX">
+            </div>
+          </div>
+        </div>
+
         <div class="form-row">
           <div class="col-md-6 form-group">
             <label>Estado</label>

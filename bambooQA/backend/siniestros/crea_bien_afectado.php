@@ -11,12 +11,25 @@ $accion        = estandariza_info($_POST['accion']         ?? '');
 $id            = estandariza_info($_POST['id']             ?? '');
 $id_siniestro  = estandariza_info($_POST['id_siniestro']   ?? '');
 $tipo          = estandariza_info($_POST['tipo']           ?? '');
+$categoria     = estandariza_info($_POST['categoria']      ?? 'otro');
 $descripcion   = estandariza_info($_POST['descripcion']    ?? '');
 $estado        = estandariza_info($_POST['estado']         ?? 'Abierto');
 $observaciones = estandariza_info($_POST['observaciones']  ?? '');
 $fecha_alarma  = estandariza_info($_POST['fecha_alarma']   ?? '');
+$patente       = estandariza_info($_POST['patente']        ?? '');
+$marca         = estandariza_info($_POST['marca']          ?? '');
+$modelo        = estandariza_info($_POST['modelo']         ?? '');
+$anio_vehiculo = estandariza_info($_POST['anio_vehiculo']  ?? '');
+$taller_nombre = estandariza_info($_POST['taller_nombre']  ?? '');
+$taller_telefono = estandariza_info($_POST['taller_telefono'] ?? '');
 $motivo        = estandariza_info($_POST['motivo']         ?? '');
 $usuario       = $_SESSION['username'] ?? '';
+
+if (!in_array($categoria, array('vehiculo','inmueble','otro'))) { $categoria = 'otro'; }
+// Si no es vehículo, limpiar campos específicos
+if ($categoria !== 'vehiculo') {
+    $patente = $marca = $modelo = $anio_vehiculo = $taller_nombre = $taller_telefono = '';
+}
 
 $ok = false; $mensaje = ''; $id_nuevo = null;
 
@@ -30,18 +43,22 @@ switch ($accion) {
         if ($descripcion === '') { $mensaje = 'descripcion es obligatoria.'; break; }
         if (!in_array($estado, array('Abierto','Cerrado','Rechazado'))) { $estado = 'Abierto'; }
         $d = sqlesc($descripcion); $o = sqlesc($observaciones);
+        $p = sqlesc($patente); $ma = sqlesc($marca); $mo = sqlesc($modelo);
+        $tn = sqlesc($taller_nombre); $tt = sqlesc($taller_telefono);
         $fa = ($fecha_alarma !== '') ? "NULLIF('$fecha_alarma','')::date" : "NULL";
-        db_query($link, "INSERT INTO siniestros_bienes_afectados (id_siniestro, tipo, descripcion, estado, observaciones, fecha_alarma)
-                         VALUES ('$id_siniestro', '$tipo', '$d', '$estado', '$o', $fa)
-                         RETURNING id");
-        // En PG pg_insert_id no es común; fallback con SELECT currval.
+        $av = (ctype_digit($anio_vehiculo)) ? "'$anio_vehiculo'::integer" : "NULL";
+        db_query($link, "INSERT INTO siniestros_bienes_afectados
+                            (id_siniestro, tipo, categoria, descripcion, estado, observaciones, fecha_alarma,
+                             patente, marca, modelo, anio_vehiculo, taller_nombre, taller_telefono)
+                         VALUES ('$id_siniestro', '$tipo', '$categoria', '$d', '$estado', '$o', $fa,
+                                 '$p', '$ma', '$mo', $av, '$tn', '$tt')");
         $r = db_query($link, "SELECT currval('siniestros_bienes_afectados_id_seq') AS id");
         while ($fila = db_fetch_object($r)) { $id_nuevo = $fila->id; }
         if ($id_nuevo) {
             db_query($link, "INSERT INTO siniestros_bienes_bitacora (id_bien, estado_anterior, estado_nuevo, usuario, motivo)
                              VALUES ('$id_nuevo', NULL, '$estado', '$usuario', 'Creación')");
         }
-        db_query($link, "SELECT trazabilidad('$usuario', 'Creación bien afectado', 'Siniestro: $id_siniestro, tipo: $tipo', 'siniestros_bienes_afectados', '$id_siniestro', '{$_SERVER['PHP_SELF']}')");
+        db_query($link, "SELECT trazabilidad('$usuario', 'Creación bien afectado', 'Siniestro: $id_siniestro, tipo: $tipo, cat: $categoria', 'siniestros_bienes_afectados', '$id_siniestro', '{$_SERVER['PHP_SELF']}')");
         $ok = true; $mensaje = 'Bien creado.';
         break;
 
@@ -50,18 +67,27 @@ switch ($accion) {
         if ($descripcion === '') { $mensaje = 'descripcion es obligatoria.'; break; }
         if (!in_array($estado, array('Abierto','Cerrado','Rechazado'))) { $estado = 'Abierto'; }
 
-        // Leer estado anterior para bitácora
         $estado_anterior = '';
         $r = db_query($link, "SELECT estado FROM siniestros_bienes_afectados WHERE id = '$id'");
         while ($row = db_fetch_object($r)) { $estado_anterior = $row->estado; }
 
         $d = sqlesc($descripcion); $o = sqlesc($observaciones);
+        $p = sqlesc($patente); $ma = sqlesc($marca); $mo = sqlesc($modelo);
+        $tn = sqlesc($taller_nombre); $tt = sqlesc($taller_telefono);
         $fa = ($fecha_alarma !== '') ? "NULLIF('$fecha_alarma','')::date" : "NULL";
+        $av = (ctype_digit($anio_vehiculo)) ? "'$anio_vehiculo'::integer" : "NULL";
         db_query($link, "UPDATE siniestros_bienes_afectados SET
+                            categoria = '$categoria',
                             descripcion = '$d',
                             estado = '$estado',
                             observaciones = '$o',
                             fecha_alarma = $fa,
+                            patente = '$p',
+                            marca = '$ma',
+                            modelo = '$mo',
+                            anio_vehiculo = $av,
+                            taller_nombre = '$tn',
+                            taller_telefono = '$tt',
                             updated_at = NOW()
                          WHERE id = '$id'");
 
@@ -76,7 +102,6 @@ switch ($accion) {
 
     case 'eliminar_bien':
         if (!ctype_digit($id)) { $mensaje = 'id inválido.'; break; }
-        // Hard delete: CASCADE borra docs + bitácora. Es data local del siniestro; OK.
         db_query($link, "DELETE FROM siniestros_bienes_afectados WHERE id = '$id'");
         db_query($link, "SELECT trazabilidad('$usuario', 'Eliminación bien afectado', 'ID: $id', 'siniestros_bienes_afectados', '$id', '{$_SERVER['PHP_SELF']}')");
         $ok = true; $mensaje = 'Bien eliminado.';

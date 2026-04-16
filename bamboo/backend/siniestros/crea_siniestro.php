@@ -64,6 +64,94 @@ function parse_items_csv($csv) {
     return array_values(array_unique($out));
 }
 
+// Sincroniza bienes afectados contra BD (INSERT / UPDATE / DELETE).
+// $bienes_array: array de objetos con id (opcional), tipo, categoria, descripcion, etc.
+function sincroniza_bienes($link, $id_siniestro, $bienes_array, $usuario) {
+    $sqlesc = function($v) { return str_replace("'", "''", (string)$v); };
+    // IDs existentes en BD
+    $existentes = array();
+    $res = db_query($link, "SELECT id FROM siniestros_bienes_afectados WHERE id_siniestro = '$id_siniestro'");
+    while ($r = db_fetch_object($res)) { $existentes[] = (int)$r->id; }
+
+    $ids_mantenidos = array();
+    foreach ($bienes_array as $b) {
+        $bien_id        = isset($b['id']) && ctype_digit((string)$b['id']) ? (int)$b['id'] : 0;
+        $tipo           = in_array($b['tipo'] ?? '', array('propio','tercero')) ? $b['tipo'] : 'propio';
+        $categoria      = in_array($b['categoria'] ?? '', array('vehiculo','inmueble','otro')) ? $b['categoria'] : 'otro';
+        $descripcion    = trim($b['descripcion'] ?? '');
+        if ($descripcion === '') continue; // ignorar filas vacías
+        $estado         = in_array($b['estado'] ?? '', array('Abierto','Cerrado','Rechazado')) ? $b['estado'] : 'Abierto';
+        $observaciones  = $b['observaciones'] ?? '';
+        $fecha_alarma   = $b['fecha_alarma'] ?? '';
+        $patente        = ($categoria === 'vehiculo') ? ($b['patente']       ?? '') : '';
+        $marca          = ($categoria === 'vehiculo') ? ($b['marca']         ?? '') : '';
+        $modelo         = ($categoria === 'vehiculo') ? ($b['modelo']        ?? '') : '';
+        $anio           = ($categoria === 'vehiculo') ? (string)($b['anio_vehiculo'] ?? '') : '';
+        $taller_nombre  = ($categoria === 'vehiculo') ? ($b['taller_nombre']   ?? '') : '';
+        $taller_telefono = ($categoria === 'vehiculo') ? ($b['taller_telefono'] ?? '') : '';
+
+        $d  = $sqlesc($descripcion);
+        $o  = $sqlesc($observaciones);
+        $p  = $sqlesc($patente);
+        $ma = $sqlesc($marca);
+        $mo = $sqlesc($modelo);
+        $tn = $sqlesc($taller_nombre);
+        $tt = $sqlesc($taller_telefono);
+        $fa = ($fecha_alarma !== '') ? "NULLIF('" . $sqlesc($fecha_alarma) . "','')::date" : "NULL";
+        $av = ctype_digit($anio) ? "'$anio'::integer" : "NULL";
+
+        if ($bien_id > 0 && in_array($bien_id, $existentes)) {
+            // UPDATE
+            $estado_anterior = '';
+            $res = db_query($link, "SELECT estado FROM siniestros_bienes_afectados WHERE id = '$bien_id'");
+            while ($r = db_fetch_object($res)) { $estado_anterior = $r->estado; }
+
+            db_query($link, "UPDATE siniestros_bienes_afectados SET
+                                tipo = '$tipo',
+                                categoria = '$categoria',
+                                descripcion = '$d',
+                                estado = '$estado',
+                                observaciones = '$o',
+                                fecha_alarma = $fa,
+                                patente = '$p',
+                                marca = '$ma',
+                                modelo = '$mo',
+                                anio_vehiculo = $av,
+                                taller_nombre = '$tn',
+                                taller_telefono = '$tt',
+                                updated_at = NOW()
+                             WHERE id = '$bien_id'");
+
+            if ($estado_anterior !== '' && $estado_anterior !== $estado) {
+                db_query($link, "INSERT INTO siniestros_bienes_bitacora (id_bien, estado_anterior, estado_nuevo, usuario, motivo)
+                                 VALUES ('$bien_id', '$estado_anterior', '$estado', '$usuario', 'Edición desde form siniestro')");
+            }
+            $ids_mantenidos[] = $bien_id;
+        } else {
+            // INSERT
+            db_query($link, "INSERT INTO siniestros_bienes_afectados
+                                (id_siniestro, tipo, categoria, descripcion, estado, observaciones, fecha_alarma,
+                                 patente, marca, modelo, anio_vehiculo, taller_nombre, taller_telefono)
+                             VALUES ('$id_siniestro', '$tipo', '$categoria', '$d', '$estado', '$o', $fa,
+                                     '$p', '$ma', '$mo', $av, '$tn', '$tt')");
+            $r = db_query($link, "SELECT currval('siniestros_bienes_afectados_id_seq') AS id");
+            $id_nuevo = null;
+            while ($fila = db_fetch_object($r)) { $id_nuevo = (int)$fila->id; }
+            if ($id_nuevo) {
+                db_query($link, "INSERT INTO siniestros_bienes_bitacora (id_bien, estado_anterior, estado_nuevo, usuario, motivo)
+                                 VALUES ('$id_nuevo', NULL, '$estado', '$usuario', 'Creación desde form siniestro')");
+                $ids_mantenidos[] = $id_nuevo;
+            }
+        }
+    }
+
+    // DELETE bienes que existían pero ya no vienen en el POST
+    $a_borrar = array_diff($existentes, $ids_mantenidos);
+    foreach ($a_borrar as $idb) {
+        db_query($link, "DELETE FROM siniestros_bienes_afectados WHERE id = '$idb'");
+    }
+}
+
 // Obtiene datos de vehículo por ítem desde el POST: vehiculo_patente[1], vehiculo_marca[1], ...
 function veh_por_item($numero_item) {
     $sanitize = function($v) {
@@ -158,6 +246,15 @@ switch ($accion) {
             // Bitácora inicial
             db_query($link, "INSERT INTO siniestros_bitacora (id_siniestro, estado_anterior, estado_nuevo, usuario, motivo)
                              VALUES ('$id_nuevo', NULL, '$estado', '$usuario', 'Creación')");
+
+            // Sincronizar bienes afectados
+            $bienes_json = $_POST['bienes_json'] ?? '';
+            if ($bienes_json !== '') {
+                $bienes = json_decode(stripslashes($bienes_json), true);
+                if (is_array($bienes)) {
+                    sincroniza_bienes($link, $id_nuevo, $bienes, $usuario);
+                }
+            }
         }
 
         db_query($link, "SELECT trazabilidad('$usuario', 'Creación siniestro', '" .
@@ -226,6 +323,15 @@ switch ($accion) {
                                 marca = EXCLUDED.marca,
                                 modelo = EXCLUDED.modelo,
                                 anio_vehiculo = EXCLUDED.anio_vehiculo");
+        }
+
+        // Sincronizar bienes afectados
+        $bienes_json = $_POST['bienes_json'] ?? '';
+        if ($bienes_json !== '') {
+            $bienes = json_decode(stripslashes($bienes_json), true);
+            if (is_array($bienes)) {
+                sincroniza_bienes($link, $id, $bienes, $usuario);
+            }
         }
 
         db_query($link, "SELECT trazabilidad('$usuario', 'Actualización siniestro', '" .
