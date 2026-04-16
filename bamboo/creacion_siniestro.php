@@ -398,6 +398,16 @@ function estandariza_info(val) {
     return $.trim(val);
 }
 
+// Reemplaza saltos de línea (literales "\r\n" escapados o reales) por un espacio.
+// Útil para mostrar texto multi-línea (materia_asegurada, patente_ubicacion) en una sola línea.
+function colapsaSaltos(s) {
+    if (s === null || s === undefined) return '';
+    return String(s)
+        .replace(/\\r\\n/g, ' ').replace(/\\n/g, ' ').replace(/\\r/g, ' ')
+        .replace(/\r\n/g, ' ').replace(/\n/g, ' ').replace(/\r/g, ' ')
+        .replace(/\s+/g, ' ').trim();
+}
+
 // ---- Toggle secciones vehículo y taller ----
 // Legacy no-op: las secciones Vehículo/Taller fueron removidas. Mantenido
 // para que llamadas antiguas no fallen.
@@ -501,8 +511,8 @@ function cargarItemsPoliza(id_poliza, items_csv_pre) {
                     checked = 'checked';
                 }
                 var label = 'Ítem ' + it.numero_item;
-                if (it.materia_asegurada) label += ' — ' + String(it.materia_asegurada).substring(0, 80);
-                if (it.patente_ubicacion) label += ' (' + it.patente_ubicacion + ')';
+                if (it.materia_asegurada) label += ' — ' + colapsaSaltos(it.materia_asegurada).substring(0, 80);
+                if (it.patente_ubicacion) label += ' (' + colapsaSaltos(it.patente_ubicacion) + ')';
                 html += '<div class="form-check">' +
                         '<input class="form-check-input chk_item" type="checkbox" value="' + it.numero_item + '" id="chk_item_' + it.numero_item + '" ' + checked + '>' +
                         '<label class="form-check-label" for="chk_item_' + it.numero_item + '">' + label + '</label>' +
