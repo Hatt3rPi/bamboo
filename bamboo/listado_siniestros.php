@@ -277,53 +277,48 @@ $(document).ready(function() {
 function format_siniestro(d) {
     // `d` is the original data object for the row
 
-    var seccion_vehiculo = '';
-    if (d.vehiculos && d.vehiculos.length > 0) {
-        var filas_veh = '';
-        for (var vi = 0; vi < d.vehiculos.length; vi++) {
-            var v = d.vehiculos[vi];
-            filas_veh +=
-                '<tr>' +
-                    '<td>Ítem ' + v.numero_item + '</td>' +
-                    '<td>' + (v.patente || '') + '</td>' +
-                    '<td>' + (v.marca || '') + '</td>' +
-                    '<td>' + (v.modelo || '') + '</td>' +
-                    '<td>' + (v.anio_vehiculo || '') + '</td>' +
-                '</tr>';
+    // Bienes afectados: propios + terceros (reemplaza sección Vehículos/Taller legacy)
+    function render_bienes_grupo(lista) {
+        if (!lista || lista.length === 0) {
+            return '<em>Sin registros.</em>';
         }
-        seccion_vehiculo =
-            '<tr>' +
-                '<td VALIGN=TOP>Vehículos: </td>' +
-                '<td>' +
-                    '<table class="table table-striped" style="width:100%">' +
-                        '<thead><tr>' +
-                            '<th>Ítem</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th>' +
-                        '</tr></thead>' +
-                        '<tbody>' + filas_veh + '</tbody>' +
-                    '</table>' +
-                '</td>' +
-            '</tr>';
+        var rows = '';
+        lista.forEach(function(b) {
+            var catCls = b.categoria === 'vehiculo' ? 'badge-info'
+                       : b.categoria === 'inmueble' ? 'badge-warning'
+                       : 'badge-light';
+            var catTxt = b.categoria === 'vehiculo' ? 'Vehículo'
+                       : b.categoria === 'inmueble' ? 'Inmueble'
+                       : 'Otro';
+            var estCls = b.estado === 'Abierto'   ? 'badge-primary'
+                       : b.estado === 'Cerrado'   ? 'badge-secondary'
+                       : b.estado === 'Rechazado' ? 'badge-danger'
+                       : 'badge-light';
+            var pat = b.patente ? ' &middot; <strong>' + b.patente + '</strong>' : '';
+            rows +=
+                '<tr>' +
+                    '<td><span class="badge ' + catCls + '">' + catTxt + '</span></td>' +
+                    '<td>' + (b.descripcion || '') + pat + '</td>' +
+                    '<td><span class="badge ' + estCls + '">' + (b.estado || '') + '</span></td>' +
+                '</tr>';
+        });
+        return '<table class="table table-sm table-striped mb-0" style="width:100%">' +
+                    '<thead><tr><th style="width:15%">Categoría</th><th>Descripción</th><th style="width:15%">Estado</th></tr></thead>' +
+                    '<tbody>' + rows + '</tbody>' +
+                '</table>';
     }
-
-    var seccion_taller = '';
-    if (d.taller_nombre) {
-        seccion_taller =
-            '<tr>' +
-                '<td VALIGN=TOP>Taller: </td>' +
-                '<td>' +
-                    '<table class="table table-striped" style="width:100%">' +
-                        '<tr>' +
-                            '<td>Nombre:</td>' +
-                            '<td>' + (d.taller_nombre || '') + '</td>' +
-                        '</tr>' +
-                        '<tr>' +
-                            '<td>Teléfono:</td>' +
-                            '<td>' + (d.taller_telefono || '') + '</td>' +
-                        '</tr>' +
-                    '</table>' +
-                '</td>' +
-            '</tr>';
-    }
+    var bienes = d.bienes || [];
+    var bienes_propios  = bienes.filter(function(b){ return b.tipo === 'propio';  });
+    var bienes_terceros = bienes.filter(function(b){ return b.tipo === 'tercero'; });
+    var seccion_bienes =
+        '<tr>' +
+            '<td VALIGN=TOP>Daño propio (' + bienes_propios.length + '):</td>' +
+            '<td>' + render_bienes_grupo(bienes_propios) + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td VALIGN=TOP>Daño terceros (' + bienes_terceros.length + '):</td>' +
+            '<td>' + render_bienes_grupo(bienes_terceros) + '</td>' +
+        '</tr>';
 
     var botones =
         '<button title="Editar Siniestro" type="button" id="' + d.id_siniestro + '" name="editar_siniestro" onclick="botones(this.id, this.name)"><i class="fas fa-edit"></i></button><a> </a>' +
@@ -377,8 +372,7 @@ function format_siniestro(d) {
                 '</table>' +
             '</td>' +
         '</tr>' +
-        seccion_vehiculo +
-        seccion_taller +
+        seccion_bienes +
         '<tr>' +
             '<td VALIGN=TOP>Acciones: </td>' +
             '<td>' +

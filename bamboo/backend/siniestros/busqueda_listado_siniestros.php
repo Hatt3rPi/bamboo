@@ -25,7 +25,8 @@ $sql = "SELECT s.id, s.numero_siniestro, s.numero_poliza, s.ramo, s.tipo_siniest
     si.patentes_items,
     si.vehiculos_json,
     COALESCE(ba.bienes_propios, 0) as bienes_propios,
-    COALESCE(ba.bienes_terceros, 0) as bienes_terceros
+    COALESCE(ba.bienes_terceros, 0) as bienes_terceros,
+    ba.bienes_json
 FROM siniestros s
 LEFT JOIN clientes c ON s.rut_asegurado = c.rut_sin_dv AND c.rut_sin_dv IS NOT NULL
 LEFT JOIN polizas_2 p ON s.id_poliza = p.id
@@ -45,7 +46,15 @@ LEFT JOIN (
 LEFT JOIN (
     SELECT id_siniestro,
            SUM(CASE WHEN tipo = 'propio'  THEN 1 ELSE 0 END) as bienes_propios,
-           SUM(CASE WHEN tipo = 'tercero' THEN 1 ELSE 0 END) as bienes_terceros
+           SUM(CASE WHEN tipo = 'tercero' THEN 1 ELSE 0 END) as bienes_terceros,
+           json_agg(json_build_object(
+               'id', id,
+               'tipo', tipo,
+               'categoria', categoria,
+               'descripcion', descripcion,
+               'estado', estado,
+               'patente', COALESCE(patente, '')
+           ) ORDER BY tipo, id) as bienes_json
     FROM siniestros_bienes_afectados GROUP BY id_siniestro
 ) ba ON ba.id_siniestro = s.id
 WHERE COALESCE(s.estado, '') <> 'Eliminado'
@@ -89,7 +98,8 @@ while ($row = db_fetch_object($resultado)) {
         "correo_cliente"       => $row->correo_cliente,
         "compania"             => $row->compania,
         "bienes_propios"       => (int)$row->bienes_propios,
-        "bienes_terceros"      => (int)$row->bienes_terceros
+        "bienes_terceros"      => (int)$row->bienes_terceros,
+        "bienes"               => $row->bienes_json ? json_decode($row->bienes_json, true) : array()
     );
 }
 db_close($link);
