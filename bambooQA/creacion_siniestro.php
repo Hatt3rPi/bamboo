@@ -774,7 +774,7 @@ function renderTablaBienes(selector, lista) {
         var docs = b.id && b.total_docs > 0 ? (b.entregados + '/' + b.total_docs + ' entregados') :
                    (b.id ? '<em>sin marcar</em>' : '<em>sin guardar</em>');
         var btnChecklist = b.id ?
-            '<button type="button" class="btn btn-sm btn-secondary" onclick="abrirChecklist(' + b.id + ',\'' + escAttr(b.descripcion) + '\')"><i class="fas fa-list-check"></i> Checklist</button> ' :
+            '<button type="button" class="btn btn-sm btn-outline-secondary" onclick="abrirChecklist(' + b.id + ',\'' + escAttr(b.descripcion) + '\')" title="Checklist de documentos">📋 Checklist</button> ' :
             '';
         var fila = '<tr data-memkey="' + b.memkey + '">' +
             '<td>' + catLabel + '</td>' +
@@ -782,10 +782,10 @@ function renderTablaBienes(selector, lista) {
             '<td>' + badge + '</td>' +
             '<td>' + alarma + '</td>' +
             '<td>' + docs + '</td>' +
-            '<td>' +
-              '<button type="button" class="btn btn-sm btn-info" onclick="editarBien(' + b.memkey + ')"><i class="fas fa-edit"></i></button> ' +
+            '<td style="white-space:nowrap">' +
+              '<button type="button" class="btn btn-sm btn-outline-info mr-1" onclick="editarBien(' + b.memkey + ')" title="Editar">✏️ Editar</button>' +
               btnChecklist +
-              '<button type="button" class="btn btn-sm btn-danger" onclick="eliminarBien(' + b.memkey + ')"><i class="fas fa-trash"></i></button>' +
+              '<button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarBien(' + b.memkey + ')" title="Eliminar">🗑️ Eliminar</button>' +
             '</td>' +
         '</tr>';
         tbody.append(fila);
