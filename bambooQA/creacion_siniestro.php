@@ -773,9 +773,6 @@ function renderTablaBienes(selector, lista) {
         var catLabel = catBienLabel(b.categoria);
         var docs = b.id && b.total_docs > 0 ? (b.entregados + '/' + b.total_docs + ' entregados') :
                    (b.id ? '<em>sin marcar</em>' : '<em>sin guardar</em>');
-        var btnChecklist = b.id ?
-            '<button type="button" class="btn btn-sm btn-outline-secondary" onclick="abrirChecklist(' + b.id + ',\'' + escAttr(b.descripcion) + '\')" title="Checklist de documentos">📋 Checklist</button> ' :
-            '';
         var fila = '<tr data-memkey="' + b.memkey + '">' +
             '<td>' + catLabel + '</td>' +
             '<td>' + escHtml(b.descripcion) + '</td>' +
@@ -783,8 +780,7 @@ function renderTablaBienes(selector, lista) {
             '<td>' + alarma + '</td>' +
             '<td>' + docs + '</td>' +
             '<td style="white-space:nowrap">' +
-              '<button type="button" class="btn btn-sm btn-outline-info mr-1" onclick="editarBien(' + b.memkey + ')" title="Editar">✏️ Editar</button>' +
-              btnChecklist +
+              '<button type="button" class="btn btn-sm btn-outline-info mr-1" onclick="editarBien(' + b.memkey + ')" title="Editar / Ver documentación">✏️ Editar</button>' +
               '<button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarBien(' + b.memkey + ')" title="Eliminar">🗑️ Eliminar</button>' +
             '</td>' +
         '</tr>';
@@ -809,6 +805,8 @@ function escAttr(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
 function toggleCamposVehiculoBien() {
     var esVeh = $('#bien_categoria').val() === 'vehiculo';
     $('#bien_campos_vehiculo').toggle(esVeh);
+    $('#bien_campos_taller').toggle(esVeh);
+    $('#bien_msg_no_taller').toggle(!esVeh);
 }
 
 // Sugerir categoría default según ramo de la póliza (la primera vez que se abre un bien propio)
@@ -883,6 +881,10 @@ function nuevoBien(tipo) {
         }
     }
 
+    // Reset al tab Descripción y checklist vacío (bien no persistido todavía)
+    $('#modalBien .nav-tabs a[href="#tab-bien-desc"]').tab('show');
+    cargarChecklistBien(null);
+
     $('#modalBienTitle').text('Nuevo bien ' + (tipo === 'propio' ? 'propio' : 'de tercero'));
     $('#modalBien').modal('show');
 }
@@ -907,6 +909,8 @@ function editarBien(memkey) {
     $('#bien_motivo').val('');
     $('#bien_motivo_wrap').hide();
     toggleCamposVehiculoBien();
+    $('#modalBien .nav-tabs a[href="#tab-bien-desc"]').tab('show');
+    cargarChecklistBien(b.id || null);
     $('#modalBienTitle').text('Editar bien ' + (b.tipo === 'propio' ? 'propio' : 'de tercero'));
     $('#modalBien').modal('show');
 }
@@ -923,6 +927,7 @@ function guardarBien() {
     var desc = $.trim($('#bien_descripcion').val());
     if (!desc) { alert('La descripción es obligatoria.'); return; }
     var memkey = $('#bien_memkey').val();
+    var bien_id = $('#bien_id').val();
     var categoria = $('#bien_categoria').val();
     var datos = {
         tipo:            $('#bien_tipo').val(),
@@ -940,15 +945,22 @@ function guardarBien() {
     };
 
     if (memkey) {
-        // Actualización en memoria
         var idx = bienesMem.findIndex(function(x){ return x.memkey == memkey; });
         if (idx >= 0) { Object.assign(bienesMem[idx], datos); }
     } else {
-        // Nuevo
         bienesMem.push(Object.assign({ memkey: ++bienMemSeq }, datos));
     }
-    $('#modalBien').modal('hide');
-    renderTodosBienes();
+
+    var cerrar = function() {
+        $('#modalBien').modal('hide');
+        renderTodosBienes();
+    };
+    // Si el bien ya está persistido, guardar también el checklist inline
+    if (bien_id) {
+        persistirChecklistBien(bien_id, cerrar);
+    } else {
+        cerrar();
+    }
 }
 function eliminarBien(memkey) {
     var b = bienesMem.find(function(x){ return x.memkey === memkey; });
@@ -962,14 +974,20 @@ function eliminarBien(memkey) {
 }
 
 // =========================================================================
-// CHECKLIST (modal)
+// CHECKLIST INLINE (integrado al modal del bien, tab Documentación)
 // =========================================================================
-function abrirChecklist(id_bien, descripcion) {
-    $('#checklistTitle').text('Checklist — ' + descripcion);
-    $('#checklist_id_bien').val(id_bien);
-    $('#checklist_body').html('<tr><td colspan="4"><em>Cargando…</em></td></tr>');
+function cargarChecklistBien(id_bien) {
+    var body = $('#bien_docs_body');
+    if (!id_bien) {
+        $('#bien_docs_msg_nuevo').show();
+        $('#bien_docs_wrap').hide();
+        body.empty();
+        return;
+    }
+    $('#bien_docs_msg_nuevo').hide();
+    $('#bien_docs_wrap').show();
+    body.html('<tr><td colspan="4"><em>Cargando…</em></td></tr>');
     $.getJSON('/bambooQA/backend/siniestros/busqueda_checklist_bien.php', { id_bien: id_bien }, function(resp) {
-        var body = $('#checklist_body');
         body.empty();
         (resp.data || []).forEach(function(d) {
             var estados = ['Pendiente','En revisión','Entregado','Rechazado','No aplica'];
@@ -989,12 +1007,11 @@ function abrirChecklist(id_bien, descripcion) {
             body.html('<tr><td colspan="4"><em>No hay documentos activos en el catálogo.</em></td></tr>');
         }
     });
-    $('#modalChecklist').modal('show');
 }
-function guardarChecklist() {
-    var id_bien = $('#checklist_id_bien').val();
-    var filas = $('#checklist_body tr[data-id-doc]');
-    if (filas.length === 0) { $('#modalChecklist').modal('hide'); return; }
+// Persiste los cambios del checklist inline (llamado desde guardarBien cuando hay id).
+function persistirChecklistBien(id_bien, cb) {
+    var filas = $('#bien_docs_body tr[data-id-doc]');
+    if (filas.length === 0) { cb(); return; }
     var promesas = [];
     filas.each(function() {
         var $tr = $(this);
@@ -1006,18 +1023,13 @@ function guardarChecklist() {
             notas: $tr.find('.cl-notas').val()
         }));
     });
-    $.when.apply($, promesas).done(function() {
-        $('#modalChecklist').modal('hide');
-        cargarBienesAfectados($('#id_siniestro').val());
-    }).fail(function() {
-        alert('Hubo errores al guardar algunos documentos.');
-    });
+    $.when.apply($, promesas).always(cb);
 }
 </script>
 
-<!-- ==================== MODALES ==================== -->
+<!-- ==================== MODAL BIEN AFECTADO (rediseñado con tabs) ==================== -->
 <div class="modal fade" id="modalBien" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="modalBienTitle">Bien afectado</h5>
@@ -1028,103 +1040,124 @@ function guardarChecklist() {
         <input type="hidden" id="bien_memkey">
         <input type="hidden" id="bien_tipo">
         <input type="hidden" id="bien_estado_original">
-        <div class="form-row">
-          <div class="col-md-4 form-group">
-            <label>Categoría <span style="color:darkred">*</span></label>
-            <select class="form-control" id="bien_categoria" onchange="toggleCamposVehiculoBien()">
-              <option value="vehiculo">Vehículo</option>
-              <option value="inmueble">Inmueble</option>
-              <option value="otro">Otro</option>
-            </select>
-          </div>
-          <div class="col-md-8 form-group">
-            <label>Descripción <span style="color:darkred">*</span></label>
-            <textarea class="form-control" id="bien_descripcion" rows="2" placeholder="Ej: Dpto 304, Pasillo 2° piso, Auto del Sr. Pérez…"></textarea>
-          </div>
-        </div>
 
-        <!-- Campos específicos de Vehículo -->
-        <div id="bien_campos_vehiculo">
-          <div class="form-row">
-            <div class="col-md-3 form-group">
-              <label>Patente</label>
-              <input type="text" class="form-control" id="bien_patente" maxlength="8" placeholder="XXXX00">
-            </div>
-            <div class="col-md-3 form-group">
-              <label>Marca</label>
-              <input type="text" class="form-control" id="bien_marca">
-            </div>
-            <div class="col-md-4 form-group">
-              <label>Modelo</label>
-              <input type="text" class="form-control" id="bien_modelo">
-            </div>
-            <div class="col-md-2 form-group">
-              <label>Año</label>
-              <input type="number" class="form-control" id="bien_anio" min="1990" max="2030">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="col-md-6 form-group">
-              <label>Taller (nombre)</label>
-              <input type="text" class="form-control" id="bien_taller_nombre">
-            </div>
-            <div class="col-md-6 form-group">
-              <label>Taller (teléfono)</label>
-              <input type="text" class="form-control" id="bien_taller_telefono" placeholder="56 9 XXXX XXXX">
-            </div>
-          </div>
-        </div>
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tab-bien-desc" role="tab">Descripción</a></li>
+          <li class="nav-item" id="li_tab_taller"><a class="nav-link" data-toggle="tab" href="#tab-bien-taller" role="tab">Taller</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-bien-seg" role="tab">Seguimiento</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-bien-docs" role="tab">Documentación</a></li>
+        </ul>
 
-        <div class="form-row">
-          <div class="col-md-6 form-group">
-            <label>Estado</label>
-            <select class="form-control" id="bien_estado">
-              <option value="Abierto">Abierto</option>
-              <option value="Cerrado">Cerrado</option>
-              <option value="Rechazado">Rechazado</option>
-            </select>
+        <div class="tab-content pt-3">
+          <!-- TAB 1: Descripción del bien -->
+          <div class="tab-pane fade show active" id="tab-bien-desc" role="tabpanel">
+            <div class="form-row">
+              <div class="col-md-4 form-group">
+                <label>Categoría <span style="color:darkred">*</span></label>
+                <select class="form-control" id="bien_categoria" onchange="toggleCamposVehiculoBien()">
+                  <option value="vehiculo">Vehículo</option>
+                  <option value="inmueble">Inmueble</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+              <div class="col-md-8 form-group">
+                <label>Descripción <span style="color:darkred">*</span></label>
+                <textarea class="form-control" id="bien_descripcion" rows="2" placeholder="Ej: Dpto 304, Pasillo 2° piso, Auto del Sr. Pérez…"></textarea>
+              </div>
+            </div>
+            <div id="bien_campos_vehiculo">
+              <div class="form-row">
+                <div class="col-md-3 form-group">
+                  <label>Patente</label>
+                  <input type="text" class="form-control" id="bien_patente" maxlength="8" placeholder="XXXX00">
+                </div>
+                <div class="col-md-3 form-group">
+                  <label>Marca</label>
+                  <input type="text" class="form-control" id="bien_marca">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Modelo</label>
+                  <input type="text" class="form-control" id="bien_modelo">
+                </div>
+                <div class="col-md-2 form-group">
+                  <label>Año</label>
+                  <input type="number" class="form-control" id="bien_anio" min="1990" max="2030">
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="col-md-6 form-group">
-            <label>Fecha alarma / próxima revisión</label>
-            <input type="date" class="form-control" id="bien_fecha_alarma">
+
+          <!-- TAB 2: Taller -->
+          <div class="tab-pane fade" id="tab-bien-taller" role="tabpanel">
+            <div id="bien_msg_no_taller" class="alert alert-info" style="display:none">
+              Los datos del taller solo aplican cuando la categoría del bien es <strong>Vehículo</strong>.
+            </div>
+            <div id="bien_campos_taller">
+              <div class="form-row">
+                <div class="col-md-6 form-group">
+                  <label>Nombre</label>
+                  <input type="text" class="form-control" id="bien_taller_nombre">
+                </div>
+                <div class="col-md-6 form-group">
+                  <label>Teléfono</label>
+                  <input type="text" class="form-control" id="bien_taller_telefono" placeholder="56 9 XXXX XXXX">
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="form-group">
-          <label>Observaciones</label>
-          <textarea class="form-control" id="bien_observaciones" rows="2"></textarea>
-        </div>
-        <div class="form-group" id="bien_motivo_wrap" style="display:none">
-          <label>Motivo del cambio de estado</label>
-          <input type="text" class="form-control" id="bien_motivo">
+
+          <!-- TAB 3: Seguimiento -->
+          <div class="tab-pane fade" id="tab-bien-seg" role="tabpanel">
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Estado</label>
+                <select class="form-control" id="bien_estado">
+                  <option value="Abierto">Abierto</option>
+                  <option value="Cerrado">Cerrado</option>
+                  <option value="Rechazado">Rechazado</option>
+                </select>
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Fecha alarma / próxima revisión</label>
+                <input type="date" class="form-control" id="bien_fecha_alarma">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Observaciones</label>
+              <textarea class="form-control" id="bien_observaciones" rows="3"></textarea>
+            </div>
+            <div class="form-group" id="bien_motivo_wrap" style="display:none">
+              <label>Motivo del cambio de estado</label>
+              <input type="text" class="form-control" id="bien_motivo">
+            </div>
+          </div>
+
+          <!-- TAB 4: Documentación -->
+          <div class="tab-pane fade" id="tab-bien-docs" role="tabpanel">
+            <div id="bien_docs_msg_nuevo" class="alert alert-warning" style="display:none">
+              Guarda primero el bien para gestionar los documentos. Al guardar aparecerán pendientes todos los documentos activos del catálogo.
+            </div>
+            <div id="bien_docs_wrap">
+              <table class="table table-sm table-bordered mb-0">
+                <thead>
+                  <tr>
+                    <th>Documento</th>
+                    <th style="width:20%">Estado</th>
+                    <th style="width:18%">Fecha entrega</th>
+                    <th style="width:30%">Notas</th>
+                  </tr>
+                </thead>
+                <tbody id="bien_docs_body">
+                  <tr><td colspan="4"><em>Cargando…</em></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
         <button type="button" class="btn btn-primary" onclick="guardarBien()">Guardar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalChecklist" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-xl" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="checklistTitle">Checklist</h5>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="checklist_id_bien">
-        <table class="table table-sm table-bordered">
-          <thead>
-            <tr><th>Documento</th><th style="width:18%">Estado</th><th style="width:18%">Fecha entrega</th><th style="width:30%">Notas</th></tr>
-          </thead>
-          <tbody id="checklist_body"></tbody>
-        </table>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" onclick="guardarChecklist()">Guardar checklist</button>
       </div>
     </div>
   </div>
