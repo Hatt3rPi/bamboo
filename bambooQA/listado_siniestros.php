@@ -323,7 +323,8 @@ function format_siniestro(d) {
     var botones =
         '<button title="Editar Siniestro" type="button" id="' + d.id_siniestro + '" name="editar_siniestro" onclick="botones(this.id, this.name)"><i class="fas fa-edit"></i></button><a> </a>' +
         '<button style="background-color: #FF0000" title="Eliminar Siniestro" type="button" id="' + d.id_siniestro + '" name="eliminar_siniestro" onclick="botones(this.id, this.name)"><i class="fas fa-trash"></i></button><a> </a>' +
-        '<button title="Crear Tarea" type="button" id="' + d.id_siniestro + '" name="tarea_siniestro" onclick="botones(this.id, this.name)"><i class="fas fa-clipboard-list"></i></button>';
+        '<button title="Crear Tarea" type="button" id="' + d.id_siniestro + '" name="tarea_siniestro" onclick="botones(this.id, this.name)"><i class="fas fa-clipboard-list"></i></button><a> </a>' +
+        '<a class="btn btn-sm btn-outline-secondary" title="Ver bienes y documentación" href="/bambooQA/seguimiento_bienes_afectados.php?id_siniestro=' + d.id_siniestro + '">📦 Bienes</a>';
 
     return '<table background-color:#F6F6F6; color:#FFF; cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
         '<tr>' +

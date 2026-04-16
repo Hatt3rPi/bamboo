@@ -1,5 +1,20 @@
 <?php
 if (!isset($_SESSION)) { session_start(); }
+
+// Filtro opcional por siniestro (para deeplink desde listado_siniestros)
+$filtro_id_siniestro = isset($_GET['id_siniestro']) && ctype_digit($_GET['id_siniestro']) ? $_GET['id_siniestro'] : '';
+$titulo_extra = '';
+if ($filtro_id_siniestro !== '') {
+    require_once "/home/gestio10/public_html/backend/config.php";
+    db_set_charset($link, 'utf8');
+    db_select_db($link, DB_NAME);
+    $r = db_query($link, "SELECT COALESCE(numero_siniestro,'') AS ns, numero_poliza FROM siniestros WHERE id='$filtro_id_siniestro' LIMIT 1");
+    while ($row = db_fetch_object($r)) {
+        $ns = $row->ns !== '' ? $row->ns : 'S' . str_pad($filtro_id_siniestro, 6, '0', STR_PAD_LEFT);
+        $titulo_extra = ' / Siniestro ' . htmlspecialchars($ns) . ' (Póliza ' . htmlspecialchars($row->numero_poliza) . ')';
+    }
+    db_close($link);
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -22,7 +37,12 @@ if (!isset($_SESSION)) { session_start(); }
 <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
 
 <div class="container">
-  <p>Siniestros / Seguimiento bienes afectados</p>
+  <p>Siniestros / Seguimiento bienes afectados<?php echo $titulo_extra; ?>
+    <?php if ($filtro_id_siniestro !== ''): ?>
+      &nbsp;<a class="btn btn-sm btn-outline-secondary" href="/bamboo/seguimiento_bienes_afectados.php">Ver todos</a>
+    <?php endif; ?>
+  </p>
+  <input type="hidden" id="filtro_id_siniestro" value="<?php echo htmlspecialchars($filtro_id_siniestro); ?>">
 
   <div class="form-row mb-3">
     <div class="col-md-3">
@@ -104,6 +124,8 @@ $(function() {
             data: function(d) {
                 d.estado = $('#filtro_estado').val();
                 d.alarma_proxima = $('#chk_alarma_proxima').is(':checked') ? 1 : 0;
+                var idSin = $('#filtro_id_siniestro').val();
+                if (idSin) d.id_siniestro = idSin;
             }
         },
         columns: [
@@ -119,8 +141,22 @@ $(function() {
             { data: 'estado', render: badgeBien },
             { data: 'fecha_alarma', defaultContent: '—' },
             { data: null, render: function(r) {
-                if (r.total_docs === 0) return '<em>sin marcar</em>';
-                return r.entregados + '/' + r.total_docs;
+                if (!r.docs || r.docs.length === 0) return '<em>sin marcar</em>';
+                var iconoEstado = function(est) {
+                    switch (est) {
+                        case 'Entregado':   return '<span style="color:#28a745;font-weight:bold">✓</span>';
+                        case 'En revisión': return '<span style="color:#17a2b8">◐</span>';
+                        case 'Rechazado':   return '<span style="color:#dc3545;font-weight:bold">✗</span>';
+                        case 'No aplica':   return '<span style="color:#6c757d">—</span>';
+                        default:            return '<span style="color:#ffc107">●</span>'; // Pendiente u otro
+                    }
+                };
+                var lineas = r.docs.map(function(d) {
+                    return '<div style="white-space:nowrap;line-height:1.4" title="' + escAttr(d.estado) + '">' +
+                           iconoEstado(d.estado) + ' ' + escHtml(d.nombre) + '</div>';
+                }).join('');
+                var resumen = '<small class="text-muted">' + r.entregados + '/' + r.total_docs + ' OK</small>';
+                return '<div style="max-width:260px">' + lineas + resumen + '</div>';
             }},
             { data: null, orderable: false, render: function(r) {
                 return '<button class="btn btn-sm btn-secondary" onclick="abrirChecklist(' + r.id + ',\'' + escAttr(r.descripcion) + '\')">' +
