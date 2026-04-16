@@ -159,10 +159,10 @@ $(function() {
                 return '<div style="max-width:260px">' + lineas + resumen + '</div>';
             }},
             { data: null, orderable: false, render: function(r) {
-                return '<button class="btn btn-sm btn-secondary" onclick="abrirChecklist(' + r.id + ',\'' + escAttr(r.descripcion) + '\')">' +
-                         '<i class="fas fa-list-check"></i> Checklist' +
-                       '</button> ' +
-                       '<a class="btn btn-sm btn-info" href="javascript:void(0)" onclick="irASiniestro(' + r.id_siniestro + ')"><i class="fas fa-external-link-alt"></i></a>';
+                return '<div style="white-space:nowrap">' +
+                         '<button class="btn btn-sm btn-outline-secondary mr-1" title="Actualizar estado de cada documento" onclick="abrirChecklist(' + r.id + ',\'' + escAttr(r.descripcion) + '\')">📋 Editar docs</button>' +
+                         '<button class="btn btn-sm btn-outline-info" title="Abrir el siniestro completo" onclick="irASiniestro(' + r.id_siniestro + ')">🔗 Ir al siniestro</button>' +
+                       '</div>';
             }}
         ],
         order: [[6, 'asc']],
