@@ -296,6 +296,16 @@ $(document).ready(function() {
 
 });
 
+// Normaliza saltos de línea (literales escapados "\r\n" o reales) y escapa HTML.
+function nl2br_safe(s) {
+    if (s === null || s === undefined) return '';
+    var txt = String(s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    txt = txt.replace(/\\r\\n/g, '<br>').replace(/\\n/g, '<br>').replace(/\\r/g, '<br>');
+    txt = txt.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>').replace(/\r/g, '<br>');
+    return txt;
+}
+
 function format_propuesta(d) {
     // `d` is the original data object for the row
     var ext_cancelado='';
@@ -305,11 +315,11 @@ function format_propuesta(d) {
     if (d.estado=='Pendiente'){
         botones='<td>Acciones</td>' +
         '<td>' +
-        '<button title="Aprobar Propuesta" type="button" id=' + d.numero_propuesta + ' name="crear_poliza" onclick="botones(this.id, this.name, \'propuesta\')"><i class="fa fa-thumbs-up"></i></button><a> </a>' +
-        '<button title="Rechazar propuesta"  type="button" id=' + d.numero_propuesta + ' name="rechazar_propuesta" onclick="botones(this.id, this.name, \'propuesta\')"><i class="fa fa-thumbs-down"></i></button>' +
-        '<button title="Generar Propuesta" type="button" id=' + d.numero_propuesta + ' name="generar_documento" onclick="botones(this.id, this.name, \'propuesta\')"><i class="fa fa-file-pdf-o"></i></button><a> </a>' +
+        '<button title="Emitir Póliza" type="button" id=' + d.numero_propuesta + ' name="crear_poliza" onclick="botones(this.id, this.name, \'propuesta\')"><i class="fa fa-thumbs-up"></i></button><a> </a>' +
+        '<button title="Rechazar propuesta Póliza"  type="button" id=' + d.numero_propuesta + ' name="rechazar_propuesta" onclick="botones(this.id, this.name, \'propuesta\')"><i class="fa fa-thumbs-down"></i></button>' +
+        '<button title="Generar Propuesta Póliza" type="button" id=' + d.numero_propuesta + ' name="generar_documento" onclick="botones(this.id, this.name, \'propuesta\')"><i class="fa fa-file-pdf-o"></i></button><a> </a>' +
         '<button title="Buscar información asociada" type="button" id=' + d.numero_propuesta + ' name="info" onclick="botones(this.id, this.name, \'propuesta\')"><i class="fas fa-search"></i></button><a> </a>' +
-        '<button title="Editar Propuesta"  type="button" id=' + d.numero_propuesta + ' name="actualiza_propuesta" onclick="botones(this.id, this.name, \'propuesta\')"><i class="fas fa-edit"></i></button><a> </a>' +
+        '<button title="Editar Propuesta Póliza"  type="button" id=' + d.numero_propuesta + ' name="actualiza_propuesta" onclick="botones(this.id, this.name, \'propuesta\')"><i class="fas fa-edit"></i></button><a> </a>' +
         '<button title="Asignar tarea"  type="button" id=' + d.id_propuesta +' name="tarea" onclick="botones(this.id, this.name, \'propuesta\')"><i class="fas fa-clipboard-list"></i></button><a> </a>' +
         '<button style="background-color: #FF0000" title="Eliminar propuesta"  type="button" id=' + d.numero_propuesta + ' name="eliminar_propuesta" onclick="botones(this.id, this.name, \'propuesta\')"><i class="fas fa-trash-alt"></i></button>' +
         '</td>' +
@@ -346,11 +356,11 @@ function format_propuesta(d) {
             
             for (var i=0; i<d.total_items; i++){
             listado_items+= '<tr>'+
-            '<td>' + (i+1) + '</td>'+
+            '<td>' + d.items[i].numero_item + '</td>'+
             '<td>' + d.items[i].rut_clienteA + '</td>'+
             '<td>' + d.items[i].nom_clienteA + '</td>'+
-            '<td>' + d.items[i].materia_asegurada + '</td>'+
-            '<td>' + d.items[i].patente_ubicacion + '</td>'+
+            '<td>' + nl2br_safe(d.items[i].materia_asegurada) + '</td>'+
+            '<td>' + nl2br_safe(d.items[i].patente_ubicacion) + '</td>'+
             '<td>' + d.items[i].cobertura + '</td>'+
             '<td>' + d.items[i].deducible + '</td>'+
             '<td>' + d.items[i].monto_asegurado + '</td>'+

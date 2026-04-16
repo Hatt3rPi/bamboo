@@ -296,6 +296,16 @@ $(document).ready(function() {
 
 });
 
+// Normaliza saltos de línea (literales escapados "\r\n" o reales) y escapa HTML.
+function nl2br_safe(s) {
+    if (s === null || s === undefined) return '';
+    var txt = String(s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    txt = txt.replace(/\\r\\n/g, '<br>').replace(/\\n/g, '<br>').replace(/\\r/g, '<br>');
+    txt = txt.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>').replace(/\r/g, '<br>');
+    return txt;
+}
+
 function format_propuesta(d) {
     // `d` is the original data object for the row
     var ext_cancelado='';
@@ -349,8 +359,8 @@ function format_propuesta(d) {
             '<td>' + d.items[i].numero_item + '</td>'+
             '<td>' + d.items[i].rut_clienteA + '</td>'+
             '<td>' + d.items[i].nom_clienteA + '</td>'+
-            '<td>' + d.items[i].materia_asegurada + '</td>'+
-            '<td>' + d.items[i].patente_ubicacion + '</td>'+
+            '<td>' + nl2br_safe(d.items[i].materia_asegurada) + '</td>'+
+            '<td>' + nl2br_safe(d.items[i].patente_ubicacion) + '</td>'+
             '<td>' + d.items[i].cobertura + '</td>'+
             '<td>' + d.items[i].deducible + '</td>'+
             '<td>' + d.items[i].monto_asegurado + '</td>'+

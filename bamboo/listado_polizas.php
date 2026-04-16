@@ -402,8 +402,8 @@ function format_poliza(d) {
             '<td>' + d.items[i].numero_item + '</td>'+
             '<td>' + d.items[i].rut_clienteA + '</td>'+
             '<td>' + d.items[i].nom_clienteA + '</td>'+
-            '<td>' + d.items[i].materia_asegurada + '</td>'+
-            '<td>' + d.items[i].patente_ubicacion + '</td>'+
+            '<td>' + nl2br_safe(d.items[i].materia_asegurada) + '</td>'+
+            '<td>' + nl2br_safe(d.items[i].patente_ubicacion) + '</td>'+
             '<td>' + d.items[i].cobertura + '</td>'+
             '<td>' + d.items[i].deducible + '</td>'+
             '<td>' + d.items[i].monto_asegurado + '</td>'+
@@ -464,6 +464,21 @@ function format_poliza(d) {
             '<td>' + botones + '</td>' +
         '</tr>' +
         '</table>';
+}
+
+// Normaliza saltos de línea (literales escapados "\r\n" o reales) y escapa HTML para evitar XSS.
+function nl2br_safe(s) {
+    if (s === null || s === undefined) return '';
+    var txt = String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    // Secuencias escapadas como texto literal: "\\r\\n", "\\n", "\\r"
+    txt = txt.replace(/\\r\\n/g, '<br>').replace(/\\n/g, '<br>').replace(/\\r/g, '<br>');
+    // Caracteres reales de salto
+    txt = txt.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>').replace(/\r/g, '<br>');
+    return txt;
 }
 
 function badge_estado_siniestro(estado) {
