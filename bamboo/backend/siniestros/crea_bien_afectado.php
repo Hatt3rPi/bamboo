@@ -25,7 +25,7 @@ $taller_telefono = estandariza_info($_POST['taller_telefono'] ?? '');
 $motivo        = estandariza_info($_POST['motivo']         ?? '');
 $usuario       = $_SESSION['username'] ?? '';
 
-if (!in_array($categoria, array('vehiculo','inmueble','otro'))) { $categoria = 'otro'; }
+if (!in_array($categoria, array('vehiculo','inmueble','persona','otro'))) { $categoria = 'otro'; }
 // Si no es vehículo, limpiar campos específicos
 if ($categoria !== 'vehiculo') {
     $patente = $marca = $modelo = $anio_vehiculo = $taller_nombre = $taller_telefono = '';

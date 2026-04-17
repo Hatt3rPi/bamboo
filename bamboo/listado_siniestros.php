@@ -354,6 +354,12 @@ function format_siniestro(d) {
             '<td VALIGN=TOP>Descripción: </td>' +
             '<td>' + (d.descripcion || '') + '</td>' +
         '</tr>' +
+        (d.observaciones ? (
+        '<tr>' +
+            '<td VALIGN=TOP>Observaciones: </td>' +
+            '<td>' + d.observaciones + '</td>' +
+        '</tr>'
+        ) : '') +
         '<tr>' +
             '<td VALIGN=TOP>Liquidador: </td>' +
             '<td>' +

@@ -17,6 +17,7 @@ $numero_siniestro = $id_poliza = $numero_poliza = $ramo = '';
 $tipo_siniestro = $fecha_ocurrencia = $fecha_denuncia = '';
 $rut_asegurado = $dv_asegurado = $nombre_asegurado = $telefono_asegurado = $correo_asegurado = '';
 $descripcion = '';
+$observaciones = '';
 $liquidador_nombre = $liquidador_telefono = $liquidador_correo = $numero_carpeta_liquidador = '';
 $patente = $marca = $modelo = $anio_vehiculo = '';
 $taller_nombre = $taller_telefono = '';
@@ -79,6 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["accion"]) && $_POST["a
         $telefono_asegurado        = $row->telefono_asegurado;
         $correo_asegurado          = $row->correo_asegurado;
         $descripcion               = str_replace("\r\n", "\\n", $row->descripcion);
+        $observaciones             = str_replace("\r\n", "\\n", $row->observaciones ?? '');
         $liquidador_nombre         = $row->liquidador_nombre;
         $liquidador_telefono       = $row->liquidador_telefono;
         $liquidador_correo         = $row->liquidador_correo;
@@ -272,6 +274,13 @@ if (!$es_ramo_vehiculo_php) {
       <div class="col-md-12 mb-3">
         <textarea class="form-control" id="descripcion" name="descripcion" rows="6"
           placeholder="Copie y pegue la descripción del siniestro aquí"><?php echo $descripcion; ?></textarea>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="col-md-12 mb-3">
+        <label for="observaciones" class="mb-1"><small class="text-muted">Observaciones adicionales</small></label>
+        <textarea class="form-control" id="observaciones" name="observaciones" rows="3"
+          placeholder="Notas libres que no caben en la descripción (opcional)"><?php echo $observaciones; ?></textarea>
       </div>
     </div>
 
@@ -599,6 +608,7 @@ function registraSiniestro() {
         'telefono_asegurado':        estandariza_info($('#telefono_asegurado').val()),
         'correo_asegurado':          estandariza_info($('#correo_asegurado').val()),
         'descripcion':               estandariza_info($('#descripcion').val()),
+        'observaciones':             estandariza_info($('#observaciones').val()),
         'liquidador_nombre':         estandariza_info($('#liquidador_nombre').val()),
         'liquidador_telefono':       estandariza_info($('#liquidador_telefono').val()),
         'liquidador_correo':         estandariza_info($('#liquidador_correo').val()),
@@ -790,6 +800,7 @@ function renderTablaBienes(selector, lista) {
 function catBienLabel(cat) {
     if (cat === 'vehiculo') return '<span class="badge badge-info">Vehículo</span>';
     if (cat === 'inmueble') return '<span class="badge badge-warning">Inmueble</span>';
+    if (cat === 'persona')  return '<span class="badge badge-success">Persona</span>';
     return '<span class="badge badge-light">Otro</span>';
 }
 function badgeBien(estado) {
@@ -1057,6 +1068,7 @@ function persistirChecklistBien(id_bien, cb) {
                 <select class="form-control" id="bien_categoria" onchange="toggleCamposVehiculoBien()">
                   <option value="vehiculo">Vehículo</option>
                   <option value="inmueble">Inmueble</option>
+                  <option value="persona">Persona</option>
                   <option value="otro">Otro</option>
                 </select>
               </div>

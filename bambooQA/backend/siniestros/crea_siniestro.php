@@ -28,6 +28,7 @@ $nombre_asegurado          = estandariza_info($_POST["nombre_asegurado"]        
 $telefono_asegurado        = estandariza_info($_POST["telefono_asegurado"]        ?? '');
 $correo_asegurado          = estandariza_info($_POST["correo_asegurado"]          ?? '');
 $descripcion               = estandariza_info($_POST["descripcion"]               ?? '');
+$observaciones             = estandariza_info($_POST["observaciones"]             ?? '');
 $liquidador_nombre         = estandariza_info($_POST["liquidador_nombre"]         ?? '');
 $liquidador_telefono       = estandariza_info($_POST["liquidador_telefono"]       ?? '');
 $liquidador_correo         = estandariza_info($_POST["liquidador_correo"]         ?? '');
@@ -77,7 +78,7 @@ function sincroniza_bienes($link, $id_siniestro, $bienes_array, $usuario) {
     foreach ($bienes_array as $b) {
         $bien_id        = isset($b['id']) && ctype_digit((string)$b['id']) ? (int)$b['id'] : 0;
         $tipo           = in_array($b['tipo'] ?? '', array('propio','tercero')) ? $b['tipo'] : 'propio';
-        $categoria      = in_array($b['categoria'] ?? '', array('vehiculo','inmueble','otro')) ? $b['categoria'] : 'otro';
+        $categoria      = in_array($b['categoria'] ?? '', array('vehiculo','inmueble','persona','otro')) ? $b['categoria'] : 'otro';
         $descripcion    = trim($b['descripcion'] ?? '');
         if ($descripcion === '') continue; // ignorar filas vacías
         $estado         = in_array($b['estado'] ?? '', array('Abierto','Cerrado','Rechazado')) ? $b['estado'] : 'Abierto';
@@ -193,7 +194,7 @@ switch ($accion) {
                         tipo_siniestro, fecha_ocurrencia, fecha_denuncia,
                         rut_asegurado, dv_asegurado, nombre_asegurado,
                         telefono_asegurado, correo_asegurado,
-                        descripcion,
+                        descripcion, observaciones,
                         liquidador_nombre, liquidador_telefono, liquidador_correo,
                         numero_carpeta_liquidador,
                         patente, marca, modelo, anio_vehiculo,
@@ -206,7 +207,7 @@ switch ($accion) {
                         " . ($fecha_denuncia   ? "'$fecha_denuncia'"   : "NULL") . ",
                         '$rut_asegurado', '$dv_asegurado', '$nombre_asegurado',
                         '$telefono_asegurado', '$correo_asegurado',
-                        '$descripcion',
+                        '$descripcion', '$observaciones',
                         '$liquidador_nombre', '$liquidador_telefono', '$liquidador_correo',
                         '$numero_carpeta_liquidador',
                         '$patente', '$marca', '$modelo',
@@ -289,6 +290,7 @@ switch ($accion) {
                         telefono_asegurado        = '$telefono_asegurado',
                         correo_asegurado          = '$correo_asegurado',
                         descripcion               = '$descripcion',
+                        observaciones             = '$observaciones',
                         liquidador_nombre         = '$liquidador_nombre',
                         liquidador_telefono       = '$liquidador_telefono',
                         liquidador_correo         = '$liquidador_correo',
