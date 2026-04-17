@@ -365,6 +365,34 @@ if (!$es_ramo_vehiculo_php) {
 
   <?php if ($camino == 'modifica_siniestro'): ?>
   <!-- =============================================================== -->
+  <!-- PENDIENTES POR RESPONSABLE -->
+  <!-- =============================================================== -->
+  <hr>
+  <div class="d-flex align-items-center" style="gap:10px">
+    <h5 class="mb-0">Pendientes</h5>
+    <span id="widget_quien_lleva" class="badge badge-light" style="font-size:0.9rem">—</span>
+    <button type="button" class="btn btn-sm btn-primary ml-auto" onclick="abrirModalPendiente(null)">➕ Agregar pendiente</button>
+  </div>
+  <br>
+  <table class="table table-sm table-striped" id="tabla_pendientes" style="width:100%">
+    <thead>
+      <tr>
+        <th>Responsable</th>
+        <th>Descripción</th>
+        <th>Bien asociado</th>
+        <th>Estado</th>
+        <th>Fecha entrega</th>
+        <th>Notas</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="filas_pendientes">
+      <tr><td colspan="7" class="text-center text-muted"><em>Cargando…</em></td></tr>
+    </tbody>
+  </table>
+  <br><br>
+
+  <!-- =============================================================== -->
   <!-- HISTORIAL DE CAMBIOS DE ESTADO -->
   <!-- =============================================================== -->
   <hr>
@@ -725,6 +753,10 @@ $(document).ready(function() {
     }
     // Bienes afectados: cargar desde BD (modo edición) o inicializar vacío (modo creación)
     cargarBienesAfectados(id_siniestro_inicial);
+    // Pendientes: cargar en modo edición
+    if (id_siniestro_inicial) {
+        cargarPendientes(id_siniestro_inicial);
+    }
 });
 
 // =========================================================================
@@ -1036,6 +1068,189 @@ function persistirChecklistBien(id_bien, cb) {
     });
     $.when.apply($, promesas).always(cb);
 }
+
+// =========================================================================
+// PENDIENTES POR RESPONSABLE (Cliente / Liquidador / Compañía)
+// =========================================================================
+var pendientesMem = [];
+var liquidadorContacto = { nombre: '', correo: '', numero_siniestro: '', numero_poliza: '', nombre_asegurado: '' };
+
+function badgeResp(resp) {
+    if (resp === 'Cliente')    return '<span class="badge badge-info">Cliente</span>';
+    if (resp === 'Liquidador') return '<span class="badge badge-warning">Liquidador</span>';
+    if (resp === 'Compañía')  return '<span class="badge badge-dark">Compañía</span>';
+    return '<span class="badge badge-light">—</span>';
+}
+function badgeEstadoPend(est) {
+    if (est === 'Pendiente')  return '<span class="badge badge-secondary">Pendiente</span>';
+    if (est === 'Entregado')  return '<span class="badge badge-success">Entregado</span>';
+    if (est === 'No aplica')  return '<span class="badge badge-light">No aplica</span>';
+    return est || '';
+}
+
+function calcularQuienLleva() {
+    var abiertos = pendientesMem.filter(function(p){ return p.estado === 'Pendiente'; });
+    if (abiertos.length === 0) {
+        $('#widget_quien_lleva').removeClass('badge-light badge-info badge-warning badge-dark')
+            .addClass('badge-success').text('✅ Sin pendientes');
+        return;
+    }
+    var orden = ['Cliente','Liquidador','Compañía'];
+    for (var i = 0; i < orden.length; i++) {
+        if (abiertos.some(function(p){ return p.responsable === orden[i]; })) {
+            var cls = orden[i] === 'Cliente' ? 'badge-info' : (orden[i] === 'Liquidador' ? 'badge-warning' : 'badge-dark');
+            $('#widget_quien_lleva').removeClass('badge-light badge-info badge-warning badge-dark badge-success')
+                .addClass(cls).text('Ahora la lleva: ' + orden[i]);
+            return;
+        }
+    }
+}
+
+function refrescarSelectBienesPendiente() {
+    var $sel = $('#pend_id_bien');
+    var actual = $sel.val();
+    $sel.empty().append('<option value="">— Siniestro en general —</option>');
+    (bienesMem || []).forEach(function(b) {
+        if (!b.id) return; // solo bienes persistidos
+        var label = (b.tipo === 'propio' ? 'Propio' : 'Tercero') + ' — ' + (b.descripcion || '(sin desc.)');
+        $sel.append('<option value="' + b.id + '">' + label + '</option>');
+    });
+    if (actual) $sel.val(actual);
+}
+
+function renderPendientes() {
+    var $body = $('#filas_pendientes');
+    if (!pendientesMem.length) {
+        $body.html('<tr><td colspan="7" class="text-center text-muted"><em>Sin pendientes registrados.</em></td></tr>');
+        calcularQuienLleva();
+        return;
+    }
+    var html = '';
+    pendientesMem.forEach(function(p) {
+        var bienDesc = p.bien_descripcion
+            ? '<small>' + (p.bien_tipo === 'propio' ? '🔵' : '🟡') + ' ' + escHtml(p.bien_descripcion) + '</small>'
+            : '<small class="text-muted">—</small>';
+        var notasHtml = p.notas ? escHtml(p.notas) : '';
+        html += '<tr>' +
+            '<td>' + badgeResp(p.responsable) + '</td>' +
+            '<td>' + escHtml(p.descripcion) + '</td>' +
+            '<td>' + bienDesc + '</td>' +
+            '<td>' + badgeEstadoPend(p.estado) + '</td>' +
+            '<td>' + (p.fecha_entrega || '—') + '</td>' +
+            '<td><small>' + notasHtml + '</small></td>' +
+            '<td style="white-space:nowrap">' +
+                '<button type="button" class="btn btn-sm btn-outline-secondary mr-1" onclick="abrirModalPendiente(' + p.id + ')">✏️</button>' +
+                '<button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarPendiente(' + p.id + ')">🗑️</button>' +
+            '</td>' +
+        '</tr>';
+    });
+    $body.html(html);
+    calcularQuienLleva();
+}
+
+function cargarPendientes(id_siniestro) {
+    if (!id_siniestro) return;
+    $.getJSON('/bambooQA/backend/siniestros/busqueda_pendientes_siniestro.php', { id_siniestro: id_siniestro }, function(resp) {
+        pendientesMem = (resp && resp.data) || [];
+        renderPendientes();
+    });
+}
+
+function abrirModalPendiente(id) {
+    refrescarSelectBienesPendiente();
+    if (id) {
+        var p = pendientesMem.find(function(x){ return x.id == id; });
+        if (!p) return;
+        $('#modalPendienteTitle').text('Editar pendiente');
+        $('#pend_id').val(p.id);
+        $('#pend_responsable').val(p.responsable);
+        $('#pend_estado').val(p.estado);
+        $('#pend_fecha_entrega').val(p.fecha_entrega || '');
+        $('#pend_descripcion').val(p.descripcion);
+        $('#pend_notas').val(p.notas || '');
+        $('#pend_id_bien').val(p.id_bien || '');
+    } else {
+        $('#modalPendienteTitle').text('Nuevo pendiente');
+        $('#pend_id').val('');
+        $('#pend_responsable').val('Cliente');
+        $('#pend_estado').val('Pendiente');
+        $('#pend_fecha_entrega').val('');
+        $('#pend_descripcion').val('');
+        $('#pend_notas').val('');
+        $('#pend_id_bien').val('');
+    }
+    $('#modalPendiente').modal('show');
+}
+
+function guardarPendiente() {
+    var id_siniestro = $('#id_siniestro').val();
+    if (!id_siniestro) { alert('Guarde el siniestro primero.'); return; }
+    var id = $('#pend_id').val();
+    var descripcion = $.trim($('#pend_descripcion').val());
+    if (!descripcion) { alert('La descripción es obligatoria.'); return; }
+    var data = {
+        id_siniestro: id_siniestro,
+        id_bien: $('#pend_id_bien').val(),
+        responsable: $('#pend_responsable').val(),
+        descripcion: descripcion,
+        fecha_entrega: $('#pend_fecha_entrega').val(),
+        notas: $('#pend_notas').val()
+    };
+    var url, accionMsg;
+    if (id) {
+        data.id = id;
+        data.estado = $('#pend_estado').val();
+        url = '/bambooQA/backend/siniestros/actualiza_pendiente.php';
+        accionMsg = 'actualizar';
+    } else {
+        url = '/bambooQA/backend/siniestros/crea_pendiente.php';
+        accionMsg = 'crear';
+    }
+    $.post(url, data, null, 'json').done(function(resp) {
+        if (resp && resp.ok) {
+            $('#modalPendiente').modal('hide');
+            if (resp.cliente_completo && resp.liquidador && resp.liquidador.correo) {
+                liquidadorContacto = resp.liquidador;
+                $('#notif_liq_nombre').text(resp.liquidador.nombre || '(sin nombre)');
+                $('#notif_liq_correo').text(resp.liquidador.correo);
+                $('#modalNotificarLiquidador').modal('show');
+            }
+            cargarPendientes(id_siniestro);
+        } else {
+            alert('No se pudo ' + accionMsg + ': ' + (resp && resp.mensaje ? resp.mensaje : 'error'));
+        }
+    }).fail(function() {
+        alert('Error de red al ' + accionMsg + ' el pendiente.');
+    });
+}
+
+function eliminarPendiente(id) {
+    if (!confirm('¿Eliminar este pendiente?')) return;
+    $.post('/bambooQA/backend/siniestros/elimina_pendiente.php', { id: id }, null, 'json').done(function(resp) {
+        if (resp && resp.ok) {
+            cargarPendientes($('#id_siniestro').val());
+        } else {
+            alert('No se pudo eliminar: ' + (resp && resp.mensaje ? resp.mensaje : 'error'));
+        }
+    });
+}
+
+function enviarCorreoLiquidador() {
+    var L = liquidadorContacto || {};
+    if (!L.correo) { $('#modalNotificarLiquidador').modal('hide'); return; }
+    var nsin = L.numero_siniestro || '(sin número de compañía)';
+    var subject = 'Siniestro ' + nsin + ' — Cliente entregó todos los documentos';
+    var body = 'Estimado/a ' + (L.nombre || 'liquidador') + ',\n\n' +
+               'El asegurado ' + (L.nombre_asegurado || '') +
+               ' (póliza N° ' + (L.numero_poliza || '') + ') del siniestro ' + nsin +
+               ' ha entregado la totalidad de los documentos a su cargo.\n\n' +
+               'Quedamos a la espera del informe de liquidación / finiquito.\n\n' +
+               'Saludos cordiales,\nAdriana';
+    window.location.href = 'mailto:' + encodeURIComponent(L.correo) +
+                           '?subject=' + encodeURIComponent(subject) +
+                           '&body=' + encodeURIComponent(body);
+    $('#modalNotificarLiquidador').modal('hide');
+}
 </script>
 
 <!-- ==================== MODAL BIEN AFECTADO (rediseñado con tabs) ==================== -->
@@ -1170,6 +1385,87 @@ function persistirChecklistBien(id_bien, cb) {
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
         <button type="button" class="btn btn-primary" onclick="guardarBien()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================================== -->
+<!-- MODAL PENDIENTE -->
+<!-- =============================================================== -->
+<div class="modal fade" id="modalPendiente" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalPendienteTitle">Pendiente</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="pend_id">
+        <div class="form-row">
+          <div class="col-md-4 form-group">
+            <label>¿Quién la lleva? <span style="color:darkred">*</span></label>
+            <select class="form-control" id="pend_responsable">
+              <option value="Cliente">Cliente</option>
+              <option value="Liquidador">Liquidador</option>
+              <option value="Compañía">Compañía</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Estado</label>
+            <select class="form-control" id="pend_estado">
+              <option value="Pendiente">Pendiente</option>
+              <option value="Entregado">Entregado</option>
+              <option value="No aplica">No aplica</option>
+            </select>
+          </div>
+          <div class="col-md-4 form-group">
+            <label>Fecha entrega</label>
+            <input type="date" class="form-control" id="pend_fecha_entrega">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Descripción del pendiente <span style="color:darkred">*</span></label>
+          <textarea class="form-control" id="pend_descripcion" rows="2"
+            placeholder="Ej: Recepción municipal del edificio, Finiquito firmado, Fecha de pago…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Bien asociado (opcional)</label>
+          <select class="form-control" id="pend_id_bien">
+            <option value="">— Siniestro en general —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notas</label>
+          <textarea class="form-control" id="pend_notas" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="guardarPendiente()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================================== -->
+<!-- MODAL NOTIFICAR LIQUIDADOR -->
+<!-- =============================================================== -->
+<div class="modal fade" id="modalNotificarLiquidador" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">✉️ Notificar al liquidador</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>El cliente ya entregó todos sus pendientes.</p>
+        <p class="mb-0">¿Desea generar un correo al liquidador <strong id="notif_liq_nombre"></strong>
+          (<span id="notif_liq_correo"></span>) para avanzar con el finiquito?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Más tarde</button>
+        <button type="button" class="btn btn-primary" onclick="enviarCorreoLiquidador()">✉️ Abrir correo</button>
       </div>
     </div>
   </div>

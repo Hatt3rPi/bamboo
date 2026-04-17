@@ -18,6 +18,9 @@ $sql = "SELECT s.id, s.numero_siniestro, s.numero_poliza, s.ramo, s.tipo_siniest
     s.patente, s.marca, s.modelo, s.anio_vehiculo,
     s.taller_nombre, s.taller_telefono,
     s.fecha_ingreso,
+    CASE WHEN s.fecha_ingreso < (NOW() - INTERVAL '24 hours')
+              AND (COALESCE(s.numero_siniestro,'') = '' OR COALESCE(s.liquidador_nombre,'') = '')
+         THEN true ELSE false END AS alarma_24h,
     CONCAT_WS(' ', c.nombre_cliente, c.apellido_paterno, c.apellido_materno) as \"nom_cliente\",
     CONCAT_WS('-', c.rut_sin_dv, c.dv) as \"rut_cliente\",
     c.telefono as \"tel_cliente\", c.correo as \"correo_cliente\",
@@ -27,10 +30,20 @@ $sql = "SELECT s.id, s.numero_siniestro, s.numero_poliza, s.ramo, s.tipo_siniest
     si.vehiculos_json,
     COALESCE(ba.bienes_propios, 0) as bienes_propios,
     COALESCE(ba.bienes_terceros, 0) as bienes_terceros,
-    ba.bienes_json
+    ba.bienes_json,
+    COALESCE(sp.pendientes_cliente, 0)    as pendientes_cliente,
+    COALESCE(sp.pendientes_liquidador, 0) as pendientes_liquidador,
+    COALESCE(sp.pendientes_compania, 0)   as pendientes_compania
 FROM siniestros s
 LEFT JOIN clientes c ON s.rut_asegurado = c.rut_sin_dv AND c.rut_sin_dv IS NOT NULL
 LEFT JOIN polizas_2 p ON s.id_poliza = p.id
+LEFT JOIN (
+    SELECT id_siniestro,
+           SUM(CASE WHEN responsable='Cliente'    AND estado='Pendiente' THEN 1 ELSE 0 END) as pendientes_cliente,
+           SUM(CASE WHEN responsable='Liquidador' AND estado='Pendiente' THEN 1 ELSE 0 END) as pendientes_liquidador,
+           SUM(CASE WHEN responsable='Compañía'  AND estado='Pendiente' THEN 1 ELSE 0 END) as pendientes_compania
+    FROM siniestros_pendientes GROUP BY id_siniestro
+) sp ON sp.id_siniestro = s.id
 LEFT JOIN (
     SELECT id_siniestro,
            string_agg(numero_item::text, ', ' ORDER BY numero_item) as items_afectados,
@@ -101,7 +114,11 @@ while ($row = db_fetch_object($resultado)) {
         "compania"             => $row->compania,
         "bienes_propios"       => (int)$row->bienes_propios,
         "bienes_terceros"      => (int)$row->bienes_terceros,
-        "bienes"               => $row->bienes_json ? json_decode($row->bienes_json, true) : array()
+        "bienes"               => $row->bienes_json ? json_decode($row->bienes_json, true) : array(),
+        "alarma_24h"           => (bool)($row->alarma_24h === 't' || $row->alarma_24h === true || $row->alarma_24h === 1 || $row->alarma_24h === '1'),
+        "pendientes_cliente"    => (int)$row->pendientes_cliente,
+        "pendientes_liquidador" => (int)$row->pendientes_liquidador,
+        "pendientes_compania"   => (int)$row->pendientes_compania
     );
 }
 db_close($link);

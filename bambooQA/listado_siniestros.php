@@ -69,6 +69,7 @@ $buscar= estandariza_info($_POST["busqueda"]);
                     <th>Tipo Siniestro</th>
                     <th>Ítems</th>
                     <th>Bienes</th>
+                    <th>Pendientes</th>
                     <th>Cliente</th>
                     <th>Liquidador</th>
                     <th>Patente</th>
@@ -161,9 +162,23 @@ $(document).ready(function() {
                 }
             }, //8
             {
+                "data": null,
+                title: "Pendientes",
+                orderable: false,
+                render: function(r) {
+                    var c = r.pendientes_cliente || 0, l = r.pendientes_liquidador || 0, q = r.pendientes_compania || 0;
+                    if (c === 0 && l === 0 && q === 0) return '<span class="badge badge-success">✅</span>';
+                    var chips = '';
+                    if (c > 0) chips += '<span class="badge badge-info" title="Cliente">👤 ' + c + '</span> ';
+                    if (l > 0) chips += '<span class="badge badge-warning" title="Liquidador">🧾 ' + l + '</span> ';
+                    if (q > 0) chips += '<span class="badge badge-dark" title="Compañía">🏢 ' + q + '</span>';
+                    return chips;
+                }
+            }, //9
+            {
                 "data": "nom_cliente",
                 title: "Cliente"
-            }, //9
+            }, //10
             {
                 "data": "liquidador_nombre",
                 title: "Liquidador"
@@ -202,6 +217,10 @@ $(document).ready(function() {
                     // Badge extra si siniestro no fue presentado
                     if (row.presentado === false || row.presentado === 'f' || row.presentado === 0 || row.presentado === '0') {
                         estado += ' <span class="badge badge-dark">No presentado</span>';
+                    }
+                    // Badge alarma 24h: compañía no ha entregado N° siniestro o liquidador
+                    if (row.alarma_24h === true || row.alarma_24h === 't' || row.alarma_24h === 1 || row.alarma_24h === '1') {
+                        estado += ' <span class="badge badge-danger" title="Compañía adeuda N° de siniestro y/o liquidador (>24h)">⏰ 24h</span>';
                     }
                     return estado;
                 }
