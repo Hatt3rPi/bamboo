@@ -67,9 +67,16 @@ while ($erow = db_fetch_object($endosos_result)) {
     $endosos_map[$erow->id_poliza] = $erow;
 }
 
-// Query 3: Siniestros agrupados por poliza (con ítems afectados)
+// Query 3: Siniestros agrupados por poliza (con ítems afectados + señales de atraso)
 $siniestros_sql = "SELECT s.id_poliza,
     COUNT(*) as total_siniestros,
+    SUM(CASE
+          WHEN (s.fecha_ingreso < (NOW() - INTERVAL '24 hours')
+                AND (COALESCE(s.numero_siniestro,'')='' OR COALESCE(s.liquidador_nombre,'')=''))
+            OR COALESCE(sp.pendientes_cliente,0) > 0
+            OR COALESCE(sp.pendientes_liquidador,0) > 0
+            OR COALESCE(sp.pendientes_compania,0) > 0
+          THEN 1 ELSE 0 END) as siniestros_con_atraso,
     json_agg(json_build_object(
         'id_siniestro', s.id::text,
         'numero_siniestro', COALESCE(s.numero_siniestro, ''),
@@ -80,9 +87,21 @@ $siniestros_sql = "SELECT s.id_poliza,
         'items_afectados', COALESCE((
             SELECT string_agg(si.numero_item::text, ', ' ORDER BY si.numero_item)
             FROM siniestros_items si WHERE si.id_siniestro = s.id
-        ), '')
+        ), ''),
+        'alarma_24h', (s.fecha_ingreso < (NOW() - INTERVAL '24 hours')
+                       AND (COALESCE(s.numero_siniestro,'')='' OR COALESCE(s.liquidador_nombre,'')='')),
+        'pendientes_cliente',    COALESCE(sp.pendientes_cliente, 0),
+        'pendientes_liquidador', COALESCE(sp.pendientes_liquidador, 0),
+        'pendientes_compania',   COALESCE(sp.pendientes_compania, 0)
     ) ORDER BY s.fecha_ocurrencia DESC NULLS LAST) as siniestros_json
     FROM siniestros s
+    LEFT JOIN (
+        SELECT id_siniestro,
+               SUM(CASE WHEN responsable='Cliente'    AND estado='Pendiente' THEN 1 ELSE 0 END) as pendientes_cliente,
+               SUM(CASE WHEN responsable='Liquidador' AND estado='Pendiente' THEN 1 ELSE 0 END) as pendientes_liquidador,
+               SUM(CASE WHEN responsable='Compañía'  AND estado='Pendiente' THEN 1 ELSE 0 END) as pendientes_compania
+        FROM siniestros_pendientes GROUP BY id_siniestro
+    ) sp ON sp.id_siniestro = s.id
     WHERE COALESCE(s.estado, '') <> 'Eliminado'
     GROUP BY s.id_poliza";
 $siniestros_result = db_query($link, $siniestros_sql);
@@ -130,6 +149,7 @@ while ($row = db_fetch_object($resultado)) {
     $has_siniestros = isset($siniestros_map[$ip]);
     $siniestros = $has_siniestros ? json_decode($siniestros_map[$ip]->siniestros_json, true) : array();
     $total_siniestros = $has_siniestros ? $siniestros_map[$ip]->total_siniestros : 0;
+    $siniestros_con_atraso = $has_siniestros ? (int)$siniestros_map[$ip]->siniestros_con_atraso : 0;
 
     $data[] = array(
         "numero_poliza" => $row->numero_poliza,
@@ -162,7 +182,8 @@ while ($row = db_fetch_object($resultado)) {
         "consolidado_patentes" => $consolidado,
         "total_items" => $total_items,
         "siniestros" => $siniestros,
-        "total_siniestros" => $total_siniestros
+        "total_siniestros" => $total_siniestros,
+        "siniestros_con_atraso" => $siniestros_con_atraso
     );
 }
 

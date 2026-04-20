@@ -491,6 +491,22 @@ function badge_estado_siniestro(estado) {
     }
 }
 
+function atrasos_siniestro_html(s) {
+    var badges = '';
+    var esAlarma = (s.alarma_24h === true || s.alarma_24h === 't' || s.alarma_24h === 1 || s.alarma_24h === '1');
+    if (esAlarma) {
+        badges += '<span class="badge badge-danger" title="Compañía adeuda N° siniestro y/o liquidador (>24h)">⏰ 24h</span> ';
+    }
+    var c = parseInt(s.pendientes_cliente    || 0, 10);
+    var l = parseInt(s.pendientes_liquidador || 0, 10);
+    var q = parseInt(s.pendientes_compania   || 0, 10);
+    if (c > 0) badges += '<span class="badge badge-info" title="Pendientes Cliente">👤 ' + c + '</span> ';
+    if (l > 0) badges += '<span class="badge badge-warning" title="Pendientes Liquidador">🧾 ' + l + '</span> ';
+    if (q > 0) badges += '<span class="badge badge-dark" title="Pendientes Compañía">🏢 ' + q + '</span>';
+    if (badges === '') return '<span class="badge badge-success">✅</span>';
+    return badges;
+}
+
 function siniestros_html(d) {
     if (!d.total_siniestros || d.total_siniestros == '0' || !d.siniestros || d.siniestros.length === 0) {
         return '<em>Sin siniestros registrados</em>';
@@ -506,6 +522,7 @@ function siniestros_html(d) {
             '<td>' + (s.fecha_ocurrencia || '') + '</td>' +
             '<td>' + (s.tipo_siniestro || '') + '</td>' +
             '<td>' + (s.items_afectados || '') + '</td>' +
+            '<td>' + atrasos_siniestro_html(s) + '</td>' +
             '<td><button title="Editar siniestro" type="button" id="' + s.id_siniestro + '" name="editar_siniestro_poliza" onclick="botones(this.id, this.name, \'poliza\')"><i class="fas fa-edit"></i></button></td>' +
             '</tr>';
     }
@@ -516,6 +533,7 @@ function siniestros_html(d) {
         '<th>Fecha Ocurrencia</th>' +
         '<th>Tipo</th>' +
         '<th>Ítems afectados</th>' +
+        '<th>Atrasos</th>' +
         '<th></th>' +
         '</tr></thead><tbody>' + filas + '</tbody></table>';
 }
