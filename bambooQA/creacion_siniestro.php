@@ -346,22 +346,27 @@ if (!$es_ramo_vehiculo_php) {
     <small class="text-muted">Los bienes se guardan junto con el siniestro al presionar <em>Registrar Siniestro</em>. El Checklist de documentos requiere un bien ya persistido.</small>
     <br><br>
 
-    <!-- ==================== BOTONES ==================== -->
-    <hr>
-    <button type="button" class="btn" style="background-color:#536656;color:white"
-      id="boton_registrar" onclick="registraSiniestro()">
-      <?php echo ($camino == 'modifica_siniestro') ? 'Guardar cambios' : 'Registrar Siniestro'; ?>
-    </button>
-    &nbsp;
-    <?php if ($camino == 'modifica_siniestro' && $estado == 'Cerrado'): ?>
-    <button type="button" class="btn btn-warning" id="boton_reabrir" onclick="reabrirSiniestro()">
-      Reabrir siniestro
-    </button>
-    &nbsp;
-    <?php endif; ?>
-    <a href="/bambooQA/listado_siniestros.php" class="btn btn-secondary">Cancelar</a>
-    <br><br>
   </form>
+
+  <!-- ==================== BOTONES STICKY FOOTER ==================== -->
+  <div id="footer_acciones_siniestro"
+       style="position:fixed;bottom:0;left:0;right:0;background:#fff;
+              border-top:1px solid #dee2e6;padding:10px 20px;z-index:1040;
+              box-shadow:0 -2px 4px rgba(0,0,0,0.05)">
+    <div class="container" style="text-align:right">
+      <button type="button" class="btn" style="background-color:#536656;color:white"
+        id="boton_registrar" onclick="registraSiniestro()">
+        <?php echo ($camino == 'modifica_siniestro') ? 'Guardar cambios' : 'Registrar Siniestro'; ?>
+      </button>
+      <?php if ($camino == 'modifica_siniestro' && $estado == 'Cerrado'): ?>
+      &nbsp;<button type="button" class="btn btn-warning" id="boton_reabrir" onclick="reabrirSiniestro()">
+        Reabrir siniestro
+      </button>
+      <?php endif; ?>
+      &nbsp;<a href="/bambooQA/listado_siniestros.php" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </div>
+  <style>body { padding-bottom: 80px; }</style>
 
   <?php if ($camino == 'modifica_siniestro'): ?>
   <!-- =============================================================== -->
@@ -392,24 +397,6 @@ if (!$es_ramo_vehiculo_php) {
   </table>
   <br><br>
 
-  <!-- =============================================================== -->
-  <!-- HISTORIAL DE CAMBIOS DE ESTADO -->
-  <!-- =============================================================== -->
-  <hr>
-  <h5>Historial de cambios de estado</h5>
-  <table class="table table-sm table-striped" id="tabla_bitacora" style="width:100%">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Usuario</th>
-        <th>Desde</th>
-        <th>Hasta</th>
-        <th>Motivo</th>
-      </tr>
-    </thead>
-    <tbody id="filas_bitacora"></tbody>
-  </table>
-  <br><br>
   <?php endif; ?>
 </div>
 
@@ -705,35 +692,6 @@ function reabrirSiniestro() {
     });
 }
 
-// ---- Cargar historial de bitácora ----
-function cargarBitacora(id_siniestro) {
-    if (!id_siniestro) return;
-    $.ajax({
-        type: 'GET',
-        url: '/bambooQA/backend/siniestros/busqueda_bitacora_siniestro.php',
-        data: { id_siniestro: id_siniestro },
-        dataType: 'json',
-        success: function(response) {
-            var data = (response && response.data) || [];
-            var html = '';
-            if (data.length === 0) {
-                html = '<tr><td colspan="5"><em>Sin cambios registrados.</em></td></tr>';
-            } else {
-                $.each(data, function(i, r) {
-                    html += '<tr>' +
-                        '<td>' + (r.fecha || '') + '</td>' +
-                        '<td>' + (r.usuario || '') + '</td>' +
-                        '<td>' + (r.estado_anterior || '—') + '</td>' +
-                        '<td>' + (r.estado_nuevo || '') + '</td>' +
-                        '<td>' + (r.motivo || '') + '</td>' +
-                        '</tr>';
-                });
-            }
-            $('#filas_bitacora').html(html);
-        }
-    });
-}
-
 // ---- Al cargar: inicializar ----
 $(document).ready(function() {
     var ramo_inicial = '<?php echo addslashes($ramo); ?>';
@@ -746,11 +704,7 @@ $(document).ready(function() {
     if (id_poliza_inicial) {
         cargarItemsPoliza(id_poliza_inicial, items_csv_inicial);
     }
-    // Cargar bitácora en modo edición
     var id_siniestro_inicial = $('#id_siniestro').val();
-    if (id_siniestro_inicial) {
-        cargarBitacora(id_siniestro_inicial);
-    }
     // Bienes afectados: cargar desde BD (modo edición) o inicializar vacío (modo creación)
     cargarBienesAfectados(id_siniestro_inicial);
     // Pendientes: cargar en modo edición
