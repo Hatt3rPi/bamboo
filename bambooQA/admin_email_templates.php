@@ -50,7 +50,7 @@ if (!isset($_SESSION)) { session_start(); }
 
 <!-- MODAL EDITOR -->
 <div class="modal fade" id="modalTemplate" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-xl" role="document">
+  <div class="modal-dialog modal-xl" role="document" style="max-width:min(1500px, 95vw)">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="modalTemplateTitle">Plantilla</h5>

@@ -172,7 +172,7 @@ function retrocede()
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <a class="dropdown-item" href="/bambooQA/solicitar_info.php">Ver Tipos de Correos</a>
                             <a class="dropdown-item" href="/bambooQA/creacion_template.php">Editar Templates</a>
-                            <a class="dropdown-item" href="/bambooQA/admin_email_templates.php">Plantillas Brevo (siniestros)</a>
+                            <a class="dropdown-item" href="/bambooQA/admin_email_templates.php">Plantillas correos</a>
                         </div>
                     </li>
                 </ul>
