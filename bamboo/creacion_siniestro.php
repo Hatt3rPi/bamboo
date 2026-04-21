@@ -1123,6 +1123,7 @@ function abrirModalPendiente(id) {
         $('#pend_descripcion').val(p.descripcion);
         $('#pend_notas').val(p.notas || '');
         $('#pend_id_bien').val(p.id_bien || '');
+        $('#pend_edicion_extras').show();
     } else {
         $('#modalPendienteTitle').text('Nuevo pendiente');
         $('#pend_id').val('');
@@ -1132,9 +1133,19 @@ function abrirModalPendiente(id) {
         $('#pend_descripcion').val('');
         $('#pend_notas').val('');
         $('#pend_id_bien').val('');
+        $('#pend_edicion_extras').hide();
     }
     $('#modalPendiente').modal('show');
 }
+
+// Auto-llenar fecha de entrega con hoy al marcar Entregado
+$(document).on('change', '#pend_estado', function() {
+    if ($(this).val() === 'Entregado' && !$('#pend_fecha_entrega').val()) {
+        var d = new Date();
+        var iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        $('#pend_fecha_entrega').val(iso);
+    }
+});
 
 function guardarPendiente() {
     var id_siniestro = $('#id_siniestro').val();
@@ -1189,21 +1200,71 @@ function eliminarPendiente(id) {
     });
 }
 
+function esRamoVehiculoJS(ramo) {
+    var r = (ramo || '').toUpperCase();
+    return r.indexOf('VEH') !== -1 || r.indexOf('AUTO') !== -1;
+}
+
+function construirCorreoLiquidador(L) {
+    var nsin = L.numero_siniestro || '(sin N° de siniestro)';
+    var asegurado = L.nombre_asegurado || '';
+    var carpeta = L.numero_carpeta_liquidador ? (' — Carpeta ' + L.numero_carpeta_liquidador) : '';
+    var subject = 'Siniestro N° ' + nsin + carpeta + ' — ' + asegurado;
+    var body;
+    if (esRamoVehiculoJS(L.ramo)) {
+        body = 'Estimado/a ' + (L.nombre || 'liquidador') + ',\n\n' +
+               'Se le informa que el vehículo del asegurado ' + asegurado +
+               ' (siniestro ' + nsin + ') asistió a revisión en el taller designado.\n\n' +
+               'Por favor proceder con la orden de reparación.\n\n' +
+               'Saludos cordiales,\nAdriana';
+    } else {
+        body = 'Estimado/a ' + (L.nombre || 'liquidador') + ',\n\n' +
+               'Le informo que el asegurado ' + asegurado +
+               ' (siniestro ' + nsin + ') ya entregó todos los documentos pendientes a su cargo.\n\n' +
+               'Agradeceré proceder con la generación del finiquito.\n\n' +
+               'Saludos cordiales,\nAdriana';
+    }
+    return { subject: subject, body: body };
+}
+
+function abrirMailtoLiquidador(L, asunto, cuerpo) {
+    window.location.href = 'mailto:' + encodeURIComponent(L.correo) +
+                           '?subject=' + encodeURIComponent(asunto) +
+                           '&body=' + encodeURIComponent(cuerpo);
+}
+
 function enviarCorreoLiquidador() {
     var L = liquidadorContacto || {};
     if (!L.correo) { $('#modalNotificarLiquidador').modal('hide'); return; }
-    var nsin = L.numero_siniestro || '(sin número de compañía)';
-    var subject = 'Siniestro ' + nsin + ' — Cliente entregó todos los documentos';
-    var body = 'Estimado/a ' + (L.nombre || 'liquidador') + ',\n\n' +
-               'El asegurado ' + (L.nombre_asegurado || '') +
-               ' (póliza N° ' + (L.numero_poliza || '') + ') del siniestro ' + nsin +
-               ' ha entregado la totalidad de los documentos a su cargo.\n\n' +
-               'Quedamos a la espera del informe de liquidación / finiquito.\n\n' +
-               'Saludos cordiales,\nAdriana';
-    window.location.href = 'mailto:' + encodeURIComponent(L.correo) +
-                           '?subject=' + encodeURIComponent(subject) +
-                           '&body=' + encodeURIComponent(body);
-    $('#modalNotificarLiquidador').modal('hide');
+    var id_siniestro = $('#id_siniestro').val();
+    if (!id_siniestro) {
+        // Modo creación: fallback directo a mailto.
+        var m = construirCorreoLiquidador(L);
+        abrirMailtoLiquidador(L, m.subject, m.body);
+        $('#modalNotificarLiquidador').modal('hide');
+        return;
+    }
+    $.post('/bamboo/backend/siniestros/notifica_liquidador.php',
+           { id_siniestro: id_siniestro }, null, 'json')
+     .done(function(resp) {
+        $('#modalNotificarLiquidador').modal('hide');
+        if (resp && resp.ok) {
+            alert('✉️ Correo enviado al liquidador (' + resp.destinatario + ').');
+        } else if (resp && resp.proveedor === 'no_configurado' && resp.asunto) {
+            // Fallback a mailto con el contenido que ya armó el backend.
+            abrirMailtoLiquidador(L, resp.asunto, resp.cuerpo);
+        } else {
+            alert('No se pudo enviar el correo: ' + (resp && resp.mensaje ? resp.mensaje : 'error') +
+                  '\n\nSe abrirá el cliente de correo como alternativa.');
+            var m = construirCorreoLiquidador(L);
+            abrirMailtoLiquidador(L, m.subject, m.body);
+        }
+     })
+     .fail(function() {
+        $('#modalNotificarLiquidador').modal('hide');
+        var m = construirCorreoLiquidador(L);
+        abrirMailtoLiquidador(L, m.subject, m.body);
+     });
 }
 </script>
 
@@ -1356,27 +1417,13 @@ function enviarCorreoLiquidador() {
       </div>
       <div class="modal-body">
         <input type="hidden" id="pend_id">
-        <div class="form-row">
-          <div class="col-md-4 form-group">
-            <label>¿Quién la lleva? <span style="color:darkred">*</span></label>
-            <select class="form-control" id="pend_responsable">
-              <option value="Cliente">Cliente</option>
-              <option value="Liquidador">Liquidador</option>
-              <option value="Compañía">Compañía</option>
-            </select>
-          </div>
-          <div class="col-md-4 form-group">
-            <label>Estado</label>
-            <select class="form-control" id="pend_estado">
-              <option value="Pendiente">Pendiente</option>
-              <option value="Entregado">Entregado</option>
-              <option value="No aplica">No aplica</option>
-            </select>
-          </div>
-          <div class="col-md-4 form-group">
-            <label>Fecha entrega</label>
-            <input type="date" class="form-control" id="pend_fecha_entrega">
-          </div>
+        <div class="form-group">
+          <label>¿Quién la lleva? <span style="color:darkred">*</span></label>
+          <select class="form-control" id="pend_responsable">
+            <option value="Cliente">Cliente</option>
+            <option value="Liquidador">Liquidador</option>
+            <option value="Compañía">Compañía</option>
+          </select>
         </div>
         <div class="form-group">
           <label>Descripción del pendiente <span style="color:darkred">*</span></label>
@@ -1392,6 +1439,24 @@ function enviarCorreoLiquidador() {
         <div class="form-group">
           <label>Notas</label>
           <textarea class="form-control" id="pend_notas" rows="2"></textarea>
+        </div>
+        <!-- Solo visible en modo edición -->
+        <div id="pend_edicion_extras" style="display:none">
+          <hr>
+          <div class="form-row">
+            <div class="col-md-6 form-group">
+              <label>Estado</label>
+              <select class="form-control" id="pend_estado">
+                <option value="Pendiente">Pendiente</option>
+                <option value="Entregado">Entregado</option>
+                <option value="No aplica">No aplica</option>
+              </select>
+            </div>
+            <div class="col-md-6 form-group">
+              <label>Fecha entrega</label>
+              <input type="date" class="form-control" id="pend_fecha_entrega">
+            </div>
+          </div>
         </div>
       </div>
       <div class="modal-footer">

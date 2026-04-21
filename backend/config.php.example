@@ -1,0 +1,68 @@
+<?php
+/**
+ * Archivo de configuración - EJEMPLO
+ * Copia este archivo como config.php y completa las credenciales.
+ * NUNCA subas config.php al repositorio.
+ *
+ * Requiere un archivo .env en la raíz del proyecto con las variables:
+ *   DB_ENGINE=mysql|pgsql
+ *   DB_SERVER=localhost
+ *   DB_USERNAME=tu_usuario
+ *   DB_PASSWORD=tu_password
+ *   DB_NAME=tu_base_de_datos
+ *   PG_HOST=tu_host_postgres
+ *   PG_PORT=5432
+ *   PG_DATABASE=postgres
+ *   PG_USERNAME=postgres
+ *   PG_PASSWORD=tu_password_pg
+ *
+ *   # Brevo (correo transaccional al liquidador)
+ *   BREVO_API_KEY=xkeysib-...
+ *   BREVO_SENDER_EMAIL=adriana@dominio.cl
+ *   BREVO_SENDER_NAME=Adriana Sandoval
+ */
+
+/* Lectura de .env */
+$env_path = __DIR__ . '/../.env';
+if (file_exists($env_path)) {
+    $lines = file($env_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line === '' || $line[0] === '#') continue;
+        if (strpos($line, '=') === false) continue;
+        list($key, $value) = explode('=', $line, 2);
+        $key = trim($key);
+        $value = trim($value);
+        if (!defined($key) && !getenv($key)) {
+            putenv("$key=$value");
+        }
+    }
+}
+
+/* Auto-deteccion de ambiente QA (bambooQA/) -> fuerza pgsql */
+if (!getenv('DB_ENGINE') && strpos($_SERVER['SCRIPT_FILENAME'] ?? '', 'bambooQA') !== false) {
+    putenv('DB_ENGINE=pgsql');
+}
+
+/* Toggle de motor: mysql (default) | pgsql */
+define('DB_ENGINE', getenv('DB_ENGINE') ?: 'mysql');
+
+/* MySQL credentials (desde .env) */
+define('DB_SERVER',   getenv('DB_SERVER')   ?: 'localhost');
+define('DB_USERNAME', getenv('DB_USERNAME') ?: '');
+define('DB_PASSWORD', getenv('DB_PASSWORD') ?: '');
+define('DB_NAME',     getenv('DB_NAME')     ?: '');
+
+/* PostgreSQL (Supabase) credentials (desde .env) */
+define('PG_HOST',     getenv('PG_HOST')     ?: '');
+define('PG_PORT',     getenv('PG_PORT')     ?: '5432');
+define('PG_DATABASE', getenv('PG_DATABASE') ?: 'postgres');
+define('PG_USERNAME', getenv('PG_USERNAME') ?: 'postgres');
+define('PG_PASSWORD', getenv('PG_PASSWORD') ?: '');
+
+/* Capa de abstraccion */
+require_once __DIR__ . '/db.php';
+
+/* Conexion */
+$link = db_connect();
+?>

@@ -3,6 +3,7 @@ if (!isset($_SESSION)) {
     session_start();
 }
 require_once "/home/gestio10/public_html/backend/config.php";
+require_once __DIR__ . "/helper_cadena_pendientes.php";
 
 function estandariza_info($data) {
     $data = trim($data);
@@ -256,6 +257,9 @@ switch ($accion) {
                     sincroniza_bienes($link, $id_nuevo, $bienes, $usuario);
                 }
             }
+
+            // Cadena automática de pendientes iniciales
+            bootstrap_cadena_siniestro($link, $id_nuevo, $ramo, $numero_siniestro, $usuario);
         }
 
         db_query($link, "SELECT trazabilidad('$usuario', 'Creación siniestro', '" .
@@ -267,11 +271,13 @@ switch ($accion) {
         $mensaje  = 'Siniestro actualizado correctamente';
         $busqueda = $numero_siniestro;
 
-        // Leer estado anterior antes del UPDATE
+        // Leer estado y N° siniestro anteriores antes del UPDATE
         $estado_anterior = '';
-        $res = db_query($link, "SELECT estado FROM siniestros WHERE id = '$id'");
+        $numero_siniestro_anterior = '';
+        $res = db_query($link, "SELECT estado, COALESCE(numero_siniestro,'') AS ns FROM siniestros WHERE id = '$id'");
         while ($row = db_fetch_object($res)) {
             $estado_anterior = $row->estado;
+            $numero_siniestro_anterior = $row->ns;
         }
 
         // Auto-promoción: si seguía en 'Número pendiente' y ahora llega N° compañía, pasa a 'Abierto'
@@ -310,6 +316,11 @@ switch ($accion) {
         if ($estado_anterior !== '' && $estado_anterior !== $estado) {
             db_query($link, "INSERT INTO siniestros_bitacora (id_siniestro, estado_anterior, estado_nuevo, usuario, motivo)
                              VALUES ('$id', '$estado_anterior', '$estado', '$usuario', 'Edición')");
+        }
+
+        // Cadena automática: si el N° siniestro deja de estar vacío, promover al liquidador.
+        if (trim($numero_siniestro_anterior) === '' && trim($numero_siniestro) !== '') {
+            promover_al_liquidador($link, $id, $ramo, $usuario);
         }
 
         // Resincronizar ítems (DELETE + INSERT) con datos de vehículo por ítem

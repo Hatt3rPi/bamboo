@@ -1,6 +1,7 @@
 <?php
 if (!isset($_SESSION)) { session_start(); }
 require_once "/home/gestio10/public_html/backend/config.php";
+require_once __DIR__ . "/helper_cadena_pendientes.php";
 
 function estandariza_info($d) { return htmlspecialchars(stripslashes(trim($d))); }
 function sqlesc($v) { return str_replace("'", "''", $v); }
@@ -17,7 +18,9 @@ $usuario       = $_SESSION['username'] ?? '';
 
 $ok = false; $mensaje = '';
 $cliente_completo = false;
-$liquidador = array('nombre' => '', 'correo' => '', 'numero_siniestro' => '', 'numero_poliza' => '', 'nombre_asegurado' => '');
+$liquidador = array('nombre' => '', 'correo' => '', 'numero_siniestro' => '',
+                    'numero_poliza' => '', 'nombre_asegurado' => '',
+                    'ramo' => '', 'numero_carpeta_liquidador' => '');
 
 db_set_charset($link, 'utf8');
 db_select_db($link, DB_NAME);
@@ -27,12 +30,14 @@ elseif (!in_array($responsable, array('Cliente','Liquidador','Compañía'))) { $
 elseif ($descripcion === '')                                                { $mensaje = 'descripcion es obligatoria.'; }
 elseif (!in_array($estado, array('Pendiente','Entregado','No aplica')))     { $mensaje = 'estado inválido.'; }
 else {
-    $resp_anterior = ''; $est_anterior = ''; $id_siniestro = '';
-    $rs = db_query($link, "SELECT responsable, estado, id_siniestro FROM siniestros_pendientes WHERE id='$id'");
+    $resp_anterior = ''; $est_anterior = ''; $id_siniestro = ''; $codigo_tarea = '';
+    $rs = db_query($link, "SELECT responsable, estado, id_siniestro, COALESCE(codigo_tarea,'') AS codigo_tarea
+                           FROM siniestros_pendientes WHERE id='$id'");
     while ($row = db_fetch_object($rs)) {
         $resp_anterior = $row->responsable;
         $est_anterior  = $row->estado;
         $id_siniestro  = $row->id_siniestro;
+        $codigo_tarea  = $row->codigo_tarea;
     }
 
     if ($id_siniestro === '') {
@@ -66,6 +71,14 @@ else {
                                  '" . sqlesc($usuario) . "')");
         }
 
+        // Cadena automática: al Entregar una tarea con código conocido, disparar la siguiente.
+        if ($est_anterior === 'Pendiente' && $estado === 'Entregado' && $codigo_tarea !== '') {
+            $ramo_sin = '';
+            $rs4 = db_query($link, "SELECT COALESCE(ramo,'') AS ramo FROM siniestros WHERE id='$id_siniestro'");
+            while ($row = db_fetch_object($rs4)) { $ramo_sin = $row->ramo; }
+            promover_cadena_al_entregar($link, $id_siniestro, $codigo_tarea, $ramo_sin, $usuario);
+        }
+
         // ¿Se acaba de cerrar el último pendiente del Cliente?
         if ($est_anterior === 'Pendiente' && $estado === 'Entregado' && $resp_anterior === 'Cliente') {
             $restantes = 0;
@@ -75,7 +88,9 @@ else {
             if ($restantes === 0) {
                 $rs3 = db_query($link, "SELECT liquidador_nombre, liquidador_correo,
                                                COALESCE(numero_siniestro,'') AS ns,
-                                               numero_poliza, nombre_asegurado
+                                               numero_poliza, nombre_asegurado,
+                                               COALESCE(ramo,'') AS ramo,
+                                               COALESCE(numero_carpeta_liquidador,'') AS ncl
                                         FROM siniestros WHERE id='$id_siniestro'");
                 while ($row = db_fetch_object($rs3)) {
                     $cliente_completo = true;
@@ -84,6 +99,8 @@ else {
                     $liquidador['numero_siniestro'] = $row->ns;
                     $liquidador['numero_poliza']    = $row->numero_poliza;
                     $liquidador['nombre_asegurado'] = $row->nombre_asegurado;
+                    $liquidador['ramo']             = $row->ramo;
+                    $liquidador['numero_carpeta_liquidador'] = $row->ncl;
                 }
             }
         }

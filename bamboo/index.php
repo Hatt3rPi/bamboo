@@ -74,12 +74,28 @@ While($row2=db_fetch_object($resultado2))
     <!-- body code goes here -->
      <div id="header"><?php include 'header2.php' ?></div>
     <div class="container">
-        <canvas id="myChart" width="400" height="100"></canvas><br>
-        <hr>
-        <canvas id="myChart2" width="400" height="100"></canvas><br>
-        <hr>
-        <canvas id="torta" width="400" height="100" class="chartjs-render-monitor"></canvas>
-        <hr><br>
+      <div class="row">
+        <div class="col-md-9">
+          <canvas id="myChart" width="400" height="100"></canvas><br>
+          <hr>
+          <canvas id="myChart2" width="400" height="100"></canvas><br>
+          <hr>
+          <canvas id="torta" width="400" height="100" class="chartjs-render-monitor"></canvas>
+        </div>
+        <div class="col-md-3">
+          <div class="card" style="position:sticky;top:10px">
+            <div class="card-header d-flex align-items-center" style="background-color:#fff3cd">
+              <strong>⏰ Alertas</strong>
+              <span id="alertas_badge" class="badge badge-danger ml-auto" style="display:none">0</span>
+            </div>
+            <div id="alertas_body" class="list-group list-group-flush"
+                 style="max-height:600px;overflow-y:auto;font-size:0.85rem">
+              <div class="list-group-item text-muted"><em>Cargando…</em></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr><br>
         <p> Resumen de tareas <br></p>
         <br>
         <div class="accordion" id="accordionExample">
@@ -1081,4 +1097,57 @@ function genera_data(data) {
     'filtro_dias': dias
     }, 'get');
 }
+
+// =========================================================================
+// WIDGET DE ALERTAS — pendientes de siniestros con plazo vencido
+// =========================================================================
+function alertasBadgeResp(r) {
+    if (r === 'Cliente')    return '<span class="badge badge-info">Cliente</span>';
+    if (r === 'Liquidador') return '<span class="badge badge-warning">Liquidador</span>';
+    if (r === 'Compañía')  return '<span class="badge badge-dark">Compañía</span>';
+    return '';
+}
+function alertasEscHtml(s) {
+    return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function abrirSiniestroDesdeAlerta(id_siniestro) {
+    var form = $('<form method="POST" action="/bamboo/creacion_siniestro.php">' +
+                 '<input name="accion" value="modifica_siniestro">' +
+                 '<input name="id_siniestro" value="' + id_siniestro + '">' +
+                 '</form>');
+    $('body').append(form);
+    form.submit();
+}
+function cargarAlertasSiniestros() {
+    $.getJSON('/bamboo/backend/siniestros/busqueda_alertas_usuario.php', function(resp) {
+        var $b = $('#alertas_body');
+        $b.empty();
+        var rows = (resp && resp.data) || [];
+        if (rows.length === 0) {
+            $b.append('<div class="list-group-item text-center text-muted">✅ Sin alertas activas</div>');
+            $('#alertas_badge').hide();
+            return;
+        }
+        $('#alertas_badge').text(rows.length).show();
+        rows.forEach(function(a) {
+            var ns = a.numero_siniestro || ('Pól. ' + (a.numero_poliza || ''));
+            var atraso = a.dias_atraso > 0 ? ('+' + a.dias_atraso + 'd') : '';
+            var html =
+                '<a href="#" class="list-group-item list-group-item-action" ' +
+                   'onclick="abrirSiniestroDesdeAlerta(' + a.id_siniestro + ');return false">' +
+                    '<div class="d-flex justify-content-between">' +
+                        '<small><strong>' + alertasEscHtml(ns) + '</strong></small>' +
+                        '<small class="text-danger">⏰ ' + atraso + '</small>' +
+                    '</div>' +
+                    '<div>' + alertasBadgeResp(a.responsable) + ' ' +
+                             '<small>' + alertasEscHtml(a.descripcion) + '</small></div>' +
+                    '<small class="text-muted">' + alertasEscHtml(a.nombre_asegurado || '') + '</small>' +
+                '</a>';
+            $b.append(html);
+        });
+    }).fail(function() {
+        $('#alertas_body').html('<div class="list-group-item text-danger"><small>Error al cargar alertas</small></div>');
+    });
+}
+$(document).ready(function() { cargarAlertasSiniestros(); });
 </script>

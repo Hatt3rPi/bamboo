@@ -22,7 +22,7 @@ db_set_charset($link, 'utf8');
 $sql = "SELECT *, concat_ws('-',mes,SUBSTRING(anomes, 3,2)) as anomes_nombre FROM `stock_polizas` WHERE ANOMES BETWEEN ANOMES(DATE_ADD(CURRENT_DATE, INTERVAL -12 MONTH)) AND ANOMES(DATE_ADD(CURRENT_DATE, INTERVAL + 6 MONTH))";
     $resultado=db_query($link, $sql);
 
-    $leyendas = $stock=$salidas=$entradas=$ramo=$cantidad=array();
+    $leyendas = $stock=$salidas=$entradas=$ramo=$porcentaje=$cantidad=array();
 While($row=db_fetch_object($resultado))
   {
       if($row->anomes==date("Ym")){
@@ -36,11 +36,12 @@ While($row=db_fetch_object($resultado))
       array_push($salidas,$row->salidas );
   }
   
-$resultado2=db_query($link, "SELECT ramo, count(*) as cantidad FROM polizas_2 where estado not in ('Cancelado','Anulado') group by ramo order by count(*) desc");
+$resultado2=db_query($link, "SELECT b.ramo_agrupado AS ramo, COUNT(a.ramo) AS cantidad, CONCAT(FORMAT((COUNT(a.ramo) / (SELECT COUNT(*) FROM polizas_2 WHERE estado NOT IN ('Cancelado', 'Anulado'))) * 100, 1), '%') AS porcentaje_total FROM polizas_2 AS a LEFT JOIN ramos_agrupados AS b ON a.ramo = b.ramo WHERE estado NOT IN ('Cancelado', 'Anulado') GROUP BY b.ramo_agrupado ORDER BY COUNT(a.ramo) DESC");
 While($row2=db_fetch_object($resultado2))
   {
       array_push($ramo,$row2->ramo );
       array_push($cantidad,$row2->cantidad );
+      array_push($porcentaje,$row2->porcentaje_total );
   }
   db_close($link);
 ?>
@@ -51,7 +52,7 @@ While($row2=db_fetch_object($resultado2))
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="/bamboo/images/bamboo.png">
+    <link rel="icon" href="/bambooQA/images/bamboo.png">
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
@@ -71,12 +72,30 @@ While($row2=db_fetch_object($resultado2))
 <body>
 
     <!-- body code goes here -->
-    <div id="header"><?php include 'header2.php' ?></div>
+     <div id="header"><?php include 'header2.php' ?></div>
     <div class="container">
-        <canvas id="myChart" width="400" height="100"></canvas><br>
-        <hr>
-        <canvas id="torta" width="400" height="100" class="chartjs-render-monitor"></canvas>
-        <hr><br>
+      <div class="row">
+        <div class="col-md-9">
+          <canvas id="myChart" width="400" height="100"></canvas><br>
+          <hr>
+          <canvas id="myChart2" width="400" height="100"></canvas><br>
+          <hr>
+          <canvas id="torta" width="400" height="100" class="chartjs-render-monitor"></canvas>
+        </div>
+        <div class="col-md-3">
+          <div class="card" style="position:sticky;top:10px">
+            <div class="card-header d-flex align-items-center" style="background-color:#fff3cd">
+              <strong>⏰ Alertas</strong>
+              <span id="alertas_badge" class="badge badge-danger ml-auto" style="display:none">0</span>
+            </div>
+            <div id="alertas_body" class="list-group list-group-flush"
+                 style="max-height:600px;overflow-y:auto;font-size:0.85rem">
+              <div class="list-group-item text-muted"><em>Cargando…</em></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr><br>
         <p> Resumen de tareas <br></p>
         <br>
         <div class="accordion" id="accordionExample">
@@ -151,7 +170,9 @@ While($row2=db_fetch_object($resultado2))
                     </tr>
 
             </table>
-                        <div id="botones_poliza"></div>
+            <div id="botones_poliza">
+            <button title="Descargar_excel_polizas" id="boton_descarga_excel" type="button"  onclick="descarga_excel();">Descargar Excel <i class="fas fa-file-excel"></i></button>
+            </div>
                     </div>
                 </div>
             </div>
@@ -186,6 +207,7 @@ While($row2=db_fetch_object($resultado2))
     <br>
 </body>
 
+
 </html>
 <script>
 function formateoFechas(date) {
@@ -209,7 +231,7 @@ $(document).ready(function() {
     document.getElementById("fec_max").value=formateoFechas(fin);
   var   table_tareas = $('#listado_tareas').DataTable({
 
-        "ajax": "/bamboo/backend/actividades/busqueda_listado_tareas.php",
+        "ajax": "/bambooQA/backend/actividades/busqueda_listado_tareas.php",
         "scrollX": false,
         "columns": [{
                 "className": 'details-control',
@@ -367,7 +389,7 @@ $(document).ready(function() {
     }).container().appendTo($('#botones_tareas'));
 
      table = $('#listado_polizas').DataTable({
-"ajax": "/bamboo/backend/polizas/busqueda_listado_polizas.php",
+"ajax": "/bambooQA/backend/polizas/busqueda_listado_polizas.php",
         "scrollX": false,
         "searchPanes":{
             "columns":[2],
@@ -472,6 +494,7 @@ $(document).ready(function() {
          }}
         ],
         "order": [
+            
             [4, "desc"]
         ],
         "oLanguage": {
@@ -594,8 +617,9 @@ function detalle_tareas(d) {
     return '<table background-color:#F6F6F6; color:#FFF; cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
         '<tr>' +
         '<td>Acciones:</td>' +
-        '<td><button title="Buscar información asociada" type="button" id=' + d.id_tarea +
-        ' name="info" onclick="botones(this.id, this.name, \'tarea\')"><i class="fas fa-search"></i></button></td>' +
+        '<td>'+
+        '<button title="Buscar información asociada" type="button" id=' + d.id_tarea +' name="info" onclick="botones(this.id, this.name, \'tarea\')"><i class="fas fa-search"></i></button><a> </a>'+
+        '<button title="Completar tarea"  type="button" id=' + d.id_tarea +' name="cerrar_tarea" onclick="botones(this.id, this.name, \'tarea\')"><i class="fas fa-check-circle"></i></i></button></td>' +
         '</tr>' +
         '<tr><td>Clientes:</td>'+
         '<td>'+ $tabla_clientes+'</td></tr>'+
@@ -635,7 +659,6 @@ function format_poliza(d) {
         else {
             for (var i=0; i< d.nro_endosos; i++){
                 listado_endosos+= '<tr>'+
-                '<td>' + (i+1) + '</td>'+
                 '<td>' + d.endosos[i].numero_endoso + '</td>'+
                 '<td>' + d.endosos[i].tipo_endoso + '</td>'+
                 '<td>' + d.endosos[i].descripcion_endoso + '</td>'+
@@ -651,7 +674,6 @@ function format_poliza(d) {
             '<td VALIGN=TOP>Endosos: </td>' +
             '<td><table class="table table-striped" style="width:100%" id="listado_endosos_1">'+
             '<tr>'+
-            '<th></th>'+
             '<th>Número</th>'+
             '<th>Tipo</th>'+
             '<th>Descripción</th>'+
@@ -776,7 +798,7 @@ function botones(id, accion, base) {
     switch (accion) {
         case "elimina": {            
             if (base == 'tarea') {
-                $.redirect('/bamboo/backend/actividades/cierra_tarea.php', {
+                $.redirect('/bambooQA/backend/actividades/cierra_tarea.php', {
                     'id_tarea': id,
                     'accion':accion,
                 }, 'post');
@@ -784,7 +806,7 @@ function botones(id, accion, base) {
             if (base == 'poliza') {
                 var r2 = confirm("Estás a punto de eliminar está póliza ¿Deseas continuar?");
                 if (r2 == true) {
-                $.redirect('/bamboo/backend/polizas/modifica_poliza.php', {
+                $.redirect('/bambooQA/backend/polizas/modifica_poliza.php', {
                     'id_poliza': id,
                     'accion':accion,
                 }, 'post');
@@ -802,12 +824,12 @@ function botones(id, accion, base) {
                 type: 'success'
             });
             if (base == 'poliza') {
-                $.redirect('/bamboo/creacion_poliza.php', {
+                $.redirect('/bambooQA/creacion_poliza.php', {
                 'id_poliza': id
                 }, 'post');
             }
             if (base == 'tarea') {
-                $.redirect('/bamboo/creacion_actividades.php', {
+                $.redirect('/bambooQA/creacion_actividades.php', {
                 'id_tarea': id,
                 'tipo_tarea':'individual'
                 }, 'post');
@@ -816,19 +838,19 @@ function botones(id, accion, base) {
         }
         case "tarea": {
             if (base == 'cliente') {
-                $.redirect('/bamboo/creacion_actividades.php', {
+                $.redirect('/bambooQA/creacion_actividades.php', {
                     'id_cliente': id
                 }, 'post');
             }
             if (base == 'poliza') {
-                $.redirect('/bamboo/creacion_actividades.php', {
+                $.redirect('/bambooQA/creacion_actividades.php', {
                     'id_poliza': id
                 }, 'post');
             }
             break;
         }
         case "info": {
-            $.redirect('/bamboo/resumen2.php', {
+            $.redirect('/bambooQA/resumen2.php', {
                 'id': id,
                 'base': base
             }, 'post');
@@ -836,7 +858,7 @@ function botones(id, accion, base) {
         }
         case "correo": {
             if (base == 'poliza') {
-                $.redirect('/bamboo/template_poliza.php', {
+                $.redirect('/bambooQA/template_poliza.php', {
                     'id_poliza': id
                 }, 'post');
             }
@@ -846,7 +868,7 @@ function botones(id, accion, base) {
             if (base == 'tarea') {
                 $.ajax({
                     type: "POST",
-                    url: "/bamboo/backend/actividades/cierra_tarea.php",
+                    url: "/bambooQA/backend/actividades/cierra_tarea.php",
                     data: {
                         id_tarea: id,
                         accion:accion,
@@ -879,6 +901,39 @@ var chart = new Chart(ctx, {
             backgroundColor: 'rgba(255, 99, 132, 0.1)',
             borderColor: 'rgb(255, 99, 132)',
             data: genera_data('stock')
+        }]
+    },
+
+    // Configuration options go here
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    min: 0
+                }
+            }]
+        }
+    }
+});
+var ctx2 = document.getElementById('myChart2').getContext('2d');
+var chart2 = new Chart(ctx2, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: genera_data('leyendas'),
+        datasets: [{
+            label: 'Pólizas que inician su vigencia',
+            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+            borderColor: 'rgb(54, 162, 235)',
+            data: genera_data('entradas')
+        },
+        {
+            label: 'Pólizas que finalizan su vigencia',
+            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: genera_data('salidas')
         }]
     },
 
@@ -934,6 +989,7 @@ var myDoughnutChart = new Chart(ctx2, {
         }
     }
 });
+
 
 function genera_data(data) {
     switch (data) {
@@ -1034,5 +1090,64 @@ function genera_data(data) {
     document.getElementById("fec_max").value=formateoFechas(fin);
     table.draw();
     });
-    
+
+    function descarga_excel(){
+    var dias=document.getElementById("busqueda_dias").value;
+     $.redirect('/bambooQA/backend/polizas/genera_excel_polizas_filtradas.php', {
+    'filtro_dias': dias
+    }, 'get');
+}
+
+// =========================================================================
+// WIDGET DE ALERTAS — pendientes de siniestros con plazo vencido
+// =========================================================================
+function alertasBadgeResp(r) {
+    if (r === 'Cliente')    return '<span class="badge badge-info">Cliente</span>';
+    if (r === 'Liquidador') return '<span class="badge badge-warning">Liquidador</span>';
+    if (r === 'Compañía')  return '<span class="badge badge-dark">Compañía</span>';
+    return '';
+}
+function alertasEscHtml(s) {
+    return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function abrirSiniestroDesdeAlerta(id_siniestro) {
+    var form = $('<form method="POST" action="/bambooQA/creacion_siniestro.php">' +
+                 '<input name="accion" value="modifica_siniestro">' +
+                 '<input name="id_siniestro" value="' + id_siniestro + '">' +
+                 '</form>');
+    $('body').append(form);
+    form.submit();
+}
+function cargarAlertasSiniestros() {
+    $.getJSON('/bambooQA/backend/siniestros/busqueda_alertas_usuario.php', function(resp) {
+        var $b = $('#alertas_body');
+        $b.empty();
+        var rows = (resp && resp.data) || [];
+        if (rows.length === 0) {
+            $b.append('<div class="list-group-item text-center text-muted">✅ Sin alertas activas</div>');
+            $('#alertas_badge').hide();
+            return;
+        }
+        $('#alertas_badge').text(rows.length).show();
+        rows.forEach(function(a) {
+            var ns = a.numero_siniestro || ('Pól. ' + (a.numero_poliza || ''));
+            var atraso = a.dias_atraso > 0 ? ('+' + a.dias_atraso + 'd') : '';
+            var html =
+                '<a href="#" class="list-group-item list-group-item-action" ' +
+                   'onclick="abrirSiniestroDesdeAlerta(' + a.id_siniestro + ');return false">' +
+                    '<div class="d-flex justify-content-between">' +
+                        '<small><strong>' + alertasEscHtml(ns) + '</strong></small>' +
+                        '<small class="text-danger">⏰ ' + atraso + '</small>' +
+                    '</div>' +
+                    '<div>' + alertasBadgeResp(a.responsable) + ' ' +
+                             '<small>' + alertasEscHtml(a.descripcion) + '</small></div>' +
+                    '<small class="text-muted">' + alertasEscHtml(a.nombre_asegurado || '') + '</small>' +
+                '</a>';
+            $b.append(html);
+        });
+    }).fail(function() {
+        $('#alertas_body').html('<div class="list-group-item text-danger"><small>Error al cargar alertas</small></div>');
+    });
+}
+$(document).ready(function() { cargarAlertasSiniestros(); });
 </script>
