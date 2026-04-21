@@ -15,6 +15,7 @@
 if (!isset($_SESSION)) { session_start(); }
 require_once "/home/gestio10/public_html/backend/config.php";
 require_once __DIR__ . "/helper_brevo.php";
+require_once __DIR__ . "/../email/render_template.php";
 
 function estandariza_info($d) { return htmlspecialchars(stripslashes(trim($d))); }
 function sqlesc($v) { return str_replace("'", "''", $v); }
@@ -53,22 +54,24 @@ if (!$s->liquidador_correo) {
 $ramo_up = strtoupper($s->ramo);
 $es_vehiculo = (strpos($ramo_up, 'VEH') !== false || strpos($ramo_up, 'AUTO') !== false);
 $nsin  = $s->ns ?: '(sin N° de siniestro)';
-$carp  = $s->ncl !== '' ? ' — Carpeta ' . $s->ncl : '';
-$asunto = 'Siniestro N° ' . $nsin . $carp . ' — ' . $s->nombre_asegurado;
 
-if ($es_vehiculo) {
-    $cuerpo = "Estimado/a " . ($s->liquidador_nombre ?: 'liquidador') . ",\n\n" .
-              "Se le informa que el vehículo del asegurado " . $s->nombre_asegurado .
-              " (siniestro " . $nsin . ") asistió a revisión en el taller designado.\n\n" .
-              "Por favor proceder con la orden de reparación.\n\n" .
-              "Saludos cordiales,\nAdriana";
-} else {
-    $cuerpo = "Estimado/a " . ($s->liquidador_nombre ?: 'liquidador') . ",\n\n" .
-              "Le informo que el asegurado " . $s->nombre_asegurado .
-              " (siniestro " . $nsin . ") ya entregó todos los documentos pendientes a su cargo.\n\n" .
-              "Agradeceré proceder con la generación del finiquito.\n\n" .
-              "Saludos cordiales,\nAdriana";
+$codigo_tpl = $es_vehiculo ? 'siniestro_liquidador_vehiculo' : 'siniestro_liquidador_no_vehiculo';
+$vars = array(
+    'liquidador_nombre'         => $s->liquidador_nombre ?? '',
+    'nombre_asegurado'          => $s->nombre_asegurado ?? '',
+    'numero_siniestro'          => $nsin,
+    'numero_carpeta_liquidador' => $s->ncl ?? '',
+    'numero_poliza'             => $s->numero_poliza ?? '',
+    'ramo'                      => $s->ramo ?? '',
+    'carpeta_suffix'            => $s->ncl !== '' ? ' — Carpeta ' . $s->ncl : ''
+);
+$rendered = render_email_template($link, $codigo_tpl, $vars);
+if ($rendered === null) {
+    echo json_encode(array('ok' => false, 'mensaje' => "Plantilla '$codigo_tpl' no encontrada o inactiva."));
+    db_close($link); exit;
 }
+$asunto = $rendered['asunto'];
+$cuerpo = $rendered['texto'];
 
 // Si Brevo no está configurado, devolver datos para que el frontend use mailto.
 if (!brevo_configurado()) {
