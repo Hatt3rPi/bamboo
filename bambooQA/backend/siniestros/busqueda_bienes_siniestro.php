@@ -12,6 +12,8 @@ db_select_db($link, DB_NAME);
 
 $res = db_query($link, "SELECT b.id, b.id_siniestro, b.tipo, b.categoria, b.descripcion, b.estado,
                                b.observaciones, b.fecha_alarma,
+                               COALESCE(b.direccion,'')     AS direccion,
+                               COALESCE(b.item_afectado,'') AS item_afectado,
                                b.patente, b.marca, b.modelo, b.anio_vehiculo,
                                b.taller_nombre, b.taller_telefono,
                                b.created_at, b.updated_at,
@@ -37,6 +39,8 @@ while ($row = db_fetch_object($res)) {
         'tipo'            => $row->tipo,
         'categoria'       => $row->categoria,
         'descripcion'     => $row->descripcion,
+        'direccion'       => $row->direccion,
+        'item_afectado'   => $row->item_afectado,
         'estado'          => $row->estado,
         'observaciones'   => $row->observaciones,
         'fecha_alarma'    => $row->fecha_alarma,

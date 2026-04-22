@@ -41,6 +41,9 @@ $anio_vehiculo             = estandariza_info($_POST["anio_vehiculo"]           
 $taller_nombre             = estandariza_info($_POST["taller_nombre"]             ?? '');
 $taller_telefono           = estandariza_info($_POST["taller_telefono"]           ?? '');
 $estado                    = estandariza_info($_POST["estado"]                    ?? 'Número pendiente');
+$compania_contacto_nombre  = estandariza_info($_POST["compania_contacto_nombre"]  ?? '');
+$compania_contacto_mail    = estandariza_info($_POST["compania_contacto_mail"]    ?? '');
+$salir_despues             = isset($_POST["salir_despues"]) && $_POST["salir_despues"] == '1';
 
 // Neutralizar campos vehículo si el ramo no es vehicular (defensa backend).
 $ramo_upper = strtoupper($ramo);
@@ -85,6 +88,8 @@ function sincroniza_bienes($link, $id_siniestro, $bienes_array, $usuario) {
         $estado         = in_array($b['estado'] ?? '', array('Abierto','Cerrado','Rechazado')) ? $b['estado'] : 'Abierto';
         $observaciones  = $b['observaciones'] ?? '';
         $fecha_alarma   = $b['fecha_alarma'] ?? '';
+        $direccion      = $b['direccion']     ?? '';
+        $item_afectado  = $b['item_afectado'] ?? '';
         $patente        = ($categoria === 'vehiculo') ? ($b['patente']       ?? '') : '';
         $marca          = ($categoria === 'vehiculo') ? ($b['marca']         ?? '') : '';
         $modelo         = ($categoria === 'vehiculo') ? ($b['modelo']        ?? '') : '';
@@ -94,6 +99,8 @@ function sincroniza_bienes($link, $id_siniestro, $bienes_array, $usuario) {
 
         $d  = $sqlesc($descripcion);
         $o  = $sqlesc($observaciones);
+        $dir = $sqlesc($direccion);
+        $ia  = $sqlesc($item_afectado);
         $p  = $sqlesc($patente);
         $ma = $sqlesc($marca);
         $mo = $sqlesc($modelo);
@@ -112,6 +119,8 @@ function sincroniza_bienes($link, $id_siniestro, $bienes_array, $usuario) {
                                 tipo = '$tipo',
                                 categoria = '$categoria',
                                 descripcion = '$d',
+                                direccion = '$dir',
+                                item_afectado = '$ia',
                                 estado = '$estado',
                                 observaciones = '$o',
                                 fecha_alarma = $fa,
@@ -132,9 +141,11 @@ function sincroniza_bienes($link, $id_siniestro, $bienes_array, $usuario) {
         } else {
             // INSERT
             db_query($link, "INSERT INTO siniestros_bienes_afectados
-                                (id_siniestro, tipo, categoria, descripcion, estado, observaciones, fecha_alarma,
+                                (id_siniestro, tipo, categoria, descripcion, direccion, item_afectado,
+                                 estado, observaciones, fecha_alarma,
                                  patente, marca, modelo, anio_vehiculo, taller_nombre, taller_telefono)
-                             VALUES ('$id_siniestro', '$tipo', '$categoria', '$d', '$estado', '$o', $fa,
+                             VALUES ('$id_siniestro', '$tipo', '$categoria', '$d', '$dir', '$ia',
+                                     '$estado', '$o', $fa,
                                      '$p', '$ma', '$mo', $av, '$tn', '$tt')");
             $r = db_query($link, "SELECT currval('siniestros_bienes_afectados_id_seq') AS id");
             $id_nuevo = null;
@@ -176,6 +187,7 @@ db_select_db($link, DB_NAME);
 $mensaje  = '';
 $busqueda = '';
 $listado  = '/bambooQA/listado_siniestros.php';
+$id_para_volver = ''; // usado cuando salir_despues=0 para re-editar el mismo siniestro
 
 switch ($accion) {
 
@@ -200,6 +212,7 @@ switch ($accion) {
                         numero_carpeta_liquidador,
                         patente, marca, modelo, anio_vehiculo,
                         taller_nombre, taller_telefono,
+                        compania_contacto_nombre, compania_contacto_mail,
                         estado, presentado, token, usuario_registro
                     ) VALUES (
                         '$numero_siniestro', " . ($id_poliza !== '' ? "'$id_poliza'" : "NULL") . ", '$numero_poliza', '$ramo',
@@ -214,6 +227,7 @@ switch ($accion) {
                         '$patente', '$marca', '$modelo',
                         " . ($anio_vehiculo ? "'$anio_vehiculo'" : "NULL") . ",
                         '$taller_nombre', '$taller_telefono',
+                        '$compania_contacto_nombre', '$compania_contacto_mail',
                         '$estado', " . ($presentado ? "TRUE" : "FALSE") . ",
                         '$token', '$usuario'
                     )";
@@ -229,6 +243,7 @@ switch ($accion) {
             $id_nuevo = $fila->id;
             $busqueda = $fila->numero_siniestro ? $fila->numero_siniestro : $numero_poliza;
         }
+        $id_para_volver = (string) $id_nuevo;
 
         // Insertar ítems asociados + datos de vehículo por ítem
         if ($id_nuevo > 0) {
@@ -270,6 +285,7 @@ switch ($accion) {
         $id       = estandariza_info($_POST["id_siniestro"]);
         $mensaje  = 'Siniestro actualizado correctamente';
         $busqueda = $numero_siniestro;
+        $id_para_volver = $id;
 
         // Leer estado y N° siniestro anteriores antes del UPDATE
         $estado_anterior = '';
@@ -307,6 +323,8 @@ switch ($accion) {
                         anio_vehiculo             = NULLIF('$anio_vehiculo', '')::integer,
                         taller_nombre             = '$taller_nombre',
                         taller_telefono           = '$taller_telefono',
+                        compania_contacto_nombre  = '$compania_contacto_nombre',
+                        compania_contacto_mail    = '$compania_contacto_mail',
                         estado                    = '$estado',
                         presentado                = " . ($presentado ? "TRUE" : "FALSE") . "
                     WHERE id = '$id'";
@@ -371,11 +389,21 @@ db_close($link);
 </head>
 <body>
 <script>
-var mensaje  = '<?php echo $mensaje; ?>';
-var busqueda = '<?php echo $busqueda; ?>';
-var listado  = '<?php echo $listado; ?>';
+var mensaje       = '<?php echo $mensaje; ?>';
+var busqueda      = '<?php echo $busqueda; ?>';
+var listado       = '<?php echo $listado; ?>';
+var salirDespues  = <?php echo $salir_despues ? 'true' : 'false'; ?>;
+var idParaVolver  = '<?php echo $id_para_volver; ?>';
 alert(mensaje);
-$.redirect(listado, { 'busqueda': busqueda }, 'post');
+if (!salirDespues && idParaVolver) {
+    // Guardar sin salir: volver al formulario de edición del mismo siniestro
+    $.redirect('/bambooQA/creacion_siniestro.php', {
+        accion: 'modifica_siniestro',
+        id_siniestro: idParaVolver
+    }, 'post');
+} else {
+    $.redirect(listado, { 'busqueda': busqueda }, 'post');
+}
 </script>
 </body>
 </html>

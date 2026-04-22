@@ -33,7 +33,8 @@ $sql = "SELECT s.id, s.numero_siniestro, s.numero_poliza, s.ramo, s.tipo_siniest
     ba.bienes_json,
     COALESCE(sp.pendientes_cliente, 0)    as pendientes_cliente,
     COALESCE(sp.pendientes_liquidador, 0) as pendientes_liquidador,
-    COALESCE(sp.pendientes_compania, 0)   as pendientes_compania
+    COALESCE(sp.pendientes_compania, 0)   as pendientes_compania,
+    COALESCE(sp.pendientes_taller, 0)     as pendientes_taller
 FROM siniestros s
 LEFT JOIN clientes c ON s.rut_asegurado = c.rut_sin_dv AND c.rut_sin_dv IS NOT NULL
 LEFT JOIN polizas_2 p ON s.id_poliza = p.id
@@ -41,7 +42,8 @@ LEFT JOIN (
     SELECT id_siniestro,
            SUM(CASE WHEN responsable='Cliente'    AND estado='Pendiente' THEN 1 ELSE 0 END) as pendientes_cliente,
            SUM(CASE WHEN responsable='Liquidador' AND estado='Pendiente' THEN 1 ELSE 0 END) as pendientes_liquidador,
-           SUM(CASE WHEN responsable='Compañía'  AND estado='Pendiente' THEN 1 ELSE 0 END) as pendientes_compania
+           SUM(CASE WHEN responsable='Compañía'  AND estado='Pendiente' THEN 1 ELSE 0 END) as pendientes_compania,
+           SUM(CASE WHEN responsable='Taller'     AND estado='Pendiente' THEN 1 ELSE 0 END) as pendientes_taller
     FROM siniestros_pendientes GROUP BY id_siniestro
 ) sp ON sp.id_siniestro = s.id
 LEFT JOIN (
@@ -118,7 +120,8 @@ while ($row = db_fetch_object($resultado)) {
         "alarma_24h"           => (bool)($row->alarma_24h === 't' || $row->alarma_24h === true || $row->alarma_24h === 1 || $row->alarma_24h === '1'),
         "pendientes_cliente"    => (int)$row->pendientes_cliente,
         "pendientes_liquidador" => (int)$row->pendientes_liquidador,
-        "pendientes_compania"   => (int)$row->pendientes_compania
+        "pendientes_compania"   => (int)$row->pendientes_compania,
+        "pendientes_taller"     => (int)$row->pendientes_taller
     );
 }
 db_close($link);

@@ -1,12 +1,21 @@
 <?php
 /**
  * Helper de cadena automática de pendientes iniciales de un siniestro.
- * Reunión Adriana 21-abr-2026.
+ * Reuniones Adriana 21-abr-2026 + 22-abr-2026.
  *
  * Códigos de tarea en `siniestros_pendientes.codigo_tarea`:
- *   - 'compania_entrega_numero'  — al crear sin N°, responsable Compañía, 24h.
- *   - 'liquidador_contacto'      — al recibir N°, responsable Liquidador, 24h.
- *   - 'cliente_entrega'          — al Entregar la de liquidador, responsable Cliente, 4 días.
+ *   - 'compania_entrega_numero'   — al crear sin N°, resp. Compañía, 24h.
+ *   - 'liquidador_contacto'       — al recibir N°, resp. Liquidador, 24h.
+ *   - 'cliente_entrega'           — tras liquidador_contacto, resp. Cliente, 4 días.
+ *   - 'liquidador_accion'         — tras cliente_entrega, resp. Liquidador, 24h.
+ *                                   (finiquito si no-veh, orden reparación si veh)
+ *   - 'cliente_ingreso_taller'    — (veh) tras liquidador_accion, resp. Cliente, 2 días.
+ *   - 'taller_fecha_entrega'      — (veh) tras cliente_ingreso_taller, resp. Taller, 5 días.
+ *   - 'cliente_firma_finiquito'   — (no-veh) tras liquidador_accion, resp. Cliente, 4 días.
+ *   - 'liquidador_envio_compania' — tras taller_fecha_entrega / cliente_firma_finiquito,
+ *                                   resp. Liquidador, 24h.
+ *   - 'compania_pago'             — tras liquidador_envio_compania, resp. Compañía, 3 días.
+ *                                   Al Entregar, se cierra el siniestro automáticamente.
  *
  * Las funciones reciben $link ya inicializado (db_select_db + charset).
  * Asumen que `sqlesc` y `estandariza_info` ya están declarados en el caller.
@@ -80,6 +89,65 @@ if (!function_exists('descripcion_tarea_cliente')) {
     }
 }
 
+if (!function_exists('descripcion_tarea_liquidador_accion')) {
+    function descripcion_tarea_liquidador_accion($ramo) {
+        return ramo_es_vehiculo($ramo)
+            ? 'Liquidador emite la orden de reparación.'
+            : 'Liquidador genera el finiquito.';
+    }
+}
+
+if (!function_exists('descripcion_tarea_cliente_ingreso_taller')) {
+    function descripcion_tarea_cliente_ingreso_taller() {
+        return 'Cliente debe avisar el día de ingreso del vehículo al taller.';
+    }
+}
+
+if (!function_exists('descripcion_tarea_taller_fecha')) {
+    function descripcion_tarea_taller_fecha() {
+        return 'Taller debe confirmar la fecha de entrega del vehículo.';
+    }
+}
+
+if (!function_exists('descripcion_tarea_cliente_firma')) {
+    function descripcion_tarea_cliente_firma() {
+        return 'Cliente debe firmar y devolver el finiquito.';
+    }
+}
+
+if (!function_exists('descripcion_tarea_liquidador_envio')) {
+    function descripcion_tarea_liquidador_envio() {
+        return 'Liquidador debe confirmar el envío del finiquito a la compañía.';
+    }
+}
+
+if (!function_exists('descripcion_tarea_compania_pago')) {
+    function descripcion_tarea_compania_pago() {
+        return 'Compañía debe confirmar fecha de indemnización/transferencia al cliente.';
+    }
+}
+
+if (!function_exists('cerrar_siniestro_por_pago')) {
+    function cerrar_siniestro_por_pago($link, $id_siniestro, $usuario) {
+        $u = str_replace("'", "''", $usuario);
+        $estado_anterior = '';
+        $rs = db_query($link, "SELECT COALESCE(estado,'') AS estado
+                               FROM siniestros WHERE id='$id_siniestro'");
+        while ($row = db_fetch_object($rs)) { $estado_anterior = $row->estado; }
+        if ($estado_anterior === 'Cerrado') { return; }
+
+        db_query($link, "UPDATE siniestros SET estado='Cerrado' WHERE id='$id_siniestro'");
+        db_query($link, "INSERT INTO siniestros_bitacora
+                            (id_siniestro, estado_anterior, estado_nuevo, usuario, motivo)
+                         VALUES
+                            ('$id_siniestro',
+                             " . ($estado_anterior !== '' ? "'" . str_replace("'","''",$estado_anterior) . "'" : "NULL") . ",
+                             'Cerrado',
+                             '" . ($u !== '' ? $u : 'sistema') . "',
+                             'Cierre automático: compañía confirmó pago')");
+    }
+}
+
 /**
  * Llamado al crear un siniestro. Decide qué tarea auto-inicial crear:
  * - Sin N° siniestro → tarea Compañía.
@@ -131,11 +199,62 @@ if (!function_exists('promover_al_liquidador')) {
  */
 if (!function_exists('promover_cadena_al_entregar')) {
     function promover_cadena_al_entregar($link, $id_siniestro, $codigo_tarea_entregada, $ramo, $usuario) {
-        if ($codigo_tarea_entregada === 'liquidador_contacto') {
-            crear_pendiente_auto(
-                $link, $id_siniestro, 'cliente_entrega', 'Cliente',
-                descripcion_tarea_cliente($ramo), 4, $usuario
-            );
+        $es_veh = ramo_es_vehiculo($ramo);
+
+        switch ($codigo_tarea_entregada) {
+            case 'liquidador_contacto':
+                crear_pendiente_auto(
+                    $link, $id_siniestro, 'cliente_entrega', 'Cliente',
+                    descripcion_tarea_cliente($ramo), 4, $usuario
+                );
+                break;
+
+            case 'cliente_entrega':
+                crear_pendiente_auto(
+                    $link, $id_siniestro, 'liquidador_accion', 'Liquidador',
+                    descripcion_tarea_liquidador_accion($ramo), 1, $usuario
+                );
+                break;
+
+            case 'liquidador_accion':
+                if ($es_veh) {
+                    crear_pendiente_auto(
+                        $link, $id_siniestro, 'cliente_ingreso_taller', 'Cliente',
+                        descripcion_tarea_cliente_ingreso_taller(), 2, $usuario
+                    );
+                } else {
+                    crear_pendiente_auto(
+                        $link, $id_siniestro, 'cliente_firma_finiquito', 'Cliente',
+                        descripcion_tarea_cliente_firma(), 4, $usuario
+                    );
+                }
+                break;
+
+            case 'cliente_ingreso_taller':
+                crear_pendiente_auto(
+                    $link, $id_siniestro, 'taller_fecha_entrega', 'Taller',
+                    descripcion_tarea_taller_fecha(), 5, $usuario
+                );
+                break;
+
+            case 'taller_fecha_entrega':
+            case 'cliente_firma_finiquito':
+                crear_pendiente_auto(
+                    $link, $id_siniestro, 'liquidador_envio_compania', 'Liquidador',
+                    descripcion_tarea_liquidador_envio(), 1, $usuario
+                );
+                break;
+
+            case 'liquidador_envio_compania':
+                crear_pendiente_auto(
+                    $link, $id_siniestro, 'compania_pago', 'Compañía',
+                    descripcion_tarea_compania_pago(), 3, $usuario
+                );
+                break;
+
+            case 'compania_pago':
+                cerrar_siniestro_por_pago($link, $id_siniestro, $usuario);
+                break;
         }
     }
 }

@@ -166,12 +166,16 @@ $(document).ready(function() {
                 title: "Pendientes",
                 orderable: false,
                 render: function(r) {
-                    var c = r.pendientes_cliente || 0, l = r.pendientes_liquidador || 0, q = r.pendientes_compania || 0;
-                    if (c === 0 && l === 0 && q === 0) return '<span class="badge badge-success">✅</span>';
+                    var c = r.pendientes_cliente    || 0,
+                        l = r.pendientes_liquidador || 0,
+                        q = r.pendientes_compania   || 0,
+                        t = r.pendientes_taller     || 0;
+                    if (c === 0 && l === 0 && q === 0 && t === 0) return '<span class="badge badge-success">✅</span>';
                     var chips = '';
                     if (c > 0) chips += '<span class="badge badge-info" title="Cliente">👤 ' + c + '</span> ';
                     if (l > 0) chips += '<span class="badge badge-warning" title="Liquidador">🧾 ' + l + '</span> ';
-                    if (q > 0) chips += '<span class="badge badge-dark" title="Compañía">🏢 ' + q + '</span>';
+                    if (q > 0) chips += '<span class="badge badge-dark" title="Compañía">🏢 ' + q + '</span> ';
+                    if (t > 0) chips += '<span class="badge" style="background:#8e44ad;color:#fff" title="Taller">🔧 ' + t + '</span>';
                     return chips;
                 }
             }, //9

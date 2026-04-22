@@ -26,7 +26,7 @@ db_set_charset($link, 'utf8');
 db_select_db($link, DB_NAME);
 
 if (!ctype_digit($id))                                                      { $mensaje = 'id inválido.'; }
-elseif (!in_array($responsable, array('Cliente','Liquidador','Compañía'))) { $mensaje = 'responsable inválido.'; }
+elseif (!in_array($responsable, array('Cliente','Liquidador','Compañía','Taller'))) { $mensaje = 'responsable inválido.'; }
 elseif ($descripcion === '')                                                { $mensaje = 'descripcion es obligatoria.'; }
 elseif (!in_array($estado, array('Pendiente','Entregado','No aplica')))     { $mensaje = 'estado inválido.'; }
 else {

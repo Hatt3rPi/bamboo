@@ -21,6 +21,7 @@ $observaciones = '';
 $liquidador_nombre = $liquidador_telefono = $liquidador_correo = $numero_carpeta_liquidador = '';
 $patente = $marca = $modelo = $anio_vehiculo = '';
 $taller_nombre = $taller_telefono = '';
+$compania_contacto_nombre = $compania_contacto_mail = '';
 $estado = 'Número pendiente';
 $presentado = true;
 $compania = '';
@@ -91,6 +92,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["accion"]) && $_POST["a
         $anio_vehiculo             = $row->anio_vehiculo;
         $taller_nombre             = $row->taller_nombre;
         $taller_telefono           = $row->taller_telefono;
+        $compania_contacto_nombre  = $row->compania_contacto_nombre ?? '';
+        $compania_contacto_mail    = $row->compania_contacto_mail ?? '';
         $estado                    = $row->estado;
         $presentado                = $row->presentado;
         $compania                  = $row->compania;
@@ -312,6 +315,26 @@ if (!$es_ramo_vehiculo_php) {
       </div>
     </div>
 
+    <!-- ==================== SECCIÓN 5a: CONTACTO COMPAÑÍA (NO VEHÍCULO) ==================== -->
+    <div id="bloque_contacto_compania" style="display:none">
+      <hr>
+      <h5 class="form-row">&nbsp;Contacto en la compañía
+        <small class="text-muted" style="font-weight:normal">— para consultas de pago/indemnización</small>
+      </h5><br>
+      <div class="form-row">
+        <div class="col-md-6 mb-3">
+          <label for="compania_contacto_nombre">Nombre del contacto</label>
+          <input type="text" class="form-control" id="compania_contacto_nombre" name="compania_contacto_nombre"
+            value="<?php echo htmlspecialchars($compania_contacto_nombre, ENT_QUOTES); ?>">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="compania_contacto_mail">Correo</label>
+          <input type="email" class="form-control" id="compania_contacto_mail" name="compania_contacto_mail"
+            value="<?php echo htmlspecialchars($compania_contacto_mail, ENT_QUOTES); ?>">
+        </div>
+      </div>
+    </div>
+
     <!-- ==================== SECCIÓN 5b: BIENES AFECTADOS ==================== -->
     <hr>
     <h5 class="form-row">&nbsp;Bienes afectados</h5><br>
@@ -355,8 +378,13 @@ if (!$es_ramo_vehiculo_php) {
               box-shadow:0 -2px 4px rgba(0,0,0,0.05)">
     <div class="container" style="text-align:right">
       <button type="button" class="btn" style="background-color:#536656;color:white"
-        id="boton_registrar" onclick="registraSiniestro()">
+        id="boton_registrar" onclick="registraSiniestro(false)">
         <?php echo ($camino == 'modifica_siniestro') ? 'Guardar cambios' : 'Registrar Siniestro'; ?>
+      </button>
+      &nbsp;<button type="button" class="btn btn-success"
+        id="boton_registrar_salir" onclick="registraSiniestro(true)"
+        title="Guarda y vuelve al listado anterior">
+        Guardar y salir
       </button>
       <?php if ($camino == 'modifica_siniestro' && $estado == 'Cerrado'): ?>
       &nbsp;<button type="button" class="btn btn-warning" id="boton_reabrir" onclick="reabrirSiniestro()">
@@ -442,6 +470,9 @@ function toggleVehiculo(ramo) {
     var st = document.getElementById('seccion_taller');
     if (sv) sv.style.display = 'none';
     if (st) st.style.display = 'none';
+    // El bloque de contacto compañía solo aplica en siniestros no-vehículo (incendio, etc.)
+    var bc = document.getElementById('bloque_contacto_compania');
+    if (bc) bc.style.display = esRamoVehiculo ? 'none' : '';
 }
 
 // ---- Renderiza un bloque Vehículo por cada ítem marcado ----
@@ -592,11 +623,12 @@ function validaSiniestro() {
 }
 
 // ---- Envío del formulario ----
-function registraSiniestro() {
+function registraSiniestro(salirDespues) {
     if (!validaSiniestro()) return;
 
     var camino = '<?php echo $camino; ?>';
     var accion = (camino === 'modifica_siniestro') ? 'actualizar_siniestro' : 'crear_siniestro';
+    var salir  = salirDespues ? '1' : '0';
 
     // Separar RUT y DV
     var rut_completo = estandariza_info($('#rut_asegurado').val()).replace(/-/g, '');
@@ -607,6 +639,7 @@ function registraSiniestro() {
 
     var payload = {
         'accion':                    accion,
+        'salir_despues':             salir,
         'id_siniestro':              estandariza_info($('#id_siniestro').val()),
         'id_poliza':                 estandariza_info($('#id_poliza').val()),
         'numero_poliza':             estandariza_info($('#numero_poliza').val()),
@@ -630,6 +663,8 @@ function registraSiniestro() {
         'numero_carpeta_liquidador': estandariza_info($('#numero_carpeta_liquidador').val()),
         'taller_nombre':             estandariza_info($('#taller_nombre').val()),
         'taller_telefono':           estandariza_info($('#taller_telefono').val()),
+        'compania_contacto_nombre':  estandariza_info($('#compania_contacto_nombre').val() || ''),
+        'compania_contacto_mail':    estandariza_info($('#compania_contacto_mail').val() || ''),
         'estado':                    estandariza_info($('#estado').val())
     };
     // Arrays de vehículo por ítem (claves vehiculo_patente[N])
@@ -648,6 +683,8 @@ function registraSiniestro() {
             tipo:            b.tipo,
             categoria:       b.categoria,
             descripcion:     b.descripcion,
+            direccion:       b.direccion || '',
+            item_afectado:   b.item_afectado || '',
             estado:          b.estado,
             fecha_alarma:    b.fecha_alarma,
             observaciones:   b.observaciones,
@@ -731,6 +768,8 @@ function cargarBienesAfectados(id_siniestro) {
                 tipo: b.tipo,
                 categoria: b.categoria || 'otro',
                 descripcion: b.descripcion || '',
+                direccion: b.direccion || '',
+                item_afectado: b.item_afectado || '',
                 estado: b.estado || 'Abierto',
                 fecha_alarma: b.fecha_alarma || '',
                 observaciones: b.observaciones || '',
@@ -853,6 +892,7 @@ function nuevoBien(tipo) {
     var cat = (tipo === 'propio') ? categoriaDefaultSegunRamo() : 'otro';
     $('#bien_categoria').val(cat);
     $('#bien_descripcion').val('');
+    $('#bien_direccion').val(''); $('#bien_item_afectado').val('');
     $('#bien_patente').val(''); $('#bien_marca').val(''); $('#bien_modelo').val(''); $('#bien_anio').val('');
     $('#bien_taller_nombre').val(''); $('#bien_taller_telefono').val('');
     $('#bien_estado').val('Abierto');
@@ -893,6 +933,8 @@ function editarBien(memkey) {
     $('#bien_tipo').val(b.tipo);
     $('#bien_categoria').val(b.categoria || 'otro');
     $('#bien_descripcion').val(b.descripcion);
+    $('#bien_direccion').val(b.direccion || '');
+    $('#bien_item_afectado').val(b.item_afectado || '');
     $('#bien_patente').val(b.patente || '');
     $('#bien_marca').val(b.marca || '');
     $('#bien_modelo').val(b.modelo || '');
@@ -930,6 +972,8 @@ function guardarBien() {
         tipo:            $('#bien_tipo').val(),
         categoria:       categoria,
         descripcion:     desc,
+        direccion:       $('#bien_direccion').val(),
+        item_afectado:   $('#bien_item_afectado').val(),
         estado:          $('#bien_estado').val(),
         fecha_alarma:    $('#bien_fecha_alarma').val(),
         observaciones:   $('#bien_observaciones').val(),
@@ -1024,7 +1068,7 @@ function persistirChecklistBien(id_bien, cb) {
 }
 
 // =========================================================================
-// PENDIENTES POR RESPONSABLE (Cliente / Liquidador / Compañía)
+// PENDIENTES POR RESPONSABLE (Cliente / Liquidador / Compañía / Taller)
 // =========================================================================
 var pendientesMem = [];
 var liquidadorContacto = { nombre: '', correo: '', numero_siniestro: '', numero_poliza: '', nombre_asegurado: '' };
@@ -1033,6 +1077,7 @@ function badgeResp(resp) {
     if (resp === 'Cliente')    return '<span class="badge badge-info">Cliente</span>';
     if (resp === 'Liquidador') return '<span class="badge badge-warning">Liquidador</span>';
     if (resp === 'Compañía')  return '<span class="badge badge-dark">Compañía</span>';
+    if (resp === 'Taller')     return '<span class="badge" style="background:#8e44ad;color:#fff">🔧 Taller</span>';
     return '<span class="badge badge-light">—</span>';
 }
 function badgeEstadoPend(est) {
@@ -1049,12 +1094,18 @@ function calcularQuienLleva() {
             .addClass('badge-success').text('✅ Sin pendientes');
         return;
     }
-    var orden = ['Cliente','Liquidador','Compañía'];
+    var orden = ['Cliente','Liquidador','Compañía','Taller'];
     for (var i = 0; i < orden.length; i++) {
         if (abiertos.some(function(p){ return p.responsable === orden[i]; })) {
-            var cls = orden[i] === 'Cliente' ? 'badge-info' : (orden[i] === 'Liquidador' ? 'badge-warning' : 'badge-dark');
-            $('#widget_quien_lleva').removeClass('badge-light badge-info badge-warning badge-dark badge-success')
-                .addClass(cls).text('Ahora la lleva: ' + orden[i]);
+            var cls = orden[i] === 'Cliente' ? 'badge-info'
+                    : orden[i] === 'Liquidador' ? 'badge-warning'
+                    : orden[i] === 'Compañía'  ? 'badge-dark'
+                    : 'badge-taller';
+            var estilo = orden[i] === 'Taller' ? 'background:#8e44ad;color:#fff' : '';
+            $('#widget_quien_lleva').removeClass('badge-light badge-info badge-warning badge-dark badge-success badge-taller')
+                .addClass(cls)
+                .attr('style', estilo)
+                .text('Ahora la lleva: ' + orden[i]);
             return;
         }
     }
@@ -1085,6 +1136,9 @@ function renderPendientes() {
             ? '<small>' + (p.bien_tipo === 'propio' ? '🔵' : '🟡') + ' ' + escHtml(p.bien_descripcion) + '</small>'
             : '<small class="text-muted">—</small>';
         var notasHtml = p.notas ? escHtml(p.notas) : '';
+        var botonRecordatorio = (p.estado === 'Pendiente')
+            ? '<button type="button" class="btn btn-sm btn-outline-primary mr-1" title="Enviar recordatorio amigable" onclick="enviarRecordatorio(' + p.id + ')">✉️</button>'
+            : '';
         html += '<tr>' +
             '<td>' + badgeResp(p.responsable) + '</td>' +
             '<td>' + escHtml(p.descripcion) + '</td>' +
@@ -1093,6 +1147,7 @@ function renderPendientes() {
             '<td>' + (p.fecha_entrega || '—') + '</td>' +
             '<td><small>' + notasHtml + '</small></td>' +
             '<td style="white-space:nowrap">' +
+                botonRecordatorio +
                 '<button type="button" class="btn btn-sm btn-outline-secondary mr-1" onclick="abrirModalPendiente(' + p.id + ')">✏️</button>' +
                 '<button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarPendiente(' + p.id + ')">🗑️</button>' +
             '</td>' +
@@ -1200,6 +1255,30 @@ function eliminarPendiente(id) {
     });
 }
 
+function enviarRecordatorio(id_pendiente) {
+    var p = pendientesMem.find(function(x){ return x.id == id_pendiente; });
+    if (!p) return;
+    if (!confirm('¿Enviar un recordatorio amigable al responsable (' + p.responsable + ')?')) return;
+    $.post('/bambooQA/backend/siniestros/enviar_recordatorio.php',
+        { id_pendiente: id_pendiente }, null, 'json')
+      .done(function(resp) {
+        if (resp && resp.ok) {
+            if (resp.enviado_por === 'brevo') {
+                alert('Recordatorio enviado por correo.');
+            } else if (resp.mailto_url) {
+                window.location.href = resp.mailto_url;
+            } else {
+                alert('Recordatorio registrado.');
+            }
+            cargarPendientes($('#id_siniestro').val());
+        } else {
+            alert('No se pudo enviar el recordatorio: ' + (resp && resp.mensaje ? resp.mensaje : 'error'));
+        }
+      }).fail(function() {
+        alert('Error de red al enviar el recordatorio.');
+      });
+}
+
 function esRamoVehiculoJS(ramo) {
     var r = (ramo || '').toUpperCase();
     return r.indexOf('VEH') !== -1 || r.indexOf('AUTO') !== -1;
@@ -1305,6 +1384,18 @@ function enviarCorreoLiquidador() {
               <div class="col-md-8 form-group">
                 <label>Descripción <span style="color:darkred">*</span></label>
                 <textarea class="form-control" id="bien_descripcion" rows="2" placeholder="Ej: Dpto 304, Pasillo 2° piso, Auto del Sr. Pérez…"></textarea>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group" id="bien_campo_direccion_wrap">
+                <label>Dirección del bien <small class="text-muted">(incendio / inmueble)</small></label>
+                <input type="text" class="form-control" id="bien_direccion"
+                  placeholder="Calle, número, comuna">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Ítem afectado de la póliza <small class="text-muted">(para vehículos o por ítem)</small></label>
+                <input type="text" class="form-control" id="bien_item_afectado"
+                  placeholder="Ej: Ítem 2 — Camioneta Hilux PPU ABCD01">
               </div>
             </div>
             <div id="bien_campos_vehiculo">
@@ -1423,6 +1514,7 @@ function enviarCorreoLiquidador() {
             <option value="Cliente">Cliente</option>
             <option value="Liquidador">Liquidador</option>
             <option value="Compañía">Compañía</option>
+            <option value="Taller">Taller</option>
           </select>
         </div>
         <div class="form-group">

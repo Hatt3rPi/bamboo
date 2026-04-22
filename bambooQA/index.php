@@ -1105,6 +1105,7 @@ function alertasBadgeResp(r) {
     if (r === 'Cliente')    return '<span class="badge badge-info">Cliente</span>';
     if (r === 'Liquidador') return '<span class="badge badge-warning">Liquidador</span>';
     if (r === 'Compañía')  return '<span class="badge badge-dark">Compañía</span>';
+    if (r === 'Taller')     return '<span class="badge" style="background:#8e44ad;color:#fff">🔧 Taller</span>';
     return '';
 }
 function alertasEscHtml(s) {
