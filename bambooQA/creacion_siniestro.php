@@ -288,30 +288,33 @@ if (!$es_ramo_vehiculo_php) {
     </div>
 
     <!-- ==================== SECCIÓN 5: LIQUIDADOR ==================== -->
-    <hr>
-    <h5 class="form-row">&nbsp;Liquidador</h5><br>
-    <div class="form-row">
-      <div class="col-md-4 mb-3">
-        <label for="liquidador_nombre">Nombre</label>
-        <input type="text" class="form-control" id="liquidador_nombre" name="liquidador_nombre"
-          value="<?php echo $liquidador_nombre; ?>">
+    <div id="grupo_liquidador">
+      <hr>
+      <h5 class="form-row">&nbsp;Liquidador <small class="text-muted etapa-hint" style="font-weight:normal"></small></h5><br>
+      <div class="etapa-aviso alert alert-warning py-2 mb-2" style="display:none"></div>
+      <div class="form-row">
+        <div class="col-md-4 mb-3">
+          <label for="liquidador_nombre">Nombre</label>
+          <input type="text" class="form-control" id="liquidador_nombre" name="liquidador_nombre"
+            value="<?php echo $liquidador_nombre; ?>">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="liquidador_telefono">Teléfono</label>
+          <input type="text" class="form-control" id="liquidador_telefono" name="liquidador_telefono"
+            value="<?php echo $liquidador_telefono; ?>" placeholder="56 9 XXXX XXXX">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="liquidador_correo">Correo</label>
+          <input type="email" class="form-control" id="liquidador_correo" name="liquidador_correo"
+            value="<?php echo $liquidador_correo; ?>">
+        </div>
       </div>
-      <div class="col-md-4 mb-3">
-        <label for="liquidador_telefono">Teléfono</label>
-        <input type="text" class="form-control" id="liquidador_telefono" name="liquidador_telefono"
-          value="<?php echo $liquidador_telefono; ?>" placeholder="56 9 XXXX XXXX">
-      </div>
-      <div class="col-md-4 mb-3">
-        <label for="liquidador_correo">Correo</label>
-        <input type="email" class="form-control" id="liquidador_correo" name="liquidador_correo"
-          value="<?php echo $liquidador_correo; ?>">
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="col-md-4 mb-3">
-        <label for="numero_carpeta_liquidador">N° Carpeta Liquidador</label>
-        <input type="text" class="form-control" id="numero_carpeta_liquidador" name="numero_carpeta_liquidador"
-          value="<?php echo $numero_carpeta_liquidador; ?>">
+      <div class="form-row">
+        <div class="col-md-4 mb-3">
+          <label for="numero_carpeta_liquidador">N° Carpeta Liquidador</label>
+          <input type="text" class="form-control" id="numero_carpeta_liquidador" name="numero_carpeta_liquidador"
+            value="<?php echo $numero_carpeta_liquidador; ?>">
+        </div>
       </div>
     </div>
 
@@ -321,6 +324,7 @@ if (!$es_ramo_vehiculo_php) {
       <h5 class="form-row">&nbsp;Contacto en la compañía
         <small class="text-muted" style="font-weight:normal">— para consultas de pago/indemnización</small>
       </h5><br>
+      <div class="etapa-aviso alert alert-warning py-2 mb-2" style="display:none"></div>
       <div class="form-row">
         <div class="col-md-6 mb-3">
           <label for="compania_contacto_nombre">Nombre del contacto</label>
@@ -473,7 +477,62 @@ function toggleVehiculo(ramo) {
     // El bloque de contacto compañía solo aplica en siniestros no-vehículo (incendio, etc.)
     var bc = document.getElementById('bloque_contacto_compania');
     if (bc) bc.style.display = esRamoVehiculo ? 'none' : '';
+    recalcEtapas();
 }
+
+// =========================================================================
+// ETAPAS PROGRESIVAS — habilita secciones solo cuando se cumplió la etapa previa
+// Flujo: compañía asigna N° → se habilita liquidador →
+//        liquidador asignado → se habilita taller (veh) y contacto compañía (no-veh)
+// =========================================================================
+function _trim(v) { return (v || '').toString().replace(/^\s+|\s+$/g, ''); }
+
+function bloquearGrupo($grupo, bloquear, mensaje) {
+    if (!$grupo || !$grupo.length) return;
+    $grupo.find('input, textarea, select').not('[data-etapa-override="1"]')
+          .prop('disabled', bloquear);
+    var $aviso = $grupo.children('.etapa-aviso').first();
+    if (bloquear) {
+        $aviso.html('⏳ ' + mensaje).show();
+        $grupo.addClass('etapa-bloqueada').css('opacity', '0.75');
+    } else {
+        $aviso.hide().html('');
+        $grupo.removeClass('etapa-bloqueada').css('opacity', '');
+    }
+}
+
+function recalcEtapas() {
+    var tieneNumero     = _trim($('#numero_siniestro').val()) !== '';
+    var tieneLiquidador = tieneNumero && _trim($('#liquidador_nombre').val()) !== '';
+
+    bloquearGrupo($('#grupo_liquidador'), !tieneNumero,
+        'Los datos del liquidador se completan una vez que la compañía asigne el N° de siniestro.');
+
+    var $bc = $('#bloque_contacto_compania');
+    if ($bc.is(':visible')) {
+        bloquearGrupo($bc, !tieneLiquidador,
+            'El contacto en la compañía se registra cuando el liquidador ya esté asignado.');
+    }
+
+    // El modal de bien puede estar abierto: aplicar al taller si corresponde
+    if ($('#modalBien').hasClass('show')) {
+        actualizarBloqueoTaller();
+    }
+}
+
+// Taller del bien: se habilita solo cuando hay liquidador asignado
+function actualizarBloqueoTaller() {
+    var categoria = $('#bien_categoria').val();
+    if (categoria !== 'vehiculo') { return; } // lo gobierna toggleCamposVehiculoBien
+    var tieneLiq = _trim($('#numero_siniestro').val()) !== '' &&
+                   _trim($('#liquidador_nombre').val()) !== '';
+    $('#bien_taller_nombre, #bien_taller_telefono').prop('disabled', !tieneLiq);
+    $('#bien_msg_taller_bloqueado').toggle(!tieneLiq);
+}
+
+$(document).on('input change', '#numero_siniestro, #liquidador_nombre', recalcEtapas);
+$('#modalBien').on('shown.bs.modal', actualizarBloqueoTaller);
+$(document).on('change', '#bien_categoria', actualizarBloqueoTaller);
 
 // ---- Renderiza un bloque Vehículo por cada ítem marcado ----
 function renderVehiculos() {
@@ -734,6 +793,8 @@ $(document).ready(function() {
     var ramo_inicial = '<?php echo addslashes($ramo); ?>';
     if (ramo_inicial !== '') {
         toggleVehiculo(ramo_inicial);
+    } else {
+        recalcEtapas();
     }
     // Cargar ítems si hay póliza preseleccionada
     var id_poliza_inicial = $('#id_poliza').val();
@@ -1424,6 +1485,9 @@ function enviarCorreoLiquidador() {
           <div class="tab-pane fade" id="tab-bien-taller" role="tabpanel">
             <div id="bien_msg_no_taller" class="alert alert-info" style="display:none">
               Los datos del taller solo aplican cuando la categoría del bien es <strong>Vehículo</strong>.
+            </div>
+            <div id="bien_msg_taller_bloqueado" class="alert alert-warning" style="display:none">
+              ⏳ Los datos del taller se habilitan cuando el liquidador haya sido asignado y emita la orden de reparación.
             </div>
             <div id="bien_campos_taller">
               <div class="form-row">

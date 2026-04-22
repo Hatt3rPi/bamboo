@@ -53,6 +53,19 @@ if (!$es_ramo_vehiculo) {
     $taller_nombre = $taller_telefono = '';
     $_POST['vehiculo_patente'] = $_POST['vehiculo_marca'] = $_POST['vehiculo_modelo'] = $_POST['vehiculo_anio'] = array();
 }
+
+// Defensa en profundidad sobre etapas: no persistir datos de etapas futuras si la
+// precondición no se cumple. Permite reabrir siempre la etapa previa sin fugas.
+//   - Sin N° siniestro → no hay liquidador aún.
+//   - Sin liquidador asignado → no hay contacto de compañía ni taller todavía.
+if (trim($numero_siniestro) === '') {
+    $liquidador_nombre = $liquidador_telefono = $liquidador_correo = '';
+    $numero_carpeta_liquidador = '';
+}
+if (trim($liquidador_nombre) === '') {
+    $compania_contacto_nombre = $compania_contacto_mail = '';
+    $taller_nombre = $taller_telefono = '';
+}
 $items_seleccionados       = estandariza_info($_POST["items_seleccionados"]       ?? '');
 
 $usuario = $_SESSION['username'] ?? '';
@@ -71,7 +84,8 @@ function parse_items_csv($csv) {
 
 // Sincroniza bienes afectados contra BD (INSERT / UPDATE / DELETE).
 // $bienes_array: array de objetos con id (opcional), tipo, categoria, descripcion, etc.
-function sincroniza_bienes($link, $id_siniestro, $bienes_array, $usuario) {
+// $liquidador_asignado: si es false, se ignoran los datos de taller del bien (etapa futura).
+function sincroniza_bienes($link, $id_siniestro, $bienes_array, $usuario, $liquidador_asignado = true) {
     $sqlesc = function($v) { return str_replace("'", "''", (string)$v); };
     // IDs existentes en BD
     $existentes = array();
@@ -96,6 +110,10 @@ function sincroniza_bienes($link, $id_siniestro, $bienes_array, $usuario) {
         $anio           = ($categoria === 'vehiculo') ? (string)($b['anio_vehiculo'] ?? '') : '';
         $taller_nombre  = ($categoria === 'vehiculo') ? ($b['taller_nombre']   ?? '') : '';
         $taller_telefono = ($categoria === 'vehiculo') ? ($b['taller_telefono'] ?? '') : '';
+        // Defensa de etapas: sin liquidador asignado no se aceptan datos de taller.
+        if (!$liquidador_asignado) {
+            $taller_nombre = $taller_telefono = '';
+        }
 
         $d  = $sqlesc($descripcion);
         $o  = $sqlesc($observaciones);
@@ -269,7 +287,8 @@ switch ($accion) {
             if ($bienes_json !== '') {
                 $bienes = json_decode(stripslashes($bienes_json), true);
                 if (is_array($bienes)) {
-                    sincroniza_bienes($link, $id_nuevo, $bienes, $usuario);
+                    sincroniza_bienes($link, $id_nuevo, $bienes, $usuario,
+                                      trim($liquidador_nombre) !== '');
                 }
             }
 
@@ -361,7 +380,8 @@ switch ($accion) {
         if ($bienes_json !== '') {
             $bienes = json_decode(stripslashes($bienes_json), true);
             if (is_array($bienes)) {
-                sincroniza_bienes($link, $id, $bienes, $usuario);
+                sincroniza_bienes($link, $id, $bienes, $usuario,
+                                  trim($liquidador_nombre) !== '');
             }
         }
 
