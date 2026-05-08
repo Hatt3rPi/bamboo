@@ -127,26 +127,26 @@ if (!$es_ramo_vehiculo_php) {
     $taller_nombre = $taller_telefono = '';
 }
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="/bamboo/images/bamboo.png">
-<title>Bamboo - Siniestros</title>
-<!-- Bootstrap -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-<link rel="stylesheet" href="/assets/css/datatables.min.css">
-</head>
-<body>
-<div id="header">
-<?php include 'header2.php' ?>
+<?php
+$page_title       = ($camino == 'modifica_siniestro' ? 'Modificar siniestro N° ' . $numero_siniestro : 'Nuevo siniestro') . ' · Bamboo Seguros';
+$page_active      = 'siniestros';
+$breadcrumb_main  = $camino == 'modifica_siniestro' ? 'Modificar siniestro N° ' . $numero_siniestro : 'Nuevo siniestro';
+$breadcrumb_sub   = 'Siniestros';
+require_once 'layout.php';
+?>
+
+<div class="bb-page-header">
+  <div>
+    <h1><?= htmlspecialchars($breadcrumb_main) ?></h1>
+    <div class="subtitle">Datos del siniestro, bienes afectados, liquidador y taller</div>
+  </div>
+  <a href="listado_siniestros.php" class="btn btn-secondary">
+    <i class="fas fa-arrow-left mr-2"></i>Volver al listado
+  </a>
 </div>
 
-<div class="container">
-  <p>Siniestros / <?php echo ($camino == 'modifica_siniestro') ? 'Modificación / N° ' . $numero_siniestro : 'Creación'; ?><br></p>
+<div class="card">
+  <div class="card-body">
 
   <!-- =============================================================== -->
   <!-- FORMULARIO -->
@@ -380,12 +380,12 @@ if (!$es_ramo_vehiculo_php) {
        style="position:fixed;bottom:0;left:0;right:0;background:#fff;
               border-top:1px solid #dee2e6;padding:10px 20px;z-index:1040;
               box-shadow:0 -2px 4px rgba(0,0,0,0.05)">
-    <div class="container" style="text-align:right">
-      <button type="button" class="btn" style="background-color:#536656;color:white"
+    <div style="text-align:right;max-width:1400px;margin:0 auto">
+      <button type="button" class="btn btn-bamboo"
         id="boton_registrar" onclick="registraSiniestro(false)">
         <?php echo ($camino == 'modifica_siniestro') ? 'Guardar cambios' : 'Registrar Siniestro'; ?>
       </button>
-      &nbsp;<button type="button" class="btn btn-success"
+      &nbsp;<button type="button" class="btn btn-warm"
         id="boton_registrar_salir" onclick="registraSiniestro(true)"
         title="Guarda y vuelve al listado anterior">
         Guardar y salir
@@ -433,15 +433,14 @@ if (!$es_ramo_vehiculo_php) {
 </div>
 
 <!-- =============================================================== -->
-<!-- SCRIPTS -->
+<!-- SCRIPTS — el inline siguiente usa $/Cookies, así que cargamos libs
+     acá mismo. layout_end.php al final también las carga (cacheado).   -->
 <!-- =============================================================== -->
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
-  integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-  integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
 <script src="/assets/js/jquery.redirect.js"></script>
-<script src="/assets/js/js.cookie.min.js"></script>
 
 <script>
 // ---- Datos pre-cargados desde servidor ----
@@ -1640,11 +1639,13 @@ function enviarCorreoLiquidador() {
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Más tarde</button>
-        <button type="button" class="btn btn-primary" onclick="enviarCorreoLiquidador()">✉️ Abrir correo</button>
+        <button type="button" class="btn btn-bamboo" onclick="enviarCorreoLiquidador()">✉️ Abrir correo</button>
       </div>
     </div>
   </div>
 </div>
 
-</body>
-</html>
+  </div>
+</div>
+
+<?php require_once 'layout_end.php'; ?>
