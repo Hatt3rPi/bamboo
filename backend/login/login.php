@@ -112,198 +112,236 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Iniciar sesión</title>
-    <link href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round" rel="stylesheet">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="/assets/js/bootstrap-notify.js"></script>
-    <script src="/assets/js/bootstrap-notify.min.js"></script>
-    <style type="text/css">
-    body {
-        font-family: 'Varela Round', sans-serif;
-    }
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iniciar sesión · Bamboo Seguros</title>
+<link rel="icon" href="/bamboo/images/bamboo.png">
 
-    .modal-login {
-        width: 350px;
-    }
+<!-- Fuentes Bamboo -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Varela+Round&display=swap" rel="stylesheet">
 
-    .modal-login .modal-content {
-        padding: 20px;
-        border-radius: 5px;
-        border: none;
-    }
+<!-- Bootstrap 4.4 + tokens Bamboo -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="/assets/css/bamboo/tokens.css">
+<link rel="stylesheet" href="/assets/css/bamboo/components.css">
+<script src="https://kit.fontawesome.com/7011384382.js" crossorigin="anonymous"></script>
 
-    .modal-login .modal-header {
-        border-bottom: none;
-        position: relative;
-        justify-content: center;
-    }
-
-    .modal-login .close {
-        position: absolute;
-        top: -10px;
-        right: -10px;
-    }
-
-    .modal-login h4 {
-        color: #636363;
-        text-align: center;
-        font-size: 26px;
-        margin-top: 0;
-    }
-
-    .modal-login .modal-content {
-        color: #999;
-        border-radius: 1px;
-        margin-bottom: 15px;
-        background: #fff;
-        border: 1px solid #f3f3f3;
-        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
-        padding: 25px;
-    }
-
-    .modal-login .form-group {
-        margin-bottom: 20px;
-    }
-
-    .modal-login label {
-        font-weight: normal;
-        font-size: 13px;
-    }
-
-    .modal-login .form-control {
-        min-height: 38px;
-        padding-left: 5px;
-        box-shadow: none !important;
-        border-width: 0 0 1px 0;
-        border-radius: 0;
-    }
-
-    .modal-login .form-control:focus {
-        border-color: #ccc;
-    }
-
-    .modal-login .input-group-addon {
-        max-width: 42px;
-        text-align: center;
-        background: none;
-        border-width: 0 0 1px 0;
-        padding-left: 5px;
-        border-radius: 0;
-    }
-
-    .modal-login .btn {
-        font-size: 16px;
-        font-weight: bold;
-        background: #19aa8d;
-        border-radius: 3px;
-        border: none;
-        min-width: 140px;
-        outline: none !important;
-    }
-
-    .modal-login .btn:hover,
-    .modal-login .btn:focus {
-        background: #179b81;
-    }
-
-    .modal-login .hint-text {
-        text-align: center;
-        padding-top: 5px;
-        font-size: 13px;
-    }
-
-    .modal-login .modal-footer {
-        color: #999;
-        border-color: #dee4e7;
-        text-align: center;
-        margin: 0 -25px -25px;
-        font-size: 13px;
-        justify-content: center;
-    }
-
-    .modal-login a {
-        color: #fff;
-        text-decoration: underline;
-    }
-
-    .modal-login a:hover {
-        text-decoration: none;
-    }
-
-    .modal-login a {
-        color: #19aa8d;
-        text-decoration: none;
-    }
-
-    .modal-login a:hover {
-        text-decoration: underline;
-    }
-
-    .modal-login .fa {
-        font-size: 21px;
-    }
-
-    .trigger-btn {
-        display: inline-block;
-        margin: 100px auto;
-    }
-    </style>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg-app);
+    font-family: var(--font-sans);
+    color: var(--fg-default);
+  }
+  .bb-login-shell {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .bb-login-side {
+    background: var(--bamboo-700);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--space-10) var(--space-8);
+    position: relative;
+    overflow: hidden;
+  }
+  .bb-login-side::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 80%, rgba(168,130,63,.18), transparent 55%),
+      radial-gradient(circle at 90% 10%, rgba(255,255,255,.05), transparent 60%);
+  }
+  .bb-login-brand {
+    display: flex; align-items: center; gap: var(--space-3);
+    position: relative; z-index: 1;
+  }
+  .bb-login-brand img {
+    width: 56px; height: 56px;
+    background: rgba(255,255,255,.1);
+    border-radius: var(--radius-md);
+    padding: 6px;
+  }
+  .bb-login-brand .name {
+    font-family: var(--font-brand);
+    font-size: var(--text-2xl);
+    line-height: 1;
+  }
+  .bb-login-brand .sub {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    opacity: .75;
+    margin-top: 2px;
+  }
+  .bb-login-pitch {
+    position: relative; z-index: 1;
+    max-width: 440px;
+  }
+  .bb-login-pitch h1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: var(--text-4xl);
+    line-height: 1.15;
+    margin-bottom: var(--space-4);
+    color: #fff;
+  }
+  .bb-login-pitch p {
+    font-size: var(--text-md);
+    color: rgba(255,255,255,.78);
+    margin: 0;
+  }
+  .bb-login-pitch .chips {
+    margin-top: var(--space-6);
+    display: flex; flex-wrap: wrap; gap: var(--space-2);
+  }
+  .bb-login-pitch .chip {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: 4px 10px;
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: var(--radius-pill);
+    color: rgba(255,255,255,.85);
+  }
+  .bb-login-side .foot {
+    position: relative; z-index: 1;
+    font-size: var(--text-xs);
+    opacity: .6;
+  }
+  .bb-login-form {
+    display: flex; align-items: center; justify-content: center;
+    padding: var(--space-8);
+  }
+  .bb-login-card {
+    width: 100%;
+    max-width: 420px;
+  }
+  .bb-login-card h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: var(--text-3xl);
+    margin: 0 0 4px;
+  }
+  .bb-login-card .subtitle {
+    color: var(--fg-muted);
+    margin-bottom: var(--space-6);
+    font-size: var(--text-sm);
+  }
+  .bb-login-card .form-control {
+    height: 44px;
+    font-size: var(--text-md);
+  }
+  .bb-login-card .input-group-text {
+    background: var(--bg-subtle);
+    border-color: var(--border-default);
+    color: var(--fg-muted);
+    width: 44px;
+    justify-content: center;
+  }
+  .bb-login-card .btn-bamboo {
+    height: 46px;
+    font-weight: 600;
+    font-size: var(--text-md);
+  }
+  .bb-login-card .hint {
+    text-align: center;
+    margin-top: var(--space-4);
+    font-size: var(--text-sm);
+  }
+  .bb-login-card .hint a {
+    color: var(--bamboo-700);
+  }
+  @media (max-width: 900px) {
+    .bb-login-shell { grid-template-columns: 1fr; }
+    .bb-login-side  { min-height: 200px; padding: var(--space-6); }
+    .bb-login-pitch h1 { font-size: var(--text-2xl); }
+  }
+</style>
 </head>
 
 <body>
-    <div class="container" style="overflow:auto;  background-color: #536656; ">
-        <p class="h6" style=" color:white; text-align: center"><img src="/bamboo/images/logo_bamboo.png"
-                width="80" class="img-fluid" style="float: left; margin-bottom: 10px"></p>
-        <p class="h2" style=" color:white; text-align: center">&nbsp; </p>
+
+<div class="bb-login-shell">
+
+  <aside class="bb-login-side">
+    <div class="bb-login-brand">
+      <img src="/bamboo/images/bamboo.png" alt="Bamboo">
+      <div>
+        <div class="name">Bamboo</div>
+        <div class="sub">Plataforma</div>
+      </div>
     </div>
-    <div class="modal-dialog modal-login">
-        <div class="modal-content col-lg-10">
-            <div class="modal-header">
-                <h4 class="modal-title">Inicio de Sesión</h4>
-            </div>
-            <div class="modal-body">
-                <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
-                    <!--<div class="form-group ?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">-->
-                    <div class="form-group">
-                        <div class="input-group">
-                            <span class="input-group-addon">
-                                <!--?php echo $username_err; ?-->
-                                <i class="fa fa-user"></i>
-                            </span>
-                            <input type="text" class="form-control" name="username" id="username" placeholder="Usuario"
-                                value="<?php echo $username; ?>" required="required">
-                        </div>
-                    </div>
 
-                    <!--div class="form-group ?php echo (!empty($password_err)) ? 'has-error' : ''; ?>"-->
-                    <div class="form-group">
-                        <div class="input-group"> <span class="input-group-addon"><i class="fa fa-lock"></i></span>
-                            <input type="password" name="password" class="form-control" id="password"
-                                placeholder="Contraseña" required="required">
-                            <span class="help-block">
-                                <!--?php echo $password_err; ?--></span>
-                        </div>
-                    </div>
+    <div class="bb-login-pitch">
+      <h1>Gestión de cartera y siniestros para corredores de seguros.</h1>
+      <p>Cartera, pólizas, endosos, tareas y siniestros — todo en un solo lugar.</p>
+      <div class="chips">
+        <span class="chip">Pólizas</span>
+        <span class="chip">Endosos</span>
+        <span class="chip">Tareas</span>
+        <span class="chip">Siniestros</span>
+        <span class="chip">Correos</span>
+      </div>
+    </div>
 
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-primary btn-block btn-lg" value="Login"
-                            style="box-shadow: 5; overflow:auto;  background-color: #A5CCAB; color: #536656">Ingresar</button>
-                    </div>
-                    <p class="hint-text"><a href="#" style="color:#536656">¿Olvidaste contraseña?</a></p>
-                </form>
+    <div class="foot">© Bamboo Seguros · gestionipn.cl</div>
+  </aside>
+
+  <main class="bb-login-form">
+    <div class="bb-login-card">
+      <h2>Inicio de sesión</h2>
+      <div class="subtitle">Ingresa tus credenciales para acceder a la plataforma.</div>
+
+      <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" autocomplete="on">
+        <div class="form-group">
+          <label for="username">Usuario</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text"><i class="fas fa-user"></i></span>
             </div>
+            <input type="text" class="form-control" name="username" id="username"
+                   value="<?php echo htmlspecialchars($username); ?>" required autofocus>
+          </div>
+          <?php if (!empty($username_err)): ?>
+            <div style="color:var(--danger-700);font-size:var(--text-xs);margin-top:4px"><?= htmlspecialchars($username_err) ?></div>
+          <?php endif; ?>
         </div>
-    </div>
-    </div>
-</body>
 
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text"><i class="fas fa-lock"></i></span>
+            </div>
+            <input type="password" class="form-control" name="password" id="password" required>
+          </div>
+          <?php if (!empty($password_err)): ?>
+            <div style="color:var(--danger-700);font-size:var(--text-xs);margin-top:4px"><?= htmlspecialchars($password_err) ?></div>
+          <?php endif; ?>
+        </div>
+
+        <button type="submit" class="btn btn-bamboo btn-block">Ingresar</button>
+        <div class="hint"><a href="#">¿Olvidaste contraseña?</a></div>
+      </form>
+    </div>
+  </main>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<script src="/assets/js/bootstrap-notify.min.js"></script>
+
+</body>
 </html>

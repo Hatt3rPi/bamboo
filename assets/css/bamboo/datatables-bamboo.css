@@ -150,3 +150,24 @@ table.dataTable thead .sorting_desc { color: var(--bamboo-700); }
   font-size: var(--text-sm);
   padding: 5px 12px;
 }
+
+/* Fix scrollX: cuando DataTables tiene scrollX:true clona el thead dentro
+   de .dataTables_scrollBody como medida de "spacer". Nuestro padding/borde
+   con !important lo dejaba visible (segunda fila fantasma con flechitas).
+   Devolverlo a 0 para que se colapse como manda jquery.dataTables.css. */
+.dataTables_scrollBody > table > thead > tr > th,
+.dataTables_scrollBody > table > thead > tr > td {
+  height: 0 !important;
+  padding: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  overflow: hidden;
+  background: transparent !important;
+}
+.dataTables_scrollBody > table > thead > tr > th > div.dataTables_sizing,
+.dataTables_scrollBody > table > thead > tr > td > div.dataTables_sizing {
+  height: 0 !important;
+  overflow: hidden;
+  margin: 0 !important;
+  padding: 0 !important;
+}
