@@ -213,31 +213,27 @@ echo '<style>.info_clientes { display:none;}</style>';
 }
 ?>
 
-<!doctype html>
-<html>
+<?php
+$page_title       = 'Nueva tarea · Bamboo Seguros';
+$page_active      = 'tareas';
+$breadcrumb_main  = 'Nueva tarea / actividad';
+$breadcrumb_sub   = 'Tareas';
+require_once 'layout.php';
+?>
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="/bamboo/images/bamboo.png">
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script>
-</head>
+<div class="bb-page-header">
+  <div>
+    <h1>Nueva tarea</h1>
+    <div class="subtitle">Asignar una actividad a clientes, pólizas o propuestas</div>
+  </div>
+  <a href="listado_tareas.php" class="btn btn-secondary">
+    <i class="fas fa-arrow-left mr-2"></i>Volver al listado
+  </a>
+</div>
 
-<body>
-    <div id="header">
-        <?php include 'header2.php' ?>
-    </div>
-    <div class="container" >
-        <form action="/bamboo/backend/polizas/crea_poliza.php" class="needs-validation" method="POST" id="formulario" novalidate>
-        
-        <p> Tareas / Creación <br>
-        </p>
+<div class="card">
+  <div class="card-body">
+    <form action="/bamboo/backend/polizas/crea_poliza.php" class="needs-validation" method="POST" id="formulario" novalidate>
         <h5 class="form-row">&nbsp;Datos Actividad</h5>
         <div id="cuadro_cliente">
         <br style="<?php if ($_SERVER["REQUEST_METHOD"] <> "POST") { echo 'display:none;'; } ?>">
@@ -470,25 +466,18 @@ echo '<style>.info_clientes { display:none;}</style>';
         <div style="color:red; visibility: hidden" id="validador2">No puedes dejar este campo en
                 blanco</div>
         <br>
-        <div  onclick="bPreguntar = false;">
-               <button class="btn" type="button" onclick="post();" onchange="bPreguntar = false;" name="registra" id="registra"
-            style="background-color: #536656; color: white" value="No preguntar">Registrar</button>
+        <div onclick="bPreguntar = false;">
+          <button class="btn btn-bamboo" type="button" onclick="post();" onchange="bPreguntar = false;" name="registra" id="registra" value="No preguntar">Registrar</button>
+        </div>
+    </form>
+  </div>
 </div>
-</form>
-        <br>
-    </div>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
-        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous">
-    </script>
-    <script src="/assets/js/jquery.redirect.js"></script>
-    <script src="/assets/js/validarRUT.js"></script>
-    <script src="/assets/js/bootstrap-notify.js"></script>
-    <script src="/assets/js/bootstrap-notify.min.js"></script>
-</body>
+<?php require_once 'layout_end.php'; ?>
 
-</html>
+<!-- Libs específicas del formulario -->
+<script src="/assets/js/validarRUT.js"></script>
+<script src="/assets/js/bootstrap-notify.min.js"></script>
 
 <script>
 

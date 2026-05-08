@@ -86,34 +86,27 @@ if ( $_SERVER[ "REQUEST_METHOD" ] == "POST" and isset( $_POST[ "id_cliente" ] ) 
       
   db_close($link);
 }
+
+$page_title       = ($camino === 'modificar' ? 'Editar cliente' : 'Nuevo cliente') . ' · Bamboo Seguros';
+$page_active      = 'clientes';
+$breadcrumb_main  = $camino === 'modificar' ? 'Editar cliente' : 'Nuevo cliente';
+$breadcrumb_sub   = 'Clientes';
+require_once 'layout.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="/bamboo/images/bamboo.png">
-<!-- Bootstrap -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script> 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-</head>
-
-<body>
-
-
-<!-- body code goes here "/bamboo/backend/clientes/crea_cliente.php"-->
-<div id="header">
-<?php include 'header2.php' ?>
+<div class="bb-page-header">
+  <div>
+    <h1><?= htmlspecialchars($breadcrumb_main) ?></h1>
+    <div class="subtitle">Datos personales, contacto y referencias</div>
+  </div>
+  <a href="listado_clientes.php" class="btn btn-secondary">
+    <i class="fas fa-arrow-left mr-2"></i>Volver al listado
+  </a>
 </div>
-<div class="container">
-  <p>Clientes / Creación<br>
-  </p>
-  <form action="/bamboo/backend/clientes/crea_cliente.php" class="needs-validation" method="POST" id="formulario"novalidate>
+
+<div class="card">
+  <div class="card-body">
+  <form action="/bamboo/backend/clientes/crea_cliente.php" class="needs-validation" method="POST" id="formulario" novalidate>
     <h5 class="form-row">&nbsp;Datos personales</h5>
     <br>
     <div class="form-row">
@@ -213,11 +206,9 @@ if ( $_SERVER[ "REQUEST_METHOD" ] == "POST" and isset( $_POST[ "id_cliente" ] ) 
       <h5 class="form-row">&nbsp;Información de Contacto</h5>
       <br>
       <div class="form-row">
-        <div class="container" id="main">
-          <input type="button" id="btAdd" value="Añadir" class="btn"
-                            style="background-color: #536656; color: white" />
-          <input type="button" id="btRemove" value="Eliminar" class="btn"
-                            style="background-color: #536656; color: white" />
+        <div class="col-12" id="main">
+          <input type="button" id="btAdd" value="Añadir" class="btn btn-bamboo btn-sm" />
+          <input type="button" id="btRemove" value="Eliminar" class="btn btn-secondary btn-sm" />
           <br>
           <br>
           <div class="container-md">
@@ -239,20 +230,18 @@ if ( $_SERVER[ "REQUEST_METHOD" ] == "POST" and isset( $_POST[ "id_cliente" ] ) 
 	  <input name="telefonocontact[]" id="telefonocontact">
 	 <input name="correocontact[]" id="correocontact">		
     </div>
-    <br>
-    <hr>
-    <button class="btn" type="submit" style="background-color: #536656; color: white" id="boton_submit">Registrar</button>
+    <hr class="my-4">
+    <button class="btn btn-bamboo" type="submit" id="boton_submit">Registrar</button>
   </form>
-  
+  </div>
 </div>
+
 <script>
     (function() {
         'use strict';
         window.addEventListener('load', function() {
-            // Fetch all the forms we want to apply custom Bootstrap validation styles to
             var forms = document.getElementsByClassName('needs-validation');
-            // Loop over them and prevent submission
-            var validation = Array.prototype.filter.call(forms, function(form) {
+            Array.prototype.filter.call(forms, function(form) {
                 form.addEventListener('submit', function(event) {
                     if (form.checkValidity() === false) {
                         event.preventDefault();
@@ -263,19 +252,13 @@ if ( $_SERVER[ "REQUEST_METHOD" ] == "POST" and isset( $_POST[ "id_cliente" ] ) 
             });
         }, false);
     })();
-    </script>
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
-        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous">
-    </script>
-<script src="/assets/js/jquery.redirect.js"></script>
+</script>
+
+<?php require_once 'layout_end.php'; ?>
+
+<!-- Libs específicas del formulario -->
 <script src="/assets/js/validarRUT.js"></script>
-<script src="/assets/js/bootstrap-notify.js"></script>
 <script src="/assets/js/bootstrap-notify.min.js"></script>
-
-
-</body>
-</html>
 <script>
 function valida_rut_duplicado() {
     if (document.getElementById("rut").checkValidity() == true) {
