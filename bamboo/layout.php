@@ -127,9 +127,9 @@ function bb_nav_class($id, $active) {
         <b><?= htmlspecialchars($breadcrumb_main) ?></b>
       </div>
       <div class="meta">
-        <div>UF<b><?= htmlspecialchars($uf_valor) ?></b></div>
-        <div>USD<b><?= htmlspecialchars($dolar_valor) ?></b></div>
-        <div><?= htmlspecialchars($fecha_hoy) ?></div>
+        <div>UF<b id="bb-uf"><?= htmlspecialchars($uf_valor) ?></b></div>
+        <div>USD<b id="bb-usd"><?= htmlspecialchars($dolar_valor) ?></b></div>
+        <div id="bb-fecha"><?= htmlspecialchars($fecha_hoy) ?></div>
       </div>
       <div class="dropdown">
         <div class="user" data-toggle="dropdown" aria-expanded="false">
