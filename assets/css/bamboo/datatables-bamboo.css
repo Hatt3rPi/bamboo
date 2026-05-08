@@ -1,0 +1,152 @@
+/* ============================================================
+   BAMBOO · DATATABLES OVERRIDES
+   Estiliza DataTables 1.10 para encajar con tokens.
+   Carga DESPUÉS de datatables.min.css y de components.css.
+   ============================================================ */
+
+/* Wrapper / spacing general */
+.dataTables_wrapper {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--fg-default);
+}
+.dataTables_wrapper .row { margin: 0 0 12px; }
+
+/* Header bar (length + search) */
+.dataTables_length, .dataTables_filter {
+  padding: 14px 0 8px;
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+}
+.dataTables_length label, .dataTables_filter label {
+  font-weight: 500;
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-bottom: 0;
+}
+.dataTables_length select.custom-select,
+.dataTables_length select {
+  height: 32px;
+  padding: 4px 26px 4px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  margin: 0 6px;
+}
+.dataTables_filter input,
+.dataTables_filter input.form-control {
+  height: 32px;
+  padding: 4px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  margin-left: 8px;
+  min-width: 240px;
+}
+.dataTables_filter input:focus {
+  border-color: var(--bamboo-600);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+/* Tabla */
+table.dataTable {
+  border-collapse: separate !important;
+  border-spacing: 0;
+  width: 100% !important;
+  font-size: var(--text-sm);
+}
+table.dataTable thead th,
+table.dataTable thead td {
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-default) !important;
+  border-top: none !important;
+  color: var(--fg-muted);
+  font-weight: 700;
+  font-size: var(--text-xs);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 12px 14px !important;
+  white-space: nowrap;
+}
+table.dataTable thead th:first-child { border-top-left-radius: var(--radius-md); }
+table.dataTable thead th:last-child  { border-top-right-radius: var(--radius-md); }
+
+table.dataTable tbody td {
+  padding: 12px 14px !important;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--fg-default);
+  vertical-align: middle;
+}
+table.dataTable.table-hover tbody tr:hover,
+table.dataTable tbody tr:hover {
+  background: var(--bg-subtle) !important;
+}
+table.dataTable tbody tr.selected {
+  background: var(--bamboo-50) !important;
+  color: var(--bamboo-800);
+}
+
+/* Sort indicators (mantiene los íconos pero cambia color) */
+table.dataTable thead .sorting,
+table.dataTable thead .sorting_asc,
+table.dataTable thead .sorting_desc {
+  cursor: pointer;
+  color: var(--fg-muted);
+}
+table.dataTable thead .sorting:hover { color: var(--fg-default); }
+table.dataTable thead .sorting_asc,
+table.dataTable thead .sorting_desc { color: var(--bamboo-700); }
+
+/* Footer / info / paginación */
+.dataTables_info {
+  padding: 14px 0 8px !important;
+  font-size: var(--text-xs);
+  color: var(--fg-subtle);
+}
+.dataTables_paginate { padding: 10px 0 !important; }
+.dataTables_paginate .pagination { margin: 0; }
+.dataTables_paginate .paginate_button {
+  padding: 6px 12px !important;
+  margin: 0 2px !important;
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid var(--border-default) !important;
+  background: #fff !important;
+  color: var(--fg-default) !important;
+  font-size: var(--text-sm) !important;
+}
+.dataTables_paginate .paginate_button:hover {
+  background: var(--bg-subtle) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--bamboo-700) !important;
+}
+.dataTables_paginate .paginate_button.current,
+.dataTables_paginate .paginate_button.current:hover {
+  background: var(--bamboo-600) !important;
+  border-color: var(--bamboo-600) !important;
+  color: #fff !important;
+}
+.dataTables_paginate .paginate_button.disabled,
+.dataTables_paginate .paginate_button.disabled:hover {
+  background: var(--bg-subtle) !important;
+  color: var(--fg-subtle) !important;
+  border-color: var(--border-subtle) !important;
+}
+
+/* Empty state */
+.dataTables_empty {
+  padding: 40px 20px !important;
+  text-align: center;
+  color: var(--fg-subtle);
+  font-size: var(--text-sm);
+}
+
+/* Botones de DataTables Buttons (export, copy) */
+.dt-buttons .btn {
+  margin-right: 6px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  padding: 5px 12px;
+}
