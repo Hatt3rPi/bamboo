@@ -23,93 +23,64 @@ if($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"])==true){
 $buscar= estandariza_info($_POST["busqueda"]);
 }
 
+$page_title      = 'Endosos · Bamboo Seguros';
+$page_active     = 'endosos';
+$breadcrumb_main = 'Listado de endosos';
+$breadcrumb_sub  = 'Endosos';
+require_once 'layout.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css">
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="/bamboo/images/bamboo.png">
-    <!-- Bootstrap -->
+<div class="bb-page-header">
+  <div>
+    <h1>Endosos</h1>
+    <div class="subtitle">Endosos emitidos sobre pólizas vigentes</div>
+  </div>
+  <button type="button" class="btn btn-secondary" onclick="window.location.href='/bamboo/backend/endosos/genera_excel_endosos.php'">
+    <i class="fas fa-file-excel mr-2"></i>Descargar Excel
+  </button>
+</div>
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="/assets/css/datatables.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
-    <link rel="stylesheet" type="text/css"
-        href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css" />
-        
+<div class="card">
+  <div class="card-body">
+    <table class="display w-100" id="listado_endosos">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Nro Propuesta Endoso</th>
+          <th>Tipo Endoso</th>
+          <th>Nro Póliza</th>
+          <th>Rut proponente</th>
+          <th>Nombre proponente</th>
+          <th>Fecha ingreso</th>
+          <th>Inicio Vigencia</th>
+          <th>Fin Vigencia</th>
+          <th>Fecha Prorroga</th>
+          <th>Fecha Emisión</th>
+        </tr>
+      </thead>
+    </table>
+    <div id="botones_poliza"></div>
+  </div>
+</div>
 
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script>
-            <script src="/assets/js/bootstrap-notify.js"></script>
-        <script src="/assets/js/bootstrap-notify.min.js"></script>
-    <script src="https://kit.fontawesome.com/7011384382.js" crossorigin="anonymous"></script>
-</head>
+<div id="auxiliar" style="display: none;">
+  <input id="var1" value="<?php echo htmlspecialchars($buscar);?>">
+</div>
 
+<?php require_once 'layout_end.php'; ?>
 
-<body>
-
-    <!-- body code goes here -->
-    <div id="header"><?php include 'header2.php' ?></div>
-    <div class="container">
-        <p> Endosos / Listado de Endosos<br>
-        </p>
-        <br>
-        <div class="container">
-            <table class="display" style="width:100%" id="listado_endosos">
-                <tr>
-                    <th></th>
-                    <th>Nro Propuesta Endoso</th>
-                    <th>Tipo Endoso</th>
-                    <th>Nro Póliza</th>
-                    <th>Rut proponente</th>
-                    <th>Nombre proponente</th>
-                    <th>Fecha ingreso</th>
-                    <th>Inicio Vigencia</th>
-                    <th>Fin Vigencia</th>
-                    <th>Fecha Prorroga</th>
-                    <th>Fecha Emisión</th>
-                </tr>
-
-            </table>
-            <div id="botones_poliza">
-                <button title="Descargar_excel_endosos" type="button"  onclick="window.location.href='/bamboo/backend/endosos/genera_excel_endosos.php'">Descargar Excel <i class="fas fa-file-excel"></i></button>
-            </div>
-            
-        </div>
-
-        <div id="auxiliar" style="display: none;">
-            <input id="var1" value="<?php 
-        echo htmlspecialchars($buscar);?>">
-        </div>
-            <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
-            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous">
-        </script>
-        <script src="/assets/js/jquery.redirect.js"></script>
-
-        <script src="/assets/js/datatables.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js">
-        </script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js">
-        </script>
-        <script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js">
-        </script>
-        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-    <script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
-
-</body>
-
-</html>
+<!-- Libs específicas del listado -->
+<script src="/assets/js/bootstrap-notify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
 <script>
 var table_endosos = ''
 $(document).ready(function() {
