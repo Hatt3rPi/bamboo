@@ -44,36 +44,23 @@ While($row2=db_fetch_object($resultado2))
       array_push($porcentaje,$row2->porcentaje_total );
   }
   db_close($link);
+
+$page_title      = 'Inicio · Bamboo Seguros';
+$page_active     = 'inicio';
+$breadcrumb_main = 'Resumen general';
+$breadcrumb_sub  = 'Plataforma';
+require_once 'layout.php';
 ?>
-<!DOCTYPE html>
-<html lang="es">
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="/bamboo/images/bamboo.png">
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="/assets/css/datatables.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
-    <link rel="stylesheet" type="text/css"
-        href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css" />
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css">
 
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script>
-    <script src="https://kit.fontawesome.com/7011384382.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
-</head>
+<div class="bb-page-header">
+  <div>
+    <h1>Resumen general</h1>
+    <div class="subtitle">Indicadores, alertas y tareas activas</div>
+  </div>
+</div>
 
-
-<body>
-
-    <!-- body code goes here -->
-     <div id="header"><?php include 'header2.php' ?></div>
-    <div class="container">
       <div class="row">
         <div class="col-md-9">
           <canvas id="myChart" width="400" height="100"></canvas><br>
@@ -83,9 +70,9 @@ While($row2=db_fetch_object($resultado2))
           <canvas id="torta" width="400" height="100" class="chartjs-render-monitor"></canvas>
         </div>
         <div class="col-md-3">
-          <div class="card" style="position:sticky;top:10px">
-            <div class="card-header d-flex align-items-center" style="background-color:#fff3cd">
-              <strong>⏰ Alertas</strong>
+          <div class="card" style="position:sticky;top:var(--space-3)">
+            <div class="card-header d-flex align-items-center" style="background:var(--warning-50);color:var(--warning-700)">
+              <strong><i class="far fa-clock mr-2"></i>Alertas</strong>
               <span id="alertas_badge" class="badge badge-danger ml-auto" style="display:none">0</span>
             </div>
             <div id="alertas_body" class="list-group list-group-flush"
@@ -95,15 +82,14 @@ While($row2=db_fetch_object($resultado2))
           </div>
         </div>
       </div>
-      <hr><br>
-        <p> Resumen de tareas <br></p>
-        <br>
+      <hr class="my-4">
+        <h2 class="mb-3">Resumen de tareas</h2>
         <div class="accordion" id="accordionExample">
             <div class="card">
-                <div class="card-header" id="headingOne" style="background-color:whitesmoke">
+                <div class="card-header" id="headingOne">
                     <h5 class="mb-0">
-                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne"
-                            aria-expanded="true" aria-controls="collapseOne" style="color:#536656">Tareas y
+                        <button class="btn btn-link text-bamboo" type="button" data-toggle="collapse" data-target="#collapseOne"
+                            aria-expanded="true" aria-controls="collapseOne">Tareas y
                             compromisos activos</button>
                     </h5>
                 </div>
@@ -128,11 +114,10 @@ While($row2=db_fetch_object($resultado2))
                 </div>
             </div>
             <div class="card">
-                <div class="card-header" id="headingTwo" style="background-color:whitesmoke">
+                <div class="card-header" id="headingTwo">
                     <h5 class="mb-0">
-                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                            data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo"
-                            style="color:#536656">Pólizas con pronto vencimiento</button>
+                        <button class="btn btn-link text-bamboo collapsed" type="button" data-toggle="collapse"
+                            data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">Pólizas con pronto vencimiento</button>
                     </h5>
                 </div>
                 <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
@@ -183,32 +168,20 @@ While($row2=db_fetch_object($resultado2))
       <input name="fec_min" id="fec_min"  >
       <input name="fec_max" id="fec_max">
     </div>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
-        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous">
-    </script>
-    <script src="/assets/js/jquery.redirect.js"></script>
-    <script src="/assets/js/bootstrap-notify.js"></script>
-    <script src="/assets/js/bootstrap-notify.min.js"></script>
-    <script src="/assets/js/datatables.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
 
-        <script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
- 
-    <br>
-    <br>
-</body>
+<?php require_once 'layout_end.php'; ?>
 
-
-</html>
+<!-- Libs específicas del dashboard (van después del shell para que jQuery + DataTables ya estén cargados) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script src="/assets/js/bootstrap-notify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
 <script>
 function formateoFechas(date) {
     var d = new Date(date),
