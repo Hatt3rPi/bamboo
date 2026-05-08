@@ -1,51 +1,48 @@
 <?php
 if (!isset($_SESSION)) { session_start(); }
-?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="/bamboo/images/bamboo.png">
-<title>Bamboo — Plantillas de correo</title>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-<link rel="stylesheet" href="/assets/css/datatables.min.css">
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
-<link rel="stylesheet" type="text/css" href="/assets/css/layout.css">
-<script src="https://kit.fontawesome.com/7011384382.js" crossorigin="anonymous"></script>
-<style>
-.var-chip { cursor:pointer; margin:2px; font-family:monospace; }
-.preview-box { background:#f8f9fa; border:1px solid #dee2e6; border-radius:4px; padding:12px; white-space:pre-wrap; font-family:Arial,sans-serif; }
-.preview-subject { font-weight:bold; border-bottom:1px solid #dee2e6; padding-bottom:6px; margin-bottom:8px; }
-</style>
-</head>
-<body>
-<div id="header"><?php include 'header2.php' ?></div>
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
-<div class="container">
-  <p>Administración / Plantillas de correo</p>
-  <div class="mb-3">
-    <button class="btn btn-primary btn-sm" onclick="abrirModalTemplate(null)">➕ Nueva plantilla</button>
+$page_title       = 'Plantillas de correo · Bamboo Seguros';
+$page_active      = 'correos';
+$breadcrumb_main  = 'Plantillas Brevo';
+$breadcrumb_sub   = 'Correos';
+$tab_correos      = 'plantillas';
+require_once 'layout.php';
+?>
+
+<style>
+.var-chip { cursor:pointer; margin:2px; font-family:var(--font-mono); }
+.preview-box { background:var(--bg-subtle); border:1px solid var(--border-default); border-radius:var(--radius-sm); padding:12px; white-space:pre-wrap; font-family:Arial,sans-serif; }
+.preview-subject { font-weight:bold; border-bottom:1px solid var(--border-default); padding-bottom:6px; margin-bottom:8px; }
+</style>
+
+<div class="bb-page-header">
+  <div>
+    <h1>Plantillas Brevo</h1>
+    <div class="subtitle">Plantillas de correo administradas por Brevo (módulo siniestros y otros)</div>
   </div>
-  <table id="tabla_templates" class="display" style="width:100%">
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Nombre</th>
-        <th>Módulo</th>
-        <th>Asunto</th>
-        <th>Activa</th>
-        <th>Última edición</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-  </table>
+  <button class="btn btn-bamboo" onclick="abrirModalTemplate(null)">
+    <i class="fas fa-plus mr-2"></i>Nueva plantilla
+  </button>
+</div>
+
+<?php include '_tabs_correos.php'; ?>
+
+<div class="card">
+  <div class="card-body">
+    <table id="tabla_templates" class="display w-100">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Módulo</th>
+          <th>Asunto</th>
+          <th>Activa</th>
+          <th>Última edición</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
 </div>
 
 <!-- MODAL EDITOR -->
@@ -105,11 +102,13 @@ if (!isset($_SESSION)) { session_start(); }
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" onclick="guardarTemplate()">Guardar</button>
+        <button type="button" class="btn btn-bamboo" onclick="guardarTemplate()">Guardar</button>
       </div>
     </div>
   </div>
 </div>
+
+<?php require_once 'layout_end.php'; ?>
 
 <script>
 // Variables conocidas por módulo — para este MVP hardcoded (se podrían traer de BD).
@@ -270,5 +269,3 @@ function eliminarTemplate(id) {
      });
 }
 </script>
-</body>
-</html>

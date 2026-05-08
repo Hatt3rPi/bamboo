@@ -120,20 +120,26 @@ $camino =  $_POST[ "tipo" ];
 
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<link rel="icon" href="/bamboo/images/bamboo.png">
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-</head>
+<?php
+$page_title       = 'Editor de templates · Bamboo Seguros';
+$page_active      = 'correos';
+$breadcrumb_main  = 'Editor de templates';
+$breadcrumb_sub   = 'Correos';
+$tab_correos      = 'editor';
+require_once 'layout.php';
+?>
 
-<body>
-<div id="header">
-<?php include 'header2.php' ?>
+<div class="bb-page-header">
+  <div>
+    <h1>Editor de templates</h1>
+    <div class="subtitle">Crear y mantener plantillas de correo por ramo e instancia</div>
+  </div>
 </div>
-<div class="container">
+
+<?php include '_tabs_correos.php'; ?>
+
+<div class="card">
+  <div class="card-body">
   <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="POST" name='editor_template'>
     <div id="auxiliar" style="display: none;">
       <input name="tipo" id="tipo">
@@ -272,9 +278,7 @@ $camino =  $_POST[ "tipo" ];
         <br>
       </div>
       <div class="col" style="align-self: center">
-        <button name="buscar" class="btn" type="submit" onclick="envio_data(this.name)"
-                        style="background-color: #536656; color: white; height: 45; align-self: center">Buscar
-        template</button>
+        <button name="buscar" class="btn btn-bamboo" type="submit" onclick="envio_data(this.name)" style="height:45px">Buscar template</button>
       </div>
     </div>
     <div class="row">
@@ -548,32 +552,22 @@ $camino =  $_POST[ "tipo" ];
         </div>
       </div>
       <br>
-      <button class="btn" name="probar"id="probar" type="submit" style="background-color: #536656; color: white"
-                    onclick="envio_data(this.name)">Probar</button>
-      <button class="btn" name="guardar" id="guardar" type="submit" style="background-color: #536656; color: white"
-                    onclick="envio_data(this.name)">Guardar</button>
+      <button class="btn btn-bamboo" name="probar" id="probar" type="submit" onclick="envio_data(this.name)">Probar</button>
+      <button class="btn btn-bamboo" name="guardar" id="guardar" type="submit" onclick="envio_data(this.name)">Guardar</button>
     </div>
     <br>
     <div class="col">
       <h6>Template</h6>
-      <textarea class="form-control" rows="10" style="height: 200px" id='template' name='template'
-                style="text-indent:0px";>
-      <?php echo $template; ?>
-      </textarea>
+      <textarea class="form-control" rows="10" style="height:200px" id='template' name='template'><?php echo $template; ?></textarea>
       <br>
       <h6>Resultado</h6>
-      <div class="form-control bg-light text-dark" id="resultado" rows="10"
-                style="height: 200px; border-style: solid;overflow-y: scroll"><?php echo $template_ejemplo; ?></div>
-      <br>
+      <div class="form-control bg-light text-dark" id="resultado" style="height:200px;border-style:solid;overflow-y:scroll"><?php echo $template_ejemplo; ?></div>
     </div>
   </form>
+  </div>
 </div>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script>
 
-</body>
-</html>
+<?php require_once 'layout_end.php'; ?>
 <script>
 
 function envio_data(boton) {

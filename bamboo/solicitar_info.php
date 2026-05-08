@@ -68,31 +68,32 @@ $template = str_replace( '_[SU_fin]_', '', $template );
 $url = htmlspecialchars( "https://mail.google.com/mail/?view=cm&fs=1&to=$destinatario&su=$subject&body=$body" );
 }
 db_close($link);
+
+$page_title       = 'Envío de correos · Bamboo Seguros';
+$page_active      = 'correos';
+$breadcrumb_main  = 'Envío de correos';
+$breadcrumb_sub   = 'Correos';
+$tab_correos      = 'solicitar';
+require_once 'layout.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
+<div class="bb-page-header">
+  <div>
+    <h1>Envío de correos</h1>
+    <div class="subtitle">Generación de correos a partir de plantillas por ramo e instancia</div>
+  </div>
+</div>
 
-<head>
-    <meta charset="utf-8">
-    <link rel="icon" href="/bamboo/images/bamboo.png">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-</head>
+<?php include '_tabs_correos.php'; ?>
 
-<body>
-    <div id="header">
-        <?php include 'header2.php' ?>
-    </div>
-    <div class="container">
-        <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="POST" name='enviar_template'>
-            <div id="auxiliar" style="display:none">
-                <input name="instancia" id="instancia">
-                <input name="ramo" id="ramo">
-                <input name="tipo" id="tipo">
-            </div>
-            <h4>Envío de Correos</h4>
-            <br>
+<div class="card">
+  <div class="card-body">
+    <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="POST" name='enviar_template'>
+      <div id="auxiliar" style="display:none">
+        <input name="instancia" id="instancia">
+        <input name="ramo" id="ramo">
+        <input name="tipo" id="tipo">
+      </div>
             <div class="form-row" style="display:flex; align-items: flex-end;">
                 <div class="col-6">
                     <label><b>Ramo</b></label>
@@ -196,34 +197,25 @@ db_close($link);
                     </select>
                 </div>
                 <div class="col">
-                    <button class="btn" type="submit" name="buscar"
-                        style="background-color: #536656; color: white; height: 45; align-self: end"
-                        onclick="envio_data(this.name)">Buscar
-                        template</button>
+                    <button class="btn btn-bamboo" type="submit" name="buscar" style="height:45px;align-self:end" onclick="envio_data(this.name)">Buscar template</button>
                 </div>
             </div>
-            <div name='correo'><br>
+            <div name='correo'>
                 <br>
-                <div class="col-12">
+                <div class="col-12 px-0">
                     <h6>Resultado</h6>
-                    <div id="template_correo" class="form-control bg-light text-dark" rows="10"
-                        style="height: 300px; width:73vw; border-style: solid;overflow-y: scroll">
-                        <?php echo $template; ?></div>
+                    <div id="template_correo" class="form-control bg-light text-dark" style="height:300px;border-style:solid;overflow-y:scroll">
+                        <?php echo $template; ?>
+                    </div>
                     <br>
-                    <a class="btn" type="btn"
-                        style="background-color: #536656; color: white; height: 45; align-self: center;"
-                        href="<?php echo urldecode($url); ?>" target="_blank">Enviar mail</a><br>
+                    <a class="btn btn-bamboo" href="<?php echo urldecode($url); ?>" target="_blank">Enviar mail</a>
                 </div>
-                <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-                    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-                    crossorigin="anonymous">
-                </script>
-                <script src="/assets/js/jquery.redirect.js"></script>
             </div>
         </form>
-    </div>
-</body>
-</html>
+  </div>
+</div>
+
+<?php require_once 'layout_end.php'; ?>
 <script>
 function envio_data(boton) {
     document.getElementById("tipo").value = boton;
