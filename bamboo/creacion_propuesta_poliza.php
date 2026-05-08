@@ -180,38 +180,28 @@ function estandariza_info( $data ) {
   return $data;
 }
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="/bamboo/images/bamboo.png">
-<!-- Bootstrap --> 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script> 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script> 
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-<link rel="stylesheet" href="/assets/css/datatables.min.css">
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
-<script src="https://kit.fontawesome.com/7011384382.js" crossorigin="anonymous"></script> 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
-</head>
+<?php
+$page_title       = 'Propuesta de póliza · Bamboo Seguros';
+$page_active      = 'propuestas';
+$breadcrumb_main  = 'Crear / editar propuesta';
+$breadcrumb_sub   = 'Pólizas';
+require_once 'layout.php';
+?>
 
-<body>
-<!-- body code goes here -->
+<div class="bb-page-header">
+  <div>
+    <h1>Propuesta de póliza</h1>
+    <div class="subtitle">Crear o editar una propuesta de póliza</div>
+  </div>
+  <a href="listado_propuesta_polizas.php" class="btn btn-secondary">
+    <i class="fas fa-arrow-left mr-2"></i>Volver al listado
+  </a>
+</div>
 
-<?php include 'header2.php' ?>
-
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-<div class="container">
-<div id=titulo1 style="display:flex">
-  <p>Propuesta de Póliza / Creación<br>
-  </p>
+<div class="card">
+  <div class="card-body">
+<div id="titulo1" style="display:flex">
+  <p style="display:none">
 </div>
 <div id=titulo2 style="display:none">
   <p>Propuesta de Póliza / Modificación / N° Propuesta:
@@ -239,8 +229,7 @@ function estandariza_info( $data ) {
 </div>
 <div class="form-row">
 <div class="col" id="botones_edicion" style="display:none ;align-items: center;">
-  <button type="button" class="btn btn-second" id="edicion1" onclick="habilitaedicion1()"
-                    style="background-color: #536656; margin-right: 5px ;color: white; display: inline">Editar</button>
+  <button type="button" class="btn btn-bamboo btn-sm" id="edicion1" onclick="habilitaedicion1()" style="margin-right:5px;display:inline">Editar</button>
   
 </div>
 <br>
@@ -281,10 +270,9 @@ function estandariza_info( $data ) {
                                readonly required>
         <div class="invalid-feedback">Dígito verificador no válido. Verifica rut </div>
       </div>
-      <button type="button" class="btn btn-secondary" id="busca_rut_prop" data-toggle="modal"
+      <button type="button" class="btn btn-bamboo" id="busca_rut_prop" data-toggle="modal"
                           onclick="origen_busqueda(this.id,0)" data-target="#modal_cliente"
-                          style="background-color: #536656; color: white; margin-top: 30px;margin-left: 5px; height: 40px">Buscar
-      RUT</button>
+                          style="margin-top:30px;margin-left:5px;height:40px">Buscar RUT</button>
       <div class="modal fade" id="modal_cliente" tabindex="-1" role="dialog"
                           aria-labelledby="modal_text_cliente" aria-hidden="true">
           
@@ -749,10 +737,8 @@ function estandariza_info( $data ) {
             </div>
             <br>
             <br>
-            <input type="button" id="btAdd" value="Añadir" class="btn"
-                              style="background-color: #536656; color: white" onclick="click_agrega_item()"/>
-            <input type="button" id="btRemove" value="Eliminar" class="btn"
-                              style="background-color: #536656; color: white" />
+            <input type="button" id="btAdd" value="Añadir" class="btn btn-bamboo btn-sm" onclick="click_agrega_item()"/>
+            <input type="button" id="btRemove" value="Eliminar" class="btn btn-secondary btn-sm" />
           </div>
         </div>
 
@@ -764,11 +750,11 @@ function estandariza_info( $data ) {
 
     </div>
     <div class="card">
-      <div class="card-header" id="headingthree" style="background-color:whitesmoke">
+      <div class="card-header" id="headingthree">
         <h5 class="mb-0">
-          <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+          <button class="btn btn-link text-bamboo collapsed" type="button" data-toggle="collapse"
                               data-target="#collapsethree" aria-expanded="false" aria-controls="collapsethree"
-                              style="color:#536656" onclick="window.scrollTo(0,0)">Comentarios </button>
+                              onclick="window.scrollTo(0,0)">Comentarios </button>
         </h5>
       </div>
       <div id="collapsethree" class="collapse" aria-labelledby="headingthree" data-parent="#accordionExample">
@@ -900,44 +886,37 @@ function estandariza_info( $data ) {
     <input id="auxiliar3" placeholder="false" style="display: none;" />
     
     
-    <button class="btn" type="button" style="background-color: #536656; color: white; display:none"
-              id='boton_submit' onclick=" validarutitem()"></button>
+    <button class="btn btn-bamboo" type="button" style="display:none"
+              id='boton_submit' onclick="validarutitem()"></button>
 </form>
-<button class="btn" type="button" style="background-color: #536656; color: white"
-              id='boton_prueba' onclick=" validarutitem()">Registrar</button>
+<button class="btn btn-bamboo" type="button"
+              id='boton_prueba' onclick="validarutitem()">Registrar</button>
  </div>
-<br>
-<br>
-</div>/
+  </div>
+</div>
+
 <script>
-
 $("#boton_submit").click(function(e){
-
-    blnFormValidity= $('#formulario')[0].checkValidity()
-   document.getElementById('formulario').classList.add('was-validated');
+    blnFormValidity= $('#formulario')[0].checkValidity();
+    document.getElementById('formulario').classList.add('was-validated');
     if(blnFormValidity==false){
         e.preventDefault();
-        return false
+        return false;
     }
     document.getElementById('auxiliar3').value = blnFormValidity;
-    
     genera_propuesta();
-})
-
+});
 </script>
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script>
 
-<script src="/assets/js/jquery.redirect.js"></script>
+<?php require_once 'layout_end.php'; ?>
+
+<!-- Libs específicas de la propuesta -->
 <script src="/assets/js/validarRUT.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-    <script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
-</body>
-</html><script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+
+<script>
 var orgn='';
 function valida_rut_duplicado_prop() {
     var dato = $('#rutprop').val();

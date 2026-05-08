@@ -105,37 +105,28 @@ elseif($_SERVER[ "REQUEST_METHOD" ] == "POST" and $_POST["accion"] == 'actualiza
         } 
 }
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="/bamboo/images/bamboo.png">
-<!-- Bootstrap --> 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script> 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script> 
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-<link rel="stylesheet" href="/assets/css/datatables.min.css">
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
-<script src="https://kit.fontawesome.com/7011384382.js" crossorigin="anonymous"></script> 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
-</head>
+<?php
+$page_title       = 'Propuesta de endoso · Bamboo Seguros';
+$page_active      = 'endosos';
+$breadcrumb_main  = 'Crear / editar propuesta de endoso';
+$breadcrumb_sub   = 'Endosos';
+require_once 'layout.php';
+?>
 
-<body>
+<div class="bb-page-header">
+  <div>
+    <h1>Propuesta de endoso</h1>
+    <div class="subtitle">Creación manual o vía propuesta web</div>
+  </div>
+  <a href="listado_propuesta_endosos.php" class="btn btn-secondary">
+    <i class="fas fa-arrow-left mr-2"></i>Volver al listado
+  </a>
+</div>
 
-<?php include 'header2.php' ?>
-
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-        
-<div class="container">
-<div id=titulo1 style="display:flex">
-  <p>Propuesta de Endoso / Creación manual</p>
+<div class="card">
+  <div class="card-body">
+<div id="titulo1" style="display:flex">
+  <p style="display:none">Propuesta de Endoso / Creación manual</p>
   <br>
 </div>
 <div id=titulo5 style="display:none">
@@ -525,29 +516,19 @@ elseif($_SERVER[ "REQUEST_METHOD" ] == "POST" and $_POST["accion"] == 'actualiza
 </div>
     
 </form>
-<br>
- <button class="btn" type="button" style="background-color: #536656; color: white; display:none"
-              id='boton_submit' onclick=" genera_propuesta()"></button>
-              
-<button class="btn" type="button" style="background-color: #536656; color: white"
-              id='boton_prueba' onclick=" validados()">Registrar</button>
-<br>
-</body>
-<foot>
-    <br>
-</foot>
 
+<button class="btn btn-bamboo" type="button" style="display:none" id='boton_submit' onclick="genera_propuesta()"></button>
+<button class="btn btn-bamboo" type="button" id='boton_prueba' onclick="validados()">Registrar</button>
 
+  </div>
+</div>
 
+<?php require_once 'layout_end.php'; ?>
 
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
-        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous">
-    </script>
-<script src="/assets/js/jquery.redirect.js"></script>
+<!-- Libs específicas de la propuesta -->
 <script src="/assets/js/validarRUT.js"></script>
-<script src="/assets/js/bootstrap-notify.js"></script>
 <script src="/assets/js/bootstrap-notify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
 
 
 
