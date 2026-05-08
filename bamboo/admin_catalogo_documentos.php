@@ -1,49 +1,50 @@
 <?php
 if (!isset($_SESSION)) { session_start(); }
+
+$page_title       = 'Catálogo de documentos · Bamboo Seguros';
+$page_active      = 'siniestros';
+$breadcrumb_main  = 'Catálogo de documentos';
+$breadcrumb_sub   = 'Siniestros';
+$tab_siniestros   = 'catalogo';
+require_once 'layout.php';
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="/bamboo/images/bamboo.png">
-<title>Bamboo - Catálogo documentos siniestros</title>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-<link rel="stylesheet" href="/assets/css/datatables.min.css">
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
-<script src="https://kit.fontawesome.com/7011384382.js" crossorigin="anonymous"></script>
-</head>
-<body>
-<div id="header"><?php include 'header2.php' ?></div>
-<!-- jQuery full (sobreescribe al slim que carga header2) y DataTables -->
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
 
-<div class="container">
-  <p>Siniestros / Administrar catálogo de documentos</p>
+<div class="bb-page-header">
+  <div>
+    <h1>Catálogo de documentos</h1>
+    <div class="subtitle">Documentos solicitables por bien afectado en un siniestro</div>
+  </div>
+  <button id="btn_nuevo" class="btn btn-bamboo">
+    <i class="fas fa-plus mr-2"></i>Nuevo documento
+  </button>
+</div>
 
-  <div class="mb-3 d-flex align-items-center">
-    <button id="btn_nuevo" class="btn btn-primary"><i class="fas fa-plus"></i> Nuevo documento</button>
-    <div class="form-check ml-4">
+<?php include '_tabs_siniestros.php'; ?>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="form-check">
       <input class="form-check-input" type="checkbox" id="chk_inactivos">
       <label class="form-check-label" for="chk_inactivos">Incluir inactivos</label>
     </div>
   </div>
+</div>
 
-  <table id="tabla_catalogo" class="display" style="width:100%">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Descripción</th>
-        <th>Orden</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-  </table>
+<div class="card">
+  <div class="card-body">
+    <table id="tabla_catalogo" class="display w-100">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Orden</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
 </div>
 
 <!-- Modal crear/editar -->
@@ -71,11 +72,13 @@ if (!isset($_SESSION)) { session_start(); }
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btn_guardar">Guardar</button>
+        <button type="button" class="btn btn-bamboo" id="btn_guardar">Guardar</button>
       </div>
     </div>
   </div>
 </div>
+
+<?php require_once 'layout_end.php'; ?>
 
 <script>
 var tabla;
@@ -153,5 +156,3 @@ $(function() {
   });
 });
 </script>
-</body>
-</html>

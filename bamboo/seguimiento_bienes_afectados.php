@@ -15,68 +15,73 @@ if ($filtro_id_siniestro !== '') {
     }
     db_close($link);
 }
+
+$page_title       = 'Bienes afectados · Bamboo Seguros';
+$page_active      = 'siniestros';
+$breadcrumb_main  = 'Bienes afectados';
+$breadcrumb_sub   = 'Siniestros';
+$tab_siniestros   = 'bienes';
+require_once 'layout.php';
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="/bamboo/images/bamboo.png">
-<title>Bamboo - Seguimiento bienes afectados</title>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-<link rel="stylesheet" href="/assets/css/datatables.min.css">
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
-<script src="https://kit.fontawesome.com/7011384382.js" crossorigin="anonymous"></script>
-</head>
-<body>
-<div id="header"><?php include 'header2.php' ?></div>
-<!-- jQuery full (sobreescribe al slim que carga header2) y DataTables -->
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
 
-<div class="container">
-  <p>Siniestros / Seguimiento bienes afectados<?php echo $titulo_extra; ?>
-    <?php if ($filtro_id_siniestro !== ''): ?>
-      &nbsp;<a class="btn btn-sm btn-outline-secondary" href="/bamboo/seguimiento_bienes_afectados.php">Ver todos</a>
-    <?php endif; ?>
-  </p>
-  <input type="hidden" id="filtro_id_siniestro" value="<?php echo htmlspecialchars($filtro_id_siniestro); ?>">
+<div class="bb-page-header">
+  <div>
+    <h1>Bienes afectados</h1>
+    <div class="subtitle">Seguimiento operativo de bienes propios y de terceros<?php
+      if ($filtro_id_siniestro !== '') {
+          echo '<br><small class="text-subtle">Filtro: ' . $titulo_extra . '</small>';
+      }
+    ?></div>
+  </div>
+  <?php if ($filtro_id_siniestro !== ''): ?>
+    <a class="btn btn-secondary btn-sm" href="/bamboo/seguimiento_bienes_afectados.php">Ver todos</a>
+  <?php endif; ?>
+</div>
 
-  <div class="form-row mb-3">
-    <div class="col-md-3">
-      <label>Estado</label>
-      <select class="form-control" id="filtro_estado">
-        <option value="">Todos</option>
-        <option value="Abierto">Abierto</option>
-        <option value="Cerrado">Cerrado</option>
-        <option value="Rechazado">Rechazado</option>
-      </select>
-    </div>
-    <div class="col-md-3 d-flex align-items-end">
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" id="chk_alarma_proxima">
-        <label class="form-check-label" for="chk_alarma_proxima">Solo alarmas próximas (7 días)</label>
+<?php include '_tabs_siniestros.php'; ?>
+
+<input type="hidden" id="filtro_id_siniestro" value="<?php echo htmlspecialchars($filtro_id_siniestro); ?>">
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="form-row">
+      <div class="col-md-3">
+        <label>Estado</label>
+        <select class="form-control" id="filtro_estado">
+          <option value="">Todos</option>
+          <option value="Abierto">Abierto</option>
+          <option value="Cerrado">Cerrado</option>
+          <option value="Rechazado">Rechazado</option>
+        </select>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="chk_alarma_proxima">
+          <label class="form-check-label" for="chk_alarma_proxima">Solo alarmas próximas (7 días)</label>
+        </div>
       </div>
     </div>
   </div>
+</div>
 
-  <table id="tabla_bienes" class="display" style="width:100%">
-    <thead>
-      <tr>
-        <th>N° Siniestro</th>
-        <th>Póliza</th>
-        <th>Ramo</th>
-        <th>Tipo</th>
-        <th>Bien afectado</th>
-        <th>Estado</th>
-        <th>Alarma</th>
-        <th>Docs</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-  </table>
+<div class="card">
+  <div class="card-body">
+    <table id="tabla_bienes" class="display w-100">
+      <thead>
+        <tr>
+          <th>N° Siniestro</th>
+          <th>Póliza</th>
+          <th>Ramo</th>
+          <th>Tipo</th>
+          <th>Bien afectado</th>
+          <th>Estado</th>
+          <th>Alarma</th>
+          <th>Docs</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
 </div>
 
 <!-- Modal Checklist (reutilizado del form) -->
@@ -98,11 +103,13 @@ if ($filtro_id_siniestro !== '') {
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" onclick="guardarChecklist()">Guardar checklist</button>
+        <button type="button" class="btn btn-bamboo" onclick="guardarChecklist()">Guardar checklist</button>
       </div>
     </div>
   </div>
 </div>
+
+<?php require_once 'layout_end.php'; ?>
 
 <script>
 var tabla;
@@ -232,5 +239,3 @@ function guardarChecklist() {
     });
 }
 </script>
-</body>
-</html>

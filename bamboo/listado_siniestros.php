@@ -21,90 +21,69 @@ if($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"])==true){
 $buscar= estandariza_info($_POST["busqueda"]);
 }
 
+$page_title       = 'Siniestros · Bamboo Seguros';
+$page_active      = 'siniestros';
+$breadcrumb_main  = 'Listado de siniestros';
+$breadcrumb_sub   = 'Siniestros';
+$tab_siniestros   = 'lista';
+require_once 'layout.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css">
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="/bamboo/images/bamboo.png">
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="/assets/css/datatables.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
-    <link rel="stylesheet" type="text/css"
-        href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css" />
+<div class="bb-page-header">
+  <div>
+    <h1>Siniestros</h1>
+    <div class="subtitle">Cartera de siniestros, bienes afectados y catálogo</div>
+  </div>
+  <a href="/bamboo/listado_polizas.php" class="btn btn-bamboo">
+    <i class="fas fa-file-medical mr-2"></i>Registrar siniestro
+  </a>
+</div>
 
+<?php include '_tabs_siniestros.php'; ?>
 
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script>
-            <script src="/assets/js/bootstrap-notify.js"></script>
-        <script src="/assets/js/bootstrap-notify.min.js"></script>
-    <script src="https://kit.fontawesome.com/7011384382.js" crossorigin="anonymous"></script>
-</head>
+<div class="card">
+  <div class="card-body">
+    <table class="display w-100" id="listado_siniestros">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Estado</th>
+          <th>N° Siniestro</th>
+          <th>N° Póliza</th>
+          <th>Fecha Ocurrencia</th>
+          <th>Ramo</th>
+          <th>Tipo Siniestro</th>
+          <th>Ítems</th>
+          <th>Bienes</th>
+          <th>Pendientes</th>
+          <th>Cliente</th>
+          <th>Liquidador</th>
+          <th>Patente</th>
+          <th>Compañía</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+</div>
 
+<div id="auxiliar" style="display: none;">
+  <input id="var1" value="<?php echo htmlspecialchars($buscar);?>">
+</div>
 
-<body>
+<?php require_once 'layout_end.php'; ?>
 
-    <!-- body code goes here -->
-    <div id="header"><?php include 'header2.php' ?></div>
-    <div class="container">
-        <p> Siniestros / Listado de Siniestros <br>
-        </p>
-        <br>
-        <div class="container">
-            <table class="display" style="width:100%" id="listado_siniestros">
-                   <tr>
-                    <th></th>
-                    <th>Estado</th>
-                    <th>N° Siniestro</th>
-                    <th>N° Póliza</th>
-                    <th>Fecha Ocurrencia</th>
-                    <th>Ramo</th>
-                    <th>Tipo Siniestro</th>
-                    <th>Ítems</th>
-                    <th>Bienes</th>
-                    <th>Pendientes</th>
-                    <th>Cliente</th>
-                    <th>Liquidador</th>
-                    <th>Patente</th>
-                    <th>Compañía</th>
-                    </tr>
-
-            </table>
-
-        <div id="auxiliar" style="display: none;">
-            <input id="var1" value="<?php
-        echo htmlspecialchars($buscar);?>">
-        </div>
-        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
-            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous">
-        </script>
-        <script src="/assets/js/jquery.redirect.js"></script>
-
-        <script src="/assets/js/datatables.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js">
-        </script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js">
-        </script>
-        <script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js">
-        </script>
-        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-    <script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
-
-</body>
-
-</html>
+<!-- Libs específicas del listado -->
+<script src="/assets/js/bootstrap-notify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
 <script>
 var table = ''
 $(document).ready(function() {
