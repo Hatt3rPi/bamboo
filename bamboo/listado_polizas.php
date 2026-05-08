@@ -23,113 +23,88 @@ if($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"])==true){
 $buscar= estandariza_info($_POST["busqueda"]);
 }
 
+$page_title      = 'Pólizas · Bamboo Seguros';
+$page_active     = 'polizas';
+$breadcrumb_main = 'Listado de pólizas';
+$breadcrumb_sub  = 'Pólizas';
+require_once 'layout.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css">
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="/bamboo/images/bamboo.png">
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="/assets/css/datatables.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
-    <link rel="stylesheet" type="text/css"
-        href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css" />
-        
+<div class="bb-page-header">
+  <div>
+    <h1>Pólizas</h1>
+    <div class="subtitle">Cartera vigente, vencida y cancelada</div>
+  </div>
+  <button type="button" class="btn btn-secondary" onclick="window.location.href='/bamboo/backend/polizas/genera_excel_polizas.php'">
+    <i class="fas fa-file-excel mr-2"></i>Descargar Excel
+  </button>
+</div>
 
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script>
-            <script src="/assets/js/bootstrap-notify.js"></script>
-        <script src="/assets/js/bootstrap-notify.min.js"></script>
-    <script src="https://kit.fontawesome.com/7011384382.js" crossorigin="anonymous"></script>
-</head>
+<div class="card">
+  <div class="card-body">
+    <table class="display w-100" id="listado_polizas">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Estado</th>
+          <th>N° Póliza</th>
+          <th>Inicio Vigencia</th>
+          <th>Fin Vigencia</th>
+          <th>Compañía</th>
+          <th>Prima neta</th>
+          <th>Ramo</th>
+          <th>Añomes final</th>
+          <th>Añomes inicial</th>
+          <th>Proponente</th>
+          <th>Rut Proponente</th>
+          <th>grupo</th>
+          <th>referido</th>
+        </tr>
+      </thead>
+    </table>
+    <div id="botones_poliza"></div>
+  </div>
+</div>
 
+<div id="auxiliar" style="display: none;">
+  <input id="var1" value="<?php echo htmlspecialchars($buscar);?>">
+</div>
 
-<body>
+<!-- Modal selección múltiple de ítems para siniestro -->
+<div class="modal fade" id="modal_seleccion_items" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Seleccionar ítems afectados</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p>Marque los ítems afectados por el siniestro:</p>
+        <div id="lista_items_modal"></div>
+        <input type="hidden" id="modal_poliza_id" value="">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-bamboo" onclick="confirmarSeleccionItems()">Continuar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <!-- body code goes here -->
-    <div id="header"><?php include 'header2.php' ?></div>
-    <div class="container">
-        <p> Pólizas / Listado de Pólizas <br>
-        </p>
-        <br>
-        <div class="container">
-            <table class="display" style="width:100%" id="listado_polizas">
-                   <tr>
-                    <th></th>
-                    <th>Estado</th>
-                    <th>N° Póliza</th>
-                    <th>Inicio Vigencia</th>
-                    <th>Fin Vigencia</th>
-                    <th>Compañia</th>
-                    <th>Ramo</th>
-                    <th>Añomes final</th>
-                    <th>Añomes inicial</th>
-                    <th>Proponente</th>
-                    <th>Rut Proponente</th>
-                    <th>grupo</th>
-                    <th>referido</th>
-                    </tr>
+<?php require_once 'layout_end.php'; ?>
 
-            </table>
-            <div id="botones_poliza">
-            <button title="Descargar_excel_propuestas" type="button"  onclick="window.location.href='/bamboo/backend/polizas/genera_excel_polizas.php'">Descargar Excel <i class="fas fa-file-excel"></i></button>
-            </div>
-
-        <div id="auxiliar" style="display: none;">
-            <input id="var1" value="<?php
-        echo htmlspecialchars($buscar);?>">
-        </div>
-
-        <!-- Modal selección múltiple de ítems para siniestro -->
-        <div class="modal fade" id="modal_seleccion_items" tabindex="-1" role="dialog" aria-hidden="true">
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Seleccionar ítems afectados</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
-              </div>
-              <div class="modal-body">
-                <p>Marque los ítems afectados por el siniestro:</p>
-                <div id="lista_items_modal"></div>
-                <input type="hidden" id="modal_poliza_id" value="">
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success" onclick="confirmarSeleccionItems()">Continuar</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
-            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous">
-        </script>
-        <script src="/assets/js/jquery.redirect.js"></script>
-
-        <script src="/assets/js/datatables.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js">
-        </script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js">
-        </script>
-        <script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js">
-        </script>
-        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-    <script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
-
-</body>
-
-</html>
+<!-- Libs específicas del listado -->
+<script src="/assets/js/bootstrap-notify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
 <script>
 var table = ''
 $(document).ready(function() {
@@ -164,20 +139,31 @@ $(document).ready(function() {
             }, //4
             {
                 "data": "compania",
-                title: "Compañia"
+                title: "Compañía"
             }, //5
+            {
+                "data": "total_prima_neta",
+                title: "Prima neta",
+                className: "text-right",
+                render: function(data, type, row) {
+                    if (type !== 'display' || data === null || data === '' || data === undefined) return data || '';
+                    var num = parseFloat(String(data).replace(/[^0-9.\-]/g, ''));
+                    if (isNaN(num)) return data;
+                    return '$' + num.toLocaleString('es-CL');
+                }
+            }, //6
             {
                 "data": "ramo",
                 title: "Ramo"
-            }, //6
+            }, //7
             {
                 "data": "anomes_final",
                 title: "Añomes final"
-            }, //7
+            }, //8
             {
                 "data": "anomes_inicial",
                 title: "Añomes inicial"
-            }, //8
+            }, //9
 
             {
                 "data": "nom_clienteP",
@@ -198,7 +184,7 @@ $(document).ready(function() {
         ],
         "columnDefs": [
             {
-                "targets": [7,8],
+                "targets": [8,9],
                 "visible": false,
             },
         {
