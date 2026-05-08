@@ -286,42 +286,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
     db_close($link);
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
+<?php
+$page_title       = 'Resumen · Bamboo Seguros';
+$page_active      = '';
+$breadcrumb_main  = 'Resumen';
+$breadcrumb_sub   = 'Búsqueda';
+require_once 'layout.php';
+?>
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="/bamboo/images/bamboo.png">
-    <!-- Bootstrap -->
+<div class="bb-page-header">
+  <div>
+    <h1 id="titulo">Resumen</h1>
+    <div class="subtitle">Detalle consolidado de cliente, pólizas, propuestas, endosos y siniestros</div>
+  </div>
+</div>
 
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script> 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script> 
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-<link rel="stylesheet" href="/assets/css/datatables.min.css">
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
-<script src="https://kit.fontawesome.com/7011384382.js" crossorigin="anonymous"></script> 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
-</head>
-
-
-<body>
-    <!-- body code goes here -->
-
-    <?php include 'header2.php' ?>
-
-
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <div class="container">
-
-        <p id="titulo"> Resumen / Búsqueda:</p> <br>
+<div class="card">
+  <div class="card-body">
         <nav>
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                <a class="nav-item nav-link active" id="clientes" data-toggle="tab" href="#nav-cliente" role="tab" aria-controls="nav-cliente" aria-selected="true" style="color: white;background-color:#536656;border-color:#dee2e6" onclick="cambiacolor(this.id)">Cliente</a>
-                <a class="nav-item nav-link" id="poliza" data-toggle="tab" href="#nav-poliza" role="tab" aria-controls="nav-poliza" aria-selected="false" style="color: grey;border-color:#dee2e6" onclick="cambiacolor(this.id)">Póliza</a>
+                <a class="nav-item nav-link active" id="clientes" data-toggle="tab" href="#nav-cliente" role="tab" aria-controls="nav-cliente" aria-selected="true" onclick="cambiacolor(this.id)">Cliente</a>
+                <a class="nav-item nav-link" id="poliza" data-toggle="tab" href="#nav-poliza" role="tab" aria-controls="nav-poliza" aria-selected="false" onclick="cambiacolor(this.id)">Póliza</a>
                 <a class="nav-item nav-link" id="endosos" data-toggle="tab" href="#nav-endosos" role="tab" aria-controls="nav-endosos" aria-selected="false" style="color: grey;border-color:#dee2e6" onclick="cambiacolor(this.id)">Endosos</a>
                 <a class="nav-item nav-link" id="tarea" data-toggle="tab" href="#nav-tarea" role="tab" aria-controls="nav-tarea" aria-selected="false" style="color: grey;border-color:#dee2e6" onclick="cambiacolor(this.id)">Tarea</a>
                 <a class="nav-item nav-link" id="tarea_rec" data-toggle="tab" href="#nav-tarea_rec" role="tab" aria-controls="nav-tarea_rec" aria-selected="false" style="color: grey;border-color:#dee2e6" onclick="cambiacolor(this.id)">Tarea Recurrente</a>
@@ -544,24 +529,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"]) !== true 
                 <input id="var7_propuesta_endoso" value="<?php echo htmlspecialchars($propuestas_endosos);?>">
                 <input id="var8_siniestro" value="<?php echo htmlspecialchars($id_siniestros);?>">
             </div>
-        </div>
-        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-        <script src="/assets/js/jquery.redirect.js"></script>
-        <script src="/assets/js/bootstrap-notify.js"></script>
-        <script src="/assets/js/bootstrap-notify.min.js"></script>
-        <script src="/assets/js/datatables.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-        <script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-</body>
+  </div>
+</div>
+
+<?php require_once 'layout_end.php'; ?>
+
+<!-- Libs específicas -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script src="/assets/js/bootstrap-notify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
 
 <script>
 // Normaliza saltos de línea (literales escapados "\r\n" o reales) y escapa HTML.

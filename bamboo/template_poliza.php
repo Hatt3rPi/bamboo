@@ -272,23 +272,26 @@ $url = htmlspecialchars( "https://mail.google.com/mail/?view=cm&fs=1&to=$destina
 
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<link rel="icon" href="/bamboo/images/bamboo.png">
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-</head>
+<?php
+$page_title       = 'Plantilla de envío póliza · Bamboo Seguros';
+$page_active      = 'polizas';
+$breadcrumb_main  = 'Plantilla de envío de póliza';
+$breadcrumb_sub   = 'Pólizas';
+require_once 'layout.php';
+?>
 
-<body>
-
-
-
-<div id="header">
-<?php include 'header2.php' ?>
+<div class="bb-page-header">
+  <div>
+    <h1>Plantilla de envío de póliza</h1>
+    <div class="subtitle">Generación de correo para envío / reenvío de póliza al asegurado</div>
+  </div>
+  <a href="listado_polizas.php" class="btn btn-secondary">
+    <i class="fas fa-arrow-left mr-2"></i>Volver al listado
+  </a>
 </div>
-<div class="container">
+
+<div class="card">
+  <div class="card-body">
   <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="POST" name='eviar_template'>
       <div id="auxiliar" style="display: none" >
       <input name="tipo" id="tipo">
@@ -308,40 +311,31 @@ $url = htmlspecialchars( "https://mail.google.com/mail/?view=cm&fs=1&to=$destina
     </select>
   </div>
   <div class="col" style="align-self:flex-end">
-    <button class="btn" type="submit" name="buscar"
-                        style="background-color: #536656; color: white; height: 45; align-self: center" onclick="envio_data(this.name)">Buscar
-    template</button>
+    <button class="btn btn-bamboo" type="submit" name="buscar" style="height:45px" onclick="envio_data(this.name)">Buscar template</button>
   </div>
   </form>
 </div>
-<br>
-<div name='correo'>
-<div class=col>
-  <h6>Resultado</h6>
-  <div id="template_correo" class="form-control bg-light text-dark" rows="10"
-                style="height: 400px; border-style: solid;overflow-y: scroll"><?php echo $template; ?></div>
-  <br>
-  <a class="btn" type="btn"
-                        style="background-color: #536656; color: white; height: 45; align-self: center;" href="<?php echo urldecode($url); ?>" target="_blank">Enviar mail</a><br>
-</div>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script>
-<script src="/assets/js/jquery.redirect.js"></script>
 
-</body>
+<br>
+
+<div name='correo'>
+  <div class="col-12 px-0">
+    <h6>Resultado</h6>
+    <div id="template_correo" class="form-control bg-light text-dark" style="height:400px;border-style:solid;overflow-y:scroll"><?php echo $template; ?></div>
+    <br>
+    <a class="btn btn-bamboo" href="<?php echo urldecode($url); ?>" target="_blank">Enviar mail</a>
+  </div>
+</div>
+  </div>
+</div>
+
+<?php require_once 'layout_end.php'; ?>
 
 <script>
-
-
 function envio_data(boton) {
     document.getElementById("tipo").value = boton;
 }
-
-
-
 </script>
-</html>
 
 <script>
 
