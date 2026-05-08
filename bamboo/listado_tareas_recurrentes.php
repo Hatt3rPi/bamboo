@@ -23,61 +23,48 @@ if($_SERVER["REQUEST_METHOD"] == "GET" and isset($_GET["tarea"])==true){
 $id_tarea= estandariza_info($_GET["tarea"]);
 }
 
+$page_title       = 'Tareas recurrentes · Bamboo Seguros';
+$page_active      = 'tareas';
+$breadcrumb_main  = 'Tareas recurrentes';
+$breadcrumb_sub   = 'Tareas';
+require_once 'layout.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css">
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="/bamboo/images/bamboo.png">
-    <!-- Bootstrap -->
-    
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="/assets/css/datatables.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
-    <link rel="stylesheet" type="text/css"
-        href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css" />
-    <link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css" rel="stylesheet" />
+<div class="bb-page-header">
+  <div>
+    <h1>Tareas recurrentes</h1>
+    <div class="subtitle">Plantillas que generan tareas con cadencia regular</div>
+  </div>
+  <a href="listado_tareas.php" class="btn btn-secondary">
+    <i class="fas fa-list mr-2"></i>Ver tareas regulares
+  </a>
+</div>
 
-    <script src="https://kit.fontawesome.com/7011384382.js" crossorigin="anonymous"></script>
-</head>
+<div id="acciones_multiples" class="alert alert-info" style="display:none;">
+  <div class="d-flex align-items-center" style="gap:var(--space-3)">
+    <strong>Selección múltiple:</strong>
+    <button id="boton_finaliza_tareas_multiples" title="Completar tarea" type="button" class="btn btn-bamboo btn-sm" data-toggle="modal" data-target="#finalizar_tareas_multiples" onclick="listado_tareas_multiples()">
+      <i class="fas fa-check-circle mr-1"></i>Finalizar tareas
+    </button>
+  </div>
+</div>
 
-
-<body>
-
-    <!-- body code goes here  -->
-    <div id="header"><?php include 'header2.php' ?></div>
-    <div class="container">
-        <p> Tareas / Listado de tareas recurrentes <br>
-        </p>
-        <br>
-    <div id="acciones_multiples" style="background-color:#E9D6EC; display:none;">
-    <table background-color:#F6F6F6; color:#FFF; cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">
-    <tr><td>Selección múltiple de tareas / Acciones:</td>
-        <td>
-<!-- Button trigger modal -->
-<button id="boton_finaliza_tareas_multiples" title="Completar tarea" type="button" class="btn btn-secondary" data-toggle="modal" data-target="#finalizar_tareas_multiples" onclick="listado_tareas_multiples()">
-  <i class="fas fa-check-circle"> Finalizar Tareas</i>
-</button>
-
-<!-- Modal -->
+<!-- Modal finalizar múltiples -->
 <div class="modal fade" id="finalizar_tareas_multiples" tabindex="-1" role="dialog" aria-labelledby="ModalOpcionesMultiples" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"  id="exampleModalLabel" >Finalizar múltiples tareas</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Finalizar múltiples tareas</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-
       </div>
       <div class="modal-body">
         <table class="table" id="tabla_tareas_multiples" style="width:100%">
-            <tr><th>#</th><th>Tarea</th><th>Estado</th></tr>
+          <tr><th>#</th><th>Tarea</th><th>Estado</th></tr>
         </table>
       </div>
       <div class="modal-footer">
@@ -86,66 +73,47 @@ $id_tarea= estandariza_info($_GET["tarea"]);
     </div>
   </div>
 </div>
-        </td>
-    </tr>
-        </table>
-        </div>
-        
 
-        
-        <br>
-        <div class="container">
-  <table class="table" id="tareas_completas" style="width:100%">
-                            <tr>
-                                <th></th>
-                                <th></th>
-                                <th>id</th>
-                                <th>Prioridad</th>
-                                <th>Estado</th>
-                                <th>Tarea</th>
-                               <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                            </tr>
-                        </table>
-                        <div id="botones_tareas"></div>
-        </div>
-    </div>
+<div class="card">
+  <div class="card-body">
+    <table class="table w-100" id="tareas_completas">
+      <thead>
+        <tr>
+          <th></th>
+          <th></th>
+          <th>id</th>
+          <th>Prioridad</th>
+          <th>Estado</th>
+          <th>Tarea</th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+    </table>
+    <div id="botones_tareas"></div>
+  </div>
+</div>
 
+<div id="auxiliar" style="display: none;">
+  <input id="var1" value="<?php echo htmlspecialchars($buscar);?>">
+  <input id="id_tareas_multiples" onchange="listado_tareas_multiples()">
+</div>
 
+<?php require_once 'layout_end.php'; ?>
 
-    <!-- <div id="auxiliar" style="display: none;"> -->
-        <div id="auxiliar" style="display: none;">
-        <input id="var1" value="<?php echo htmlspecialchars($buscar);?>">
-        <input id="id_tareas_multiples" onchange="listado_tareas_multiples()">
-    </div>
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-        </script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
-        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous">
-        </script>
-    <script src="/assets/js/jquery.redirect.js"></script>
-    <script src="/assets/js/bootstrap-notify.js"></script>
-    <script src="/assets/js/bootstrap-notify.min.js"></script>
-    <script src="/assets/js/datatables.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-    <script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
-<script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>
-
-</body>
-
-</html>
+<!-- Libs específicas del listado -->
+<script src="/assets/js/bootstrap-notify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+<script src="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>
 <script>
 
 $(document).ready(function() {
