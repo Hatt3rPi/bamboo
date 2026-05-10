@@ -191,13 +191,18 @@ if (!$es_ramo_vehiculo_php) {
     <!-- ==================== SECCIÓN 2: DATOS DEL SINIESTRO ==================== -->
     <hr>
     <h5 class="form-row">&nbsp;Datos del Siniestro</h5><br>
+    <?php $col_datos_siniestro = ($camino == 'modifica_siniestro') ? 'col-md-4' : 'col-md-6'; ?>
     <div class="form-row">
+      <?php if ($camino == 'modifica_siniestro'): ?>
       <div class="col-md-4 mb-3">
         <label for="numero_siniestro">N° Siniestro Compañía</label>
         <input type="text" class="form-control" id="numero_siniestro" name="numero_siniestro"
           value="<?php echo $numero_siniestro; ?>" placeholder="Número entregado por la compañía">
       </div>
-      <div class="col-md-4 mb-3">
+      <?php else: ?>
+      <input type="hidden" id="numero_siniestro" name="numero_siniestro" value="">
+      <?php endif; ?>
+      <div class="<?php echo $col_datos_siniestro; ?> mb-3">
         <label for="tipo_siniestro">Tipo de Siniestro <span style="color:darkred">*</span></label>
         <select class="form-control" id="tipo_siniestro" name="tipo_siniestro">
           <option value="">-- Seleccione --</option>
@@ -210,6 +215,12 @@ if (!$es_ramo_vehiculo_php) {
           ?>
         </select>
       </div>
+      <div class="<?php echo $col_datos_siniestro; ?> mb-3">
+        <label for="fecha_ocurrencia">Fecha de Ocurrencia <span style="color:darkred">*</span></label>
+        <input type="date" class="form-control" id="fecha_ocurrencia" name="fecha_ocurrencia"
+          value="<?php echo $fecha_ocurrencia; ?>">
+      </div>
+      <?php if ($camino == 'modifica_siniestro'): ?>
       <div class="col-md-4 mb-3">
         <label for="estado">Estado</label>
         <select class="form-control" id="estado" name="estado">
@@ -222,13 +233,11 @@ if (!$es_ramo_vehiculo_php) {
           ?>
         </select>
       </div>
+      <?php else: ?>
+      <input type="hidden" id="estado" name="estado" value="Número pendiente">
+      <?php endif; ?>
     </div>
     <div class="form-row">
-      <div class="col-md-4 mb-3">
-        <label for="fecha_ocurrencia">Fecha de Ocurrencia <span style="color:darkred">*</span></label>
-        <input type="date" class="form-control" id="fecha_ocurrencia" name="fecha_ocurrencia"
-          value="<?php echo $fecha_ocurrencia; ?>">
-      </div>
       <div class="col-md-4 mb-3">
         <label for="fecha_denuncia">Fecha de Denuncia</label>
         <input type="date" class="form-control" id="fecha_denuncia" name="fecha_denuncia"
@@ -288,6 +297,7 @@ if (!$es_ramo_vehiculo_php) {
     </div>
 
     <!-- ==================== SECCIÓN 5: LIQUIDADOR ==================== -->
+    <?php if ($camino == 'modifica_siniestro'): ?>
     <div id="grupo_liquidador">
       <hr>
       <h5 class="form-row">&nbsp;Liquidador <small class="text-muted etapa-hint" style="font-weight:normal"></small></h5><br>
@@ -317,6 +327,12 @@ if (!$es_ramo_vehiculo_php) {
         </div>
       </div>
     </div>
+    <?php else: ?>
+    <input type="hidden" id="liquidador_nombre" name="liquidador_nombre" value="">
+    <input type="hidden" id="liquidador_telefono" name="liquidador_telefono" value="">
+    <input type="hidden" id="liquidador_correo" name="liquidador_correo" value="">
+    <input type="hidden" id="numero_carpeta_liquidador" name="numero_carpeta_liquidador" value="">
+    <?php endif; ?>
 
     <!-- ==================== SECCIÓN 5a: CONTACTO COMPAÑÍA (NO VEHÍCULO) ==================== -->
     <div id="bloque_contacto_compania" style="display:none">
@@ -382,14 +398,17 @@ if (!$es_ramo_vehiculo_php) {
               box-shadow:0 -2px 4px rgba(0,0,0,0.05)">
     <div class="container" style="text-align:right">
       <button type="button" class="btn" style="background-color:#536656;color:white"
-        id="boton_registrar" onclick="registraSiniestro(false)">
+        id="boton_registrar" onclick="registraSiniestro(false)"
+        <?php echo ($camino == 'modifica_siniestro') ? '' : 'disabled'; ?>>
         <?php echo ($camino == 'modifica_siniestro') ? 'Guardar cambios' : 'Registrar Siniestro'; ?>
       </button>
+      <?php if ($camino == 'modifica_siniestro'): ?>
       &nbsp;<button type="button" class="btn btn-success"
         id="boton_registrar_salir" onclick="registraSiniestro(true)"
         title="Guarda y vuelve al listado anterior">
         Guardar y salir
       </button>
+      <?php endif; ?>
       <?php if ($camino == 'modifica_siniestro' && $estado == 'Cerrado'): ?>
       &nbsp;<button type="button" class="btn btn-warning" id="boton_reabrir" onclick="reabrirSiniestro()">
         Reabrir siniestro
@@ -639,7 +658,13 @@ function cargarItemsPoliza(id_poliza, items_csv_pre) {
             $('.chk_item').on('change', function() {
                 actualizarItemsSeleccionados();
                 renderVehiculos();
+                actualizarBotonRegistrar();
             });
+            // Si el modal del bien está abierto, refrescar visibilidad del campo "Ítem afectado"
+            if ($('#modalBien').hasClass('show')) {
+                setItemAfectadoVisible();
+            }
+            actualizarBotonRegistrar();
         },
         error: function() {
             $('#lista_items_checkboxes').html('<em style="color:darkred">Error cargando ítems.</em>');
@@ -656,29 +681,41 @@ function actualizarItemsSeleccionados() {
 }
 
 // ---- Validación de campos requeridos ----
+// Boolean puro, sin alert, para enable/disable del botón.
+function siniestroEsValido() {
+    var poliza = estandariza_info($('#numero_poliza').val());
+    var tipo   = estandariza_info($('#tipo_siniestro').val());
+    var fecha  = estandariza_info($('#fecha_ocurrencia').val());
+    var items  = estandariza_info($('#items_seleccionados').val());
+    return poliza !== '' && tipo !== '' && fecha !== '' && items !== '';
+}
+
+// Wrapper con alerts para el flujo de envío.
 function validaSiniestro() {
     var poliza = estandariza_info($('#numero_poliza').val());
     var tipo   = estandariza_info($('#tipo_siniestro').val());
     var fecha  = estandariza_info($('#fecha_ocurrencia').val());
     var items  = estandariza_info($('#items_seleccionados').val());
 
-    if (poliza === '') {
-        alert('Debe ingresar o seleccionar una póliza.');
-        return false;
-    }
-    if (tipo === '') {
-        alert('Debe seleccionar el tipo de siniestro.');
-        return false;
-    }
-    if (fecha === '') {
-        alert('Debe ingresar la fecha de ocurrencia.');
-        return false;
-    }
-    if (items === '') {
-        alert('Debe seleccionar al menos un ítem afectado.');
-        return false;
-    }
+    if (poliza === '') { alert('Debe ingresar o seleccionar una póliza.'); return false; }
+    if (tipo   === '') { alert('Debe seleccionar el tipo de siniestro.'); return false; }
+    if (fecha  === '') { alert('Debe ingresar la fecha de ocurrencia.'); return false; }
+    if (items  === '') { alert('Debe seleccionar al menos un ítem afectado.'); return false; }
     return true;
+}
+
+// Bandera de modo creación, leída desde PHP
+var MODO_CREACION = '<?php echo $camino; ?>' === 'crear_siniestro';
+
+// Aplica disabled al botón Registrar Siniestro según validez (solo en modo creación)
+function actualizarBotonRegistrar() {
+    if (!MODO_CREACION) return;
+    var $btn = $('#boton_registrar');
+    if (siniestroEsValido()) {
+        $btn.prop('disabled', false);
+    } else {
+        $btn.prop('disabled', true);
+    }
 }
 
 // ---- Envío del formulario ----
@@ -809,6 +846,14 @@ $(document).ready(function() {
     if (id_siniestro_inicial) {
         cargarPendientes(id_siniestro_inicial);
     }
+
+    // Modo creación: el botón "Registrar Siniestro" arranca disabled hasta que
+    // los obligatorios estén completos. Listeners en los inputs clave.
+    if (MODO_CREACION) {
+        $('#numero_poliza, #tipo_siniestro, #fecha_ocurrencia').on('change input', actualizarBotonRegistrar);
+        // El listener de #items_seleccionados ya está en cargarItemsPoliza al hookear .chk_item
+        actualizarBotonRegistrar();
+    }
 });
 
 // =========================================================================
@@ -904,6 +949,34 @@ function toggleCamposVehiculoBien() {
     $('#bien_campos_vehiculo').toggle(esVeh);
     $('#bien_campos_taller').toggle(esVeh);
     $('#bien_msg_no_taller').toggle(!esVeh);
+    // Dirección del bien: solo aplica para no-vehículo (incendio/inmueble)
+    $('#bien_campo_direccion_wrap').toggle(!esVeh);
+    // Pestaña Taller: visible solo si es vehículo Y el bien ya tiene taller persistido.
+    // Los inputs taller_nombre/telefono se llenan desde la cadena de pendientes,
+    // no desde este modal en el momento de creación.
+    var tieneTaller = !!($.trim($('#bien_taller_nombre').val()) || $.trim($('#bien_taller_telefono').val()));
+    setTallerTabVisible(esVeh && tieneTaller);
+}
+
+// Muestra/oculta la pestaña Taller del modal del bien.
+// Si la pestaña activa era Taller y se oculta, redirige a Descripción.
+function setTallerTabVisible(visible) {
+    var $li = $('#li_tab_taller');
+    $li.toggle(!!visible);
+    if (!visible) {
+        var $tallerLink = $li.find('a');
+        if ($tallerLink.hasClass('active')) {
+            $('#modalBien .nav-tabs a[href="#tab-bien-desc"]').tab('show');
+        }
+    }
+}
+
+// Muestra/oculta el campo "Ítem afectado de la póliza" según conteo de ítems.
+// Visible solo cuando la póliza tiene >1 ítem; si hay 1 (o ninguno cargado aún),
+// se oculta porque la sección "Ítems afectados" del form principal cubre la asociación.
+function setItemAfectadoVisible() {
+    var n = (typeof itemsCache !== 'undefined' && itemsCache) ? itemsCache.length : 0;
+    $('#bien_campo_item_afectado_wrap').toggle(n > 1);
 }
 
 // Sugerir categoría default según ramo de la póliza (la primera vez que se abre un bien propio)
@@ -983,6 +1056,11 @@ function nuevoBien(tipo) {
     $('#modalBien .nav-tabs a[href="#tab-bien-desc"]').tab('show');
     cargarChecklistBien(null);
 
+    // Bien recién creado: nunca tiene datos del taller. Se llenan desde la cadena
+    // de pendientes (modal "marcar Entregado" de liquidador_contacto en vehículo).
+    setTallerTabVisible(false);
+    setItemAfectadoVisible();
+
     $('#modalBienTitle').text('Nuevo bien ' + (tipo === 'propio' ? 'propio' : 'de tercero'));
     $('#modalBien').modal('show');
 }
@@ -1011,6 +1089,13 @@ function editarBien(memkey) {
     toggleCamposVehiculoBien();
     $('#modalBien .nav-tabs a[href="#tab-bien-desc"]').tab('show');
     cargarChecklistBien(b.id || null);
+
+    // Pestaña Taller visible solo si el bien es vehículo y ya tiene datos persistidos
+    var esVeh = (b.categoria === 'vehiculo');
+    var tieneTaller = !!(b.taller_nombre || b.taller_telefono);
+    setTallerTabVisible(esVeh && tieneTaller);
+    setItemAfectadoVisible();
+
     $('#modalBienTitle').text('Editar bien ' + (b.tipo === 'propio' ? 'propio' : 'de tercero'));
     $('#modalBien').modal('show');
 }
@@ -1453,7 +1538,7 @@ function enviarCorreoLiquidador() {
                 <input type="text" class="form-control" id="bien_direccion"
                   placeholder="Calle, número, comuna">
               </div>
-              <div class="col-md-6 form-group">
+              <div class="col-md-6 form-group" id="bien_campo_item_afectado_wrap">
                 <label>Ítem afectado de la póliza <small class="text-muted">(para vehículos o por ítem)</small></label>
                 <input type="text" class="form-control" id="bien_item_afectado"
                   placeholder="Ej: Ítem 2 — Camioneta Hilux PPU ABCD01">
