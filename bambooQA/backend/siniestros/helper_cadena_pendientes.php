@@ -67,9 +67,9 @@ if (!function_exists('crear_pendiente_auto')) {
 
 if (!function_exists('descripcion_tarea_compania')) {
     function descripcion_tarea_compania($ramo) {
-        return ramo_es_vehiculo($ramo)
-            ? 'Compañía debe entregar N° de siniestro, liquidador asignado y taller.'
-            : 'Compañía debe entregar N° de siniestro y liquidador asignado.';
+        // El taller en vehículos lo asigna el liquidador en `liquidador_contacto`,
+        // no la compañía (validado con Adriana 08-may).
+        return 'Compañía debe entregar N° de siniestro y liquidador asignado.';
     }
 }
 

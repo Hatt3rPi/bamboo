@@ -117,6 +117,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["accion"]) && $_POST["a
 }
 if (!isset($vehiculos_pre)) $vehiculos_pre = array();
 
+// Estado de tareas relevantes de la cadena (para render contextual del form en edición).
+// Si compania_entrega_numero está Pendiente, los campos N°/Estado/Liquidador no se muestran.
+$compania_entrega_pendiente = false;
+if ($camino == 'modifica_siniestro' && $id_siniestro !== '') {
+    require_once "/home/gestio10/public_html/backend/config.php";
+    db_set_charset($link, 'utf8');
+    db_select_db($link, DB_NAME);
+    $rs_t = db_query($link, "SELECT estado FROM siniestros_pendientes
+                             WHERE id_siniestro='" . $id_siniestro . "'
+                               AND codigo_tarea='compania_entrega_numero'
+                             ORDER BY fecha_creacion DESC LIMIT 1");
+    while ($row = db_fetch_object($rs_t)) {
+        if ($row->estado === 'Pendiente') { $compania_entrega_pendiente = true; }
+    }
+    db_close($link);
+}
+// "Bloqueado" = los datos de la compañía aún no llegaron, ya sea porque estamos en
+// creación, o estamos en edición pero la tarea sigue Pendiente.
+$bloqueo_compania = ($camino != 'modifica_siniestro') || $compania_entrega_pendiente;
+
 // Defensa: si el ramo no es vehicular, limpiar datos de vehículo/taller
 // arrastrados desde BD (previene data leakage en edición y guardado inadvertido).
 $ramo_upper_php = strtoupper($ramo);
@@ -191,16 +211,16 @@ if (!$es_ramo_vehiculo_php) {
     <!-- ==================== SECCIÓN 2: DATOS DEL SINIESTRO ==================== -->
     <hr>
     <h5 class="form-row">&nbsp;Datos del Siniestro</h5><br>
-    <?php $col_datos_siniestro = ($camino == 'modifica_siniestro') ? 'col-md-4' : 'col-md-6'; ?>
+    <?php $col_datos_siniestro = (!$bloqueo_compania) ? 'col-md-4' : 'col-md-6'; ?>
     <div class="form-row">
-      <?php if ($camino == 'modifica_siniestro'): ?>
+      <?php if (!$bloqueo_compania): ?>
       <div class="col-md-4 mb-3">
         <label for="numero_siniestro">N° Siniestro Compañía</label>
         <input type="text" class="form-control" id="numero_siniestro" name="numero_siniestro"
           value="<?php echo $numero_siniestro; ?>" placeholder="Número entregado por la compañía">
       </div>
       <?php else: ?>
-      <input type="hidden" id="numero_siniestro" name="numero_siniestro" value="">
+      <input type="hidden" id="numero_siniestro" name="numero_siniestro" value="<?php echo htmlspecialchars($numero_siniestro, ENT_QUOTES); ?>">
       <?php endif; ?>
       <div class="<?php echo $col_datos_siniestro; ?> mb-3">
         <label for="tipo_siniestro">Tipo de Siniestro <span style="color:darkred">*</span></label>
@@ -220,7 +240,7 @@ if (!$es_ramo_vehiculo_php) {
         <input type="date" class="form-control" id="fecha_ocurrencia" name="fecha_ocurrencia"
           value="<?php echo $fecha_ocurrencia; ?>">
       </div>
-      <?php if ($camino == 'modifica_siniestro'): ?>
+      <?php if (!$bloqueo_compania): ?>
       <div class="col-md-4 mb-3">
         <label for="estado">Estado</label>
         <select class="form-control" id="estado" name="estado">
@@ -234,7 +254,7 @@ if (!$es_ramo_vehiculo_php) {
         </select>
       </div>
       <?php else: ?>
-      <input type="hidden" id="estado" name="estado" value="Número pendiente">
+      <input type="hidden" id="estado" name="estado" value="<?php echo htmlspecialchars($estado, ENT_QUOTES); ?>">
       <?php endif; ?>
     </div>
     <div class="form-row">
@@ -297,7 +317,7 @@ if (!$es_ramo_vehiculo_php) {
     </div>
 
     <!-- ==================== SECCIÓN 5: LIQUIDADOR ==================== -->
-    <?php if ($camino == 'modifica_siniestro'): ?>
+    <?php if (!$bloqueo_compania): ?>
     <div id="grupo_liquidador">
       <hr>
       <h5 class="form-row">&nbsp;Liquidador <small class="text-muted etapa-hint" style="font-weight:normal"></small></h5><br>
@@ -328,10 +348,10 @@ if (!$es_ramo_vehiculo_php) {
       </div>
     </div>
     <?php else: ?>
-    <input type="hidden" id="liquidador_nombre" name="liquidador_nombre" value="">
-    <input type="hidden" id="liquidador_telefono" name="liquidador_telefono" value="">
-    <input type="hidden" id="liquidador_correo" name="liquidador_correo" value="">
-    <input type="hidden" id="numero_carpeta_liquidador" name="numero_carpeta_liquidador" value="">
+    <input type="hidden" id="liquidador_nombre" name="liquidador_nombre" value="<?php echo htmlspecialchars($liquidador_nombre, ENT_QUOTES); ?>">
+    <input type="hidden" id="liquidador_telefono" name="liquidador_telefono" value="<?php echo htmlspecialchars($liquidador_telefono, ENT_QUOTES); ?>">
+    <input type="hidden" id="liquidador_correo" name="liquidador_correo" value="<?php echo htmlspecialchars($liquidador_correo, ENT_QUOTES); ?>">
+    <input type="hidden" id="numero_carpeta_liquidador" name="numero_carpeta_liquidador" value="<?php echo htmlspecialchars($numero_carpeta_liquidador, ENT_QUOTES); ?>">
     <?php endif; ?>
 
     <!-- ==================== SECCIÓN 5a: CONTACTO COMPAÑÍA (NO VEHÍCULO) ==================== -->
@@ -402,7 +422,7 @@ if (!$es_ramo_vehiculo_php) {
         <?php echo ($camino == 'modifica_siniestro') ? '' : 'disabled'; ?>>
         <?php echo ($camino == 'modifica_siniestro') ? 'Guardar cambios' : 'Registrar Siniestro'; ?>
       </button>
-      <?php if ($camino == 'modifica_siniestro'): ?>
+      <?php if (!$bloqueo_compania): ?>
       &nbsp;<button type="button" class="btn btn-success"
         id="boton_registrar_salir" onclick="registraSiniestro(true)"
         title="Guarda y vuelve al listado anterior">
@@ -1285,6 +1305,9 @@ function renderPendientes() {
         var botonRecordatorio = (p.estado === 'Pendiente')
             ? '<button type="button" class="btn btn-sm btn-outline-primary mr-1" title="Enviar recordatorio amigable" onclick="enviarRecordatorio(' + p.id + ')">✉️</button>'
             : '';
+        var botonResolver = (p.estado === 'Pendiente')
+            ? '<button type="button" class="btn btn-sm btn-success mr-1" title="Marcar como Entregado" onclick="abrirModalResolver(' + p.id + ')">✅</button>'
+            : '';
         html += '<tr>' +
             '<td>' + badgeResp(p.responsable) + '</td>' +
             '<td>' + escHtml(p.descripcion) + '</td>' +
@@ -1293,6 +1316,7 @@ function renderPendientes() {
             '<td>' + (p.fecha_entrega || '—') + '</td>' +
             '<td><small>' + notasHtml + '</small></td>' +
             '<td style="white-space:nowrap">' +
+                botonResolver +
                 botonRecordatorio +
                 '<button type="button" class="btn btn-sm btn-outline-secondary mr-1" onclick="abrirModalPendiente(' + p.id + ')">✏️</button>' +
                 '<button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarPendiente(' + p.id + ')">🗑️</button>' +
@@ -1347,6 +1371,379 @@ $(document).on('change', '#pend_estado', function() {
         $('#pend_fecha_entrega').val(iso);
     }
 });
+
+// ============================================================
+// MODAL "Resolver pendiente" (marca Entregado y captura datos)
+// ============================================================
+
+function fechaHoyIso() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function bienesPropiosVehiculares() {
+    return (bienesMem || []).filter(function(b){
+        return b.tipo === 'propio' && b.categoria === 'vehiculo' && b.id;
+    });
+}
+
+function abrirModalResolver(id_pendiente) {
+    var p = pendientesMem.find(function(x){ return x.id == id_pendiente; });
+    if (!p) return;
+    $('#resolver_pend_id').val(p.id);
+    $('#resolver_codigo_tarea').val(p.codigo_tarea || '');
+    $('#resolver_descripcion').html('<strong>' + escHtml(p.descripcion) + '</strong>');
+    $('#resolver_notas').val(p.notas || '');
+    $('#resolver_body').html('<em>Cargando…</em>');
+    $('#modalResolverPendiente').modal('show');
+
+    var ramo = ($('#ramo').val() || '').toUpperCase();
+    var esVeh = ramo.indexOf('VEH') !== -1 || ramo.indexOf('AUTO') !== -1;
+
+    switch (p.codigo_tarea) {
+        case 'compania_entrega_numero':
+            renderResolver_companiaEntrega(p);
+            break;
+        case 'liquidador_contacto':
+            esVeh ? renderResolver_liquidadorContactoVeh(p) : renderResolver_liquidadorContactoNoVeh(p);
+            break;
+        case 'cliente_entrega':
+            renderResolver_clienteEntrega(p);
+            break;
+        case 'liquidador_accion':
+            esVeh ? renderResolver_liquidadorAccionVeh(p) : renderResolver_liquidadorAccionNoVeh(p);
+            break;
+        case 'cliente_ingreso_taller':
+            renderResolver_clienteIngresoTaller(p);
+            break;
+        case 'cliente_firma_finiquito':
+            renderResolver_clienteFirmaFiniquito(p);
+            break;
+        case 'taller_fecha_entrega':
+            renderResolver_tallerFechaEntrega(p);
+            break;
+        case 'liquidador_envio_compania':
+            renderResolver_liquidadorEnvioCompania(p, esVeh);
+            break;
+        case 'compania_pago':
+            renderResolver_companiaPago(p);
+            break;
+        default:
+            renderResolver_generico(p);
+    }
+}
+
+function renderResolver_companiaEntrega(p) {
+    $('#resolver_body').html('<em>Cargando liquidadores conocidos…</em>');
+    $.getJSON('/bambooQA/backend/siniestros/busqueda_liquidadores_compania.php',
+        { id_siniestro: p.id_siniestro }, function(resp) {
+        var liqs = (resp && resp.data) || [];
+        var compania = (resp && resp.compania) || '(sin compañía)';
+        var opts = '<option value="">— Nuevo liquidador —</option>';
+        liqs.forEach(function(l) {
+            opts += '<option value="' + l.id + '"' +
+                    ' data-nombre="'   + escAttr(l.nombre)   + '"' +
+                    ' data-telefono="' + escAttr(l.telefono) + '"' +
+                    ' data-correo="'   + escAttr(l.correo)   + '">' +
+                    escHtml(l.nombre) + (l.correo ? ' — ' + escHtml(l.correo) : '') +
+                    '</option>';
+        });
+        var html =
+          '<div class="form-group">' +
+            '<label>N° Siniestro Compañía <span class="text-danger">*</span></label>' +
+            '<input type="text" class="form-control" id="rp_numero_siniestro"' +
+            ' placeholder="Número entregado por la compañía">' +
+          '</div>' +
+          '<hr>' +
+          '<h6>Liquidador asignado <small class="text-muted">(' + escHtml(compania) + ')</small></h6>' +
+          '<div class="form-group">' +
+            '<label>Liquidador conocido</label>' +
+            '<select class="form-control" id="rp_liquidador_id" onchange="onResolverLiquidadorSelect()">' +
+              opts +
+            '</select>' +
+          '</div>' +
+          '<div class="form-row">' +
+            '<div class="col-md-4 form-group">' +
+              '<label>Nombre <span class="text-danger">*</span></label>' +
+              '<input type="text" class="form-control" id="rp_liquidador_nombre">' +
+            '</div>' +
+            '<div class="col-md-4 form-group">' +
+              '<label>Teléfono</label>' +
+              '<input type="text" class="form-control" id="rp_liquidador_telefono"' +
+              ' placeholder="56 9 XXXX XXXX">' +
+            '</div>' +
+            '<div class="col-md-4 form-group">' +
+              '<label>Correo</label>' +
+              '<input type="email" class="form-control" id="rp_liquidador_correo">' +
+            '</div>' +
+          '</div>' +
+          '<small class="text-muted">Mínimo: nombre + (teléfono o correo). Si seleccionás un liquidador conocido, sus datos se reusan; los nuevos se persisten para futuros siniestros de la misma compañía.</small>';
+        $('#resolver_body').html(html);
+    });
+}
+
+function onResolverLiquidadorSelect() {
+    var $sel = $('#rp_liquidador_id');
+    var id = $sel.val();
+    if (id === '') {
+        $('#rp_liquidador_nombre, #rp_liquidador_telefono, #rp_liquidador_correo')
+            .val('').prop('readonly', false);
+    } else {
+        var $opt = $sel.find('option:selected');
+        $('#rp_liquidador_nombre').val($opt.data('nombre')).prop('readonly', true);
+        $('#rp_liquidador_telefono').val($opt.data('telefono')).prop('readonly', true);
+        $('#rp_liquidador_correo').val($opt.data('correo')).prop('readonly', true);
+    }
+}
+
+function renderResolver_liquidadorContactoVeh(p) {
+    var vehs = bienesPropiosVehiculares();
+    if (!vehs.length) {
+        $('#resolver_body').html('<div class="alert alert-warning">No hay bienes propios vehiculares persistidos. Guardá el siniestro primero.</div>');
+        return;
+    }
+    var html = '<p class="text-muted">El liquidador designó el taller. Capturá los datos de contacto por bien:</p>';
+    vehs.forEach(function(b) {
+        html += '<div class="border rounded p-2 mb-2">' +
+                  '<strong>🚗 ' + escHtml(b.descripcion) + '</strong>' +
+                  '<div class="form-row mt-2">' +
+                    '<div class="col-md-6 form-group mb-1">' +
+                      '<label>Nombre del taller</label>' +
+                      '<input type="text" class="form-control rp-bien"' +
+                      ' data-bien="' + b.id + '" data-field="taller_nombre"' +
+                      ' value="' + escAttr(b.taller_nombre || '') + '">' +
+                    '</div>' +
+                    '<div class="col-md-6 form-group mb-1">' +
+                      '<label>Teléfono del taller</label>' +
+                      '<input type="text" class="form-control rp-bien"' +
+                      ' data-bien="' + b.id + '" data-field="taller_telefono"' +
+                      ' value="' + escAttr(b.taller_telefono || '') + '"' +
+                      ' placeholder="56 9 XXXX XXXX">' +
+                    '</div>' +
+                  '</div>' +
+                '</div>';
+    });
+    $('#resolver_body').html(html);
+}
+
+function renderResolver_liquidadorContactoNoVeh(p) {
+    $('#resolver_body').html(
+        '<p class="text-muted">Liquidador tomó contacto y pidió antecedentes al cliente.</p>' +
+        '<div class="form-group">' +
+            '<label>N° Carpeta Liquidador <small class="text-muted">(opcional)</small></label>' +
+            '<input type="text" class="form-control" id="rp_numero_carpeta_liquidador"' +
+            ' placeholder="Si el liquidador la entregó">' +
+        '</div>'
+    );
+}
+
+function renderResolver_clienteEntrega(p) {
+    $('#resolver_body').html(
+        '<p class="text-muted">El cliente entregó los antecedentes solicitados. ' +
+        'Podés agregar notas en el campo de abajo si querés dejar registro de qué entregó.</p>'
+    );
+}
+
+function renderResolver_liquidadorAccionVeh(p) {
+    var vehs = bienesPropiosVehiculares();
+    if (!vehs.length) {
+        $('#resolver_body').html('<div class="alert alert-warning">No hay bienes propios vehiculares.</div>');
+        return;
+    }
+    var html = '<p class="text-muted">El liquidador emitió la orden de reparación. Por bien:</p>';
+    vehs.forEach(function(b) {
+        html += '<div class="border rounded p-2 mb-2">' +
+                  '<strong>🚗 ' + escHtml(b.descripcion) + '</strong>' +
+                  '<div class="form-row mt-2">' +
+                    '<div class="col-md-5 form-group mb-1">' +
+                      '<label>Fecha orden de reparación</label>' +
+                      '<input type="date" class="form-control rp-bien"' +
+                      ' data-bien="' + b.id + '" data-field="liquidador_fecha_orden_reparacion"' +
+                      ' value="' + (b.liquidador_fecha_orden_reparacion || fechaHoyIso()) + '">' +
+                    '</div>' +
+                    '<div class="col-md-7 form-group mb-1 d-flex align-items-end">' +
+                      '<div class="form-check mb-2">' +
+                        '<input type="checkbox" class="form-check-input rp-bien"' +
+                        ' id="rp_imp_' + b.id + '"' +
+                        ' data-bien="' + b.id + '" data-field="importacion_repuestos" value="1"' +
+                        (b.importacion_repuestos ? ' checked' : '') + '>' +
+                        '<label class="form-check-label" for="rp_imp_' + b.id + '">Hay importación de repuestos</label>' +
+                      '</div>' +
+                    '</div>' +
+                  '</div>' +
+                  '<div class="form-group mb-0">' +
+                    '<label>Observación de importación <small class="text-muted">(opcional)</small></label>' +
+                    '<textarea class="form-control rp-bien"' +
+                    ' data-bien="' + b.id + '" data-field="importacion_repuestos_obs" rows="1">' +
+                    escHtml(b.importacion_repuestos_obs || '') + '</textarea>' +
+                  '</div>' +
+                '</div>';
+    });
+    $('#resolver_body').html(html);
+}
+
+function renderResolver_liquidadorAccionNoVeh(p) {
+    $('#resolver_body').html(
+        '<p class="text-muted">El liquidador generó el finiquito.</p>' +
+        '<div class="form-group">' +
+            '<label>Fecha de generación del finiquito</label>' +
+            '<input type="date" class="form-control" id="rp_liquidador_fecha_finiquito"' +
+            ' value="' + fechaHoyIso() + '">' +
+        '</div>'
+    );
+}
+
+function renderResolver_clienteIngresoTaller(p) {
+    var vehs = bienesPropiosVehiculares();
+    if (!vehs.length) {
+        $('#resolver_body').html('<div class="alert alert-warning">No hay bienes propios vehiculares.</div>');
+        return;
+    }
+    var html = '<p class="text-muted">Fecha en que el cliente ingresó el vehículo al taller:</p>';
+    vehs.forEach(function(b) {
+        html += '<div class="form-row align-items-end mb-2">' +
+                  '<div class="col-md-7"><strong>🚗 ' + escHtml(b.descripcion) + '</strong></div>' +
+                  '<div class="col-md-5">' +
+                    '<input type="date" class="form-control rp-bien"' +
+                    ' data-bien="' + b.id + '" data-field="cliente_fecha_ingreso_taller"' +
+                    ' value="' + (b.cliente_fecha_ingreso_taller || fechaHoyIso()) + '">' +
+                  '</div>' +
+                '</div>';
+    });
+    $('#resolver_body').html(html);
+}
+
+function renderResolver_clienteFirmaFiniquito(p) {
+    $('#resolver_body').html(
+        '<p class="text-muted">Cliente firmó el finiquito.</p>' +
+        '<div class="form-group">' +
+            '<label>Fecha firma finiquito</label>' +
+            '<input type="date" class="form-control" id="rp_cliente_fecha_firma_finiquito"' +
+            ' value="' + fechaHoyIso() + '">' +
+        '</div>'
+    );
+}
+
+function renderResolver_tallerFechaEntrega(p) {
+    var vehs = bienesPropiosVehiculares();
+    if (!vehs.length) {
+        $('#resolver_body').html('<div class="alert alert-warning">No hay bienes propios vehiculares.</div>');
+        return;
+    }
+    var html = '<p class="text-muted">Fecha que confirmó el taller para la entrega del vehículo:</p>';
+    vehs.forEach(function(b) {
+        html += '<div class="form-row align-items-end mb-2">' +
+                  '<div class="col-md-7"><strong>🚗 ' + escHtml(b.descripcion) + '</strong></div>' +
+                  '<div class="col-md-5">' +
+                    '<input type="date" class="form-control rp-bien"' +
+                    ' data-bien="' + b.id + '" data-field="taller_fecha_compromiso_entrega"' +
+                    ' value="' + (b.taller_fecha_compromiso_entrega || '') + '">' +
+                  '</div>' +
+                '</div>';
+    });
+    $('#resolver_body').html(html);
+}
+
+function renderResolver_liquidadorEnvioCompania(p, esVeh) {
+    var html = '<p class="text-muted">Liquidador confirmó envío del finiquito a la compañía.</p>' +
+        '<div class="form-group">' +
+            '<label>Fecha de envío</label>' +
+            '<input type="date" class="form-control" id="rp_liquidador_fecha_envio_compania"' +
+            ' value="' + fechaHoyIso() + '">' +
+        '</div>';
+    if (!esVeh) {
+        html +=
+        '<hr><h6>Contacto en la compañía <small class="text-muted">(para consultas de pago)</small></h6>' +
+        '<div class="form-row">' +
+            '<div class="col-md-6 form-group">' +
+                '<label>Nombre del contacto</label>' +
+                '<input type="text" class="form-control" id="rp_compania_contacto_nombre">' +
+            '</div>' +
+            '<div class="col-md-6 form-group">' +
+                '<label>Correo</label>' +
+                '<input type="email" class="form-control" id="rp_compania_contacto_mail">' +
+            '</div>' +
+        '</div>';
+    }
+    $('#resolver_body').html(html);
+}
+
+function renderResolver_companiaPago(p) {
+    $('#resolver_body').html(
+        '<p class="text-muted">La compañía confirmó el pago. Al guardar, el siniestro se cierra automáticamente.</p>' +
+        '<div class="form-group">' +
+            '<label>Fecha de pago / indemnización</label>' +
+            '<input type="date" class="form-control" id="rp_compania_fecha_pago"' +
+            ' value="' + fechaHoyIso() + '">' +
+        '</div>'
+    );
+}
+
+function renderResolver_generico(p) {
+    $('#resolver_body').html(
+        '<p class="text-muted">Esta tarea no requiere captura de datos adicionales. ' +
+        'Podés agregar una nota libre y marcar entregado.</p>'
+    );
+}
+
+function guardarResolverPendiente() {
+    var id = $('#resolver_pend_id').val();
+    var codigo = $('#resolver_codigo_tarea').val();
+    var p = pendientesMem.find(function(x){ return x.id == id; });
+    if (!p) return;
+
+    // Construir payload
+    var payload = {};
+    var payload_bienes = {};
+
+    $('#resolver_body').find('input, select, textarea').each(function() {
+        var $el = $(this);
+        var bien = $el.data('bien');
+        if (typeof bien !== 'undefined' && bien !== null && bien !== '') {
+            var f = $el.data('field');
+            if (!f) return;
+            var bk = String(bien);
+            payload_bienes[bk] = payload_bienes[bk] || {};
+            if ($el.attr('type') === 'checkbox') {
+                payload_bienes[bk][f] = $el.is(':checked') ? '1' : '';
+            } else {
+                payload_bienes[bk][f] = $el.val();
+            }
+        } else if (this.id && this.id.indexOf('rp_') === 0) {
+            payload[this.id.substring(3)] = $el.val();
+        }
+    });
+
+    var data = {
+        id:             p.id,
+        responsable:    p.responsable,
+        descripcion:    p.descripcion,
+        estado:         'Entregado',
+        fecha_entrega:  fechaHoyIso(),
+        notas:          $('#resolver_notas').val(),
+        payload:        payload,
+        payload_bienes: payload_bienes
+    };
+
+    $.post('/bambooQA/backend/siniestros/actualiza_pendiente.php', data, null, 'json')
+        .done(function(resp) {
+            if (resp && resp.ok) {
+                $('#modalResolverPendiente').modal('hide');
+                if (resp.cliente_completo && resp.liquidador && resp.liquidador.correo) {
+                    liquidadorContacto = resp.liquidador;
+                    $('#notif_liq_nombre').text(resp.liquidador.nombre || '(sin nombre)');
+                    $('#notif_liq_correo').text(resp.liquidador.correo);
+                    $('#modalNotificarLiquidador').modal('show');
+                }
+                // Recargar para reflejar cambios en form (numero_siniestro, liquidador, etc.)
+                location.reload();
+            } else {
+                alert('No se pudo: ' + (resp && resp.mensaje ? resp.mensaje : 'error'));
+            }
+        }).fail(function() {
+            alert('Error de red al guardar.');
+        });
+}
 
 function guardarPendiente() {
     var id_siniestro = $('#id_siniestro').val();
@@ -1726,6 +2123,34 @@ function enviarCorreoLiquidador() {
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Más tarde</button>
         <button type="button" class="btn btn-primary" onclick="enviarCorreoLiquidador()">✉️ Abrir correo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================================== -->
+<!-- MODAL RESOLVER PENDIENTE (marcar Entregado con captura)        -->
+<!-- =============================================================== -->
+<div class="modal fade" id="modalResolverPendiente" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">✅ Marcar como Entregado</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="resolver_pend_id">
+        <input type="hidden" id="resolver_codigo_tarea">
+        <div id="resolver_descripcion" class="mb-3"></div>
+        <div id="resolver_body"></div>
+        <div class="form-group mt-3">
+          <label>Notas <small class="text-muted">(opcional)</small></label>
+          <textarea class="form-control" id="resolver_notas" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-success" onclick="guardarResolverPendiente()">Marcar Entregado</button>
       </div>
     </div>
   </div>
