@@ -1439,6 +1439,9 @@ function abrirModalResolver(id_pendiente) {
         case 'liquidador_accion':
             esVeh ? renderResolver_liquidadorAccionVeh(p) : renderResolver_liquidadorAccionNoVeh(p);
             break;
+        case 'taller_disponibilidad_repuestos':
+            renderResolver_tallerDisponibilidad(p);
+            break;
         case 'cliente_ingreso_taller':
             renderResolver_clienteIngresoTaller(p);
             break;
@@ -1496,8 +1499,8 @@ function renderResolver_companiaEntrega(p) {
         }
 
         var helperText = hayConocidos
-            ? 'Mínimo: nombre + (teléfono o correo). Si selecciona un liquidador conocido, sus datos se reusan; los nuevos se persisten para futuros siniestros de la misma compañía.'
-            : 'Mínimo: nombre + (teléfono o correo). Se persiste para futuros siniestros de la misma compañía.';
+            ? 'Datos del liquidador (opcionales). Si selecciona un conocido sus datos se reusan; los nuevos se persisten para futuros siniestros de la misma compañía.'
+            : 'Datos del liquidador (opcionales). Se persisten para futuros siniestros de la misma compañía.';
 
         // Bloque taller (solo en vehículo, por cada bien vehicular)
         var bloqueTaller = '';
@@ -1546,7 +1549,7 @@ function renderResolver_companiaEntrega(p) {
           dropdownHtml +
           '<div class="form-row">' +
             '<div class="col-md-4 form-group">' +
-              '<label>Nombre <span class="text-danger">*</span></label>' +
+              '<label>Nombre</label>' +
               '<input type="text" class="form-control" id="rp_liquidador_nombre">' +
             '</div>' +
             '<div class="col-md-4 form-group">' +
@@ -1653,6 +1656,14 @@ function renderResolver_liquidadorAccionNoVeh(p) {
             '<input type="date" class="form-control" id="rp_liquidador_fecha_finiquito"' +
             ' value="' + fechaHoyIso() + '">' +
         '</div>'
+    );
+}
+
+function renderResolver_tallerDisponibilidad(p) {
+    $('#resolver_body').html(
+        '<p class="text-muted">El taller confirmó que los repuestos están disponibles ' +
+        'y se puede coordinar el reingreso del vehículo. Al marcar entregado se enviará ' +
+        'un correo al cliente avisándole.</p>'
     );
 }
 

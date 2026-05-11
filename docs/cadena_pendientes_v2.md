@@ -54,9 +54,14 @@ Fuente de verdad: `bamboo/backend/siniestros/helper_cadena_pendientes.php` y
 │  [3] CLIENTE · 4 días                codigo: cliente_entrega│
 │  ─────────────────────────────────────────────────────────  │
 │  "Cliente lleva el vehículo al taller designado."           │
+│  (evaluación inicial; el cliente vuelve a casa)             │
 │                                                             │
 │  📥 Al cerrar pide:                                         │
 │    • Notas (opcional)                                       │
+│                                                             │
+│  ✉️  Correo automático al liquidador:                       │
+│     "El cliente llevó el vehículo al taller, proceda con    │
+│     la orden de reparación."                                │
 └─────────────────────────────────────────────────────────────┘
                           │
                           ▼
@@ -76,10 +81,25 @@ Fuente de verdad: `bamboo/backend/siniestros/helper_cadena_pendientes.php` y
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  [5] CLIENTE · 2 días        codigo: cliente_ingreso_taller │
+│  [5] TALLER · 4 días                                        │
+│      codigo: taller_disponibilidad_repuestos  (NUEVA)       │
+│  ─────────────────────────────────────────────────────────  │
+│  "Taller debe confirmar disponibilidad de repuestos."       │
+│  Bucle de seguimiento (puede tardar meses si hay importación)│
+│                                                             │
+│  📥 Al cerrar pide: nada (solo confirmación)                │
+│                                                             │
+│  ✉️  Correo automático al cliente:                          │
+│     "El taller confirmó que hay repuestos disponibles.      │
+│     Coordine el reingreso del vehículo."                    │
+└─────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│  [6] CLIENTE · 2 días        codigo: cliente_ingreso_taller │
 │  ─────────────────────────────────────────────────────────  │
 │  "Cliente debe avisar el día de ingreso del vehículo al     │
-│   taller."                                                  │
+│   taller." (reingreso para reparación efectiva)             │
 │                                                             │
 │  📥 Al cerrar pide (por cada bien vehicular):               │
 │    • Fecha ingreso al taller                                │
@@ -90,7 +110,7 @@ Fuente de verdad: `bamboo/backend/siniestros/helper_cadena_pendientes.php` y
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  [6] TALLER · 5 días hábiles  codigo: taller_fecha_entrega  │
+│  [7] TALLER · 5 días hábiles  codigo: taller_fecha_entrega  │
 │  ─────────────────────────────────────────────────────────  │
 │  "Taller debe confirmar la fecha de entrega del vehículo."  │
 │                                                             │
@@ -103,7 +123,7 @@ Fuente de verdad: `bamboo/backend/siniestros/helper_cadena_pendientes.php` y
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  [7] LIQUIDADOR · 24h    codigo: liquidador_envio_compania  │
+│  [8] LIQUIDADOR · 24h    codigo: liquidador_envio_compania  │
 │  ─────────────────────────────────────────────────────────  │
 │  "Liquidador debe confirmar el envío del finiquito a la     │
 │   compañía."                                                │
@@ -112,20 +132,9 @@ Fuente de verdad: `bamboo/backend/siniestros/helper_cadena_pendientes.php` y
 │    • Fecha de envío                                         │
 │                                                             │
 │  💾 Persiste en: siniestros.liquidador_fecha_envio_compania │
-└─────────────────────────────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────────┐
-│  [8] COMPAÑÍA · 3 días              codigo: compania_pago   │
-│  ─────────────────────────────────────────────────────────  │
-│  "Compañía debe confirmar fecha de indemnización /          │
-│   transferencia al cliente."                                │
-│                                                             │
-│  📥 Al cerrar pide:                                         │
-│    • Fecha de pago                                          │
-│                                                             │
-│  💾 Persiste en: siniestros.compania_fecha_pago             │
 │  ⚡ Efecto: estado siniestro → 🔒 Cerrado (automático)      │
+│  (en vehículo NO existe compania_pago: el cliente no recibe │
+│   pago, recibe el vehículo reparado)                        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -237,12 +246,14 @@ Fuente de verdad: `bamboo/backend/siniestros/helper_cadena_pendientes.php` y
 
 | # | Punto | Vehículo | No vehículo |
 |---|---|---|---|
-| 1 | Captura tras `compania_entrega_numero` | N° + liquidador + **taller por bien** | N° + liquidador |
-| 3 | Descripción `cliente_entrega` | "Lleva el vehículo al taller" | "Entrega antecedentes" |
+| 1 | Captura tras `compania_entrega_numero` | N° + liquidador + **taller por bien** (todos opcionales salvo N°) | N° + liquidador (opcionales salvo N°) |
+| 3 | Descripción `cliente_entrega` | "Lleva el vehículo al taller" + ✉️ correo al liquidador | "Entrega antecedentes" |
 | 4 | `liquidador_accion` | "Emite orden de reparación" + fecha + flag importación | "Genera finiquito" + fecha |
-| 5 | Tarea siguiente | `cliente_ingreso_taller` | `cliente_firma_finiquito` |
-| 6 | Tarea adicional | `taller_fecha_entrega` (no existe en no-veh) | — |
-| 6/7 | Contacto compañía | No se pide | Se pide en `liquidador_envio_compania` |
+| 5 | Tarea adicional veh | **`taller_disponibilidad_repuestos`** + ✉️ correo al cliente | — |
+| 6 | Tarea siguiente | `cliente_ingreso_taller` (reingreso) | `cliente_firma_finiquito` |
+| 7 | Tarea adicional | `taller_fecha_entrega` | — |
+| 7/8 | Contacto compañía | No se pide | Se pide en `liquidador_envio_compania` |
+| Final | Cierre | `liquidador_envio_compania` → cierra | `compania_pago` → cierra |
 | Total | Pasos | 8 | 7 |
 
 ---

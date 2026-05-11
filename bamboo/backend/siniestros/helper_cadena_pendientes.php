@@ -103,6 +103,12 @@ if (!function_exists('descripcion_tarea_cliente_ingreso_taller')) {
     }
 }
 
+if (!function_exists('descripcion_tarea_taller_disponibilidad')) {
+    function descripcion_tarea_taller_disponibilidad() {
+        return 'Taller debe confirmar disponibilidad de repuestos.';
+    }
+}
+
 if (!function_exists('descripcion_tarea_taller_fecha')) {
     function descripcion_tarea_taller_fecha() {
         return 'Taller debe confirmar la fecha de entrega del vehículo.';
@@ -218,9 +224,12 @@ if (!function_exists('promover_cadena_al_entregar')) {
 
             case 'liquidador_accion':
                 if ($es_veh) {
+                    // Antes de que el cliente reingrese al taller, el taller (o el
+                    // liquidador) debe confirmar disponibilidad de repuestos. Bucle de
+                    // seguimiento cada 4 días hasta confirmar.
                     crear_pendiente_auto(
-                        $link, $id_siniestro, 'cliente_ingreso_taller', 'Cliente',
-                        descripcion_tarea_cliente_ingreso_taller(), 2, $usuario
+                        $link, $id_siniestro, 'taller_disponibilidad_repuestos', 'Taller',
+                        descripcion_tarea_taller_disponibilidad(), 4, $usuario
                     );
                 } else {
                     crear_pendiente_auto(
@@ -228,6 +237,13 @@ if (!function_exists('promover_cadena_al_entregar')) {
                         descripcion_tarea_cliente_firma(), 4, $usuario
                     );
                 }
+                break;
+
+            case 'taller_disponibilidad_repuestos':
+                crear_pendiente_auto(
+                    $link, $id_siniestro, 'cliente_ingreso_taller', 'Cliente',
+                    descripcion_tarea_cliente_ingreso_taller(), 2, $usuario
+                );
                 break;
 
             case 'cliente_ingreso_taller':
@@ -246,10 +262,16 @@ if (!function_exists('promover_cadena_al_entregar')) {
                 break;
 
             case 'liquidador_envio_compania':
-                crear_pendiente_auto(
-                    $link, $id_siniestro, 'compania_pago', 'Compañía',
-                    descripcion_tarea_compania_pago(), 3, $usuario
-                );
+                if ($es_veh) {
+                    // Vehículo: no hay pago al cliente (recibe el vehículo reparado).
+                    // El siniestro se cierra acá directamente.
+                    cerrar_siniestro_por_pago($link, $id_siniestro, $usuario);
+                } else {
+                    crear_pendiente_auto(
+                        $link, $id_siniestro, 'compania_pago', 'Compañía',
+                        descripcion_tarea_compania_pago(), 3, $usuario
+                    );
+                }
                 break;
 
             case 'compania_pago':

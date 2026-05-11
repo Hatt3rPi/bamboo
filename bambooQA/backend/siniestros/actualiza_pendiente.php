@@ -2,6 +2,8 @@
 if (!isset($_SESSION)) { session_start(); }
 require_once "/home/gestio10/public_html/backend/config.php";
 require_once __DIR__ . "/helper_cadena_pendientes.php";
+require_once __DIR__ . "/helper_brevo.php";
+require_once __DIR__ . "/../email/render_template.php";
 
 function estandariza_info($d) { return htmlspecialchars(stripslashes(trim($d))); }
 function sqlesc($v) { return str_replace("'", "''", $v); }
@@ -14,6 +16,126 @@ function sql_date_or_null($v) {
 function sql_text_or_null($v) {
     $v = (string)$v;
     return ($v === '') ? "NULL" : "'" . sqlesc($v) . "'";
+}
+
+/**
+ * Dispara un correo automático según el codigo_tarea que acaba de cerrarse.
+ * - cliente_entrega (vehículo) → liquidador (aviso "cliente llevó vehículo").
+ * - taller_disponibilidad_repuestos → cliente (aviso "hay repuestos disponibles").
+ * Registra el envío en siniestros_notificaciones_enviadas.
+ */
+function disparar_correo_evento_tarea($link, $id_siniestro, $codigo_tarea, $ramo, $usuario) {
+    $es_veh = ramo_es_vehiculo($ramo);
+    $plantilla = ''; $destinatario_correo = ''; $destinatario_nombre = '';
+
+    // Cargar datos comunes del siniestro
+    $datos = array(
+        'numero_siniestro'    => '',
+        'nombre_asegurado'    => '',
+        'correo_asegurado'    => '',
+        'liquidador_nombre'   => '',
+        'liquidador_correo'   => '',
+        'taller_nombre'       => '',
+        'taller_telefono'     => '',
+        'taller_correo'       => '',
+        'vehiculo_descripcion'=> '',
+        'corredor_nombre'     => 'Adriana Sandoval'
+    );
+    $rs = db_query($link, "SELECT COALESCE(s.numero_siniestro,'')   AS numero_siniestro,
+                                  COALESCE(s.nombre_asegurado,'')   AS nombre_asegurado,
+                                  COALESCE(s.correo_asegurado,'')   AS correo_asegurado,
+                                  COALESCE(s.liquidador_nombre,'')  AS liquidador_nombre,
+                                  COALESCE(s.liquidador_correo,'')  AS liquidador_correo
+                           FROM siniestros s WHERE s.id='$id_siniestro'");
+    while ($r = db_fetch_object($rs)) {
+        $datos['numero_siniestro']   = $r->numero_siniestro;
+        $datos['nombre_asegurado']   = $r->nombre_asegurado;
+        $datos['correo_asegurado']   = $r->correo_asegurado;
+        $datos['liquidador_nombre']  = $r->liquidador_nombre;
+        $datos['liquidador_correo']  = $r->liquidador_correo;
+    }
+    // Primer bien propio vehicular (para sacar taller + descripción del vehículo)
+    $rs = db_query($link, "SELECT COALESCE(taller_nombre,'')   AS taller_nombre,
+                                  COALESCE(taller_telefono,'') AS taller_telefono,
+                                  COALESCE(taller_correo,'')   AS taller_correo,
+                                  COALESCE(descripcion,'')     AS descripcion,
+                                  COALESCE(marca,'')           AS marca,
+                                  COALESCE(modelo,'')          AS modelo,
+                                  COALESCE(anio_vehiculo::text,'') AS anio,
+                                  COALESCE(patente,'')         AS patente
+                           FROM siniestros_bienes_afectados
+                           WHERE id_siniestro='$id_siniestro' AND tipo='propio' AND categoria='vehiculo'
+                           ORDER BY id LIMIT 1");
+    while ($r = db_fetch_object($rs)) {
+        $datos['taller_nombre']   = $r->taller_nombre;
+        $datos['taller_telefono'] = $r->taller_telefono;
+        $datos['taller_correo']   = $r->taller_correo;
+        $partes = array_filter(array($r->marca, $r->modelo, $r->anio ? '(' . $r->anio . ')' : ''));
+        $desc = trim(implode(' ', $partes));
+        if ($desc === '') $desc = $r->descripcion;
+        if ($r->patente !== '') $desc .= ' — PPU ' . $r->patente;
+        $datos['vehiculo_descripcion'] = $desc;
+    }
+
+    // Decidir plantilla y destinatario
+    if ($codigo_tarea === 'cliente_entrega' && $es_veh) {
+        $plantilla = 'siniestro_cliente_llevo_vehiculo';
+        $destinatario_correo = $datos['liquidador_correo'];
+        $destinatario_nombre = $datos['liquidador_nombre'] ?: 'Liquidador';
+    } elseif ($codigo_tarea === 'taller_disponibilidad_repuestos') {
+        $plantilla = 'siniestro_taller_disponibilidad_repuestos';
+        $destinatario_correo = $datos['correo_asegurado'];
+        $destinatario_nombre = $datos['nombre_asegurado'] ?: 'Cliente';
+    } else {
+        return; // No hay correo automático para esta tarea
+    }
+
+    if ($destinatario_correo === '') {
+        // No tenemos destinatario, registrar como omitido y salir
+        $log_tipo = sqlesc($plantilla);
+        $log_usr  = sqlesc($usuario);
+        db_query($link, "INSERT INTO siniestros_notificaciones_enviadas
+                            (id_siniestro, destinatario_email, destinatario_nombre,
+                             asunto, cuerpo, proveedor, estado, error_detalle,
+                             tipo, usuario, timestamp)
+                         VALUES
+                            ('$id_siniestro', '', '', '', '', 'omitido', 'omitido',
+                             'Sin correo destinatario', '$log_tipo', '$log_usr', NOW())");
+        return;
+    }
+
+    $render = render_email_template($link, $plantilla, $datos);
+    if ($render === null) return;
+
+    $envio = enviar_correo_brevo($destinatario_correo, $destinatario_nombre,
+                                 $render['asunto'], $render['texto']);
+    $log_to_email  = sqlesc($destinatario_correo);
+    $log_to_nombre = sqlesc($destinatario_nombre);
+    $log_asunto    = sqlesc($render['asunto']);
+    $log_cuerpo    = sqlesc($render['texto']);
+    $log_tipo      = sqlesc($plantilla);
+    $log_usr       = sqlesc($usuario);
+    if ($envio['ok']) {
+        $log_mid = sqlesc($envio['message_id'] ?? '');
+        db_query($link, "INSERT INTO siniestros_notificaciones_enviadas
+                            (id_siniestro, destinatario_email, destinatario_nombre,
+                             asunto, cuerpo, proveedor, proveedor_message_id,
+                             estado, tipo, usuario, timestamp)
+                         VALUES
+                            ('$id_siniestro', '$log_to_email', '$log_to_nombre',
+                             '$log_asunto', '$log_cuerpo', 'brevo', '$log_mid',
+                             'enviado', '$log_tipo', '$log_usr', NOW())");
+    } else {
+        $log_err = sqlesc($envio['mensaje'] ?? 'error');
+        db_query($link, "INSERT INTO siniestros_notificaciones_enviadas
+                            (id_siniestro, destinatario_email, destinatario_nombre,
+                             asunto, cuerpo, proveedor, estado, error_detalle,
+                             tipo, usuario, timestamp)
+                         VALUES
+                            ('$id_siniestro', '$log_to_email', '$log_to_nombre',
+                             '$log_asunto', '$log_cuerpo', 'brevo', 'error',
+                             '$log_err', '$log_tipo', '$log_usr', NOW())");
+    }
 }
 
 header('Content-Type: application/json; charset=utf-8');
@@ -97,15 +219,14 @@ else {
                         }
                     }
 
-                    // Validación mínima
+                    // Validación mínima — solo N° siniestro obligatorio.
+                    // El resto (liquidador, taller) puede llegar incompleto: la compañía
+                    // a veces solo manda "puntetú" o no tiene los datos en el momento.
                     if ($numero_siniestro === '') { $mensaje = 'Debe ingresar el N° de siniestro.'; break; }
-                    if ($liq_nombre === '')      { $mensaje = 'Debe seleccionar o ingresar un liquidador.'; break; }
-                    if ($liq_telefono === '' && $liq_correo === '') {
-                        $mensaje = 'El liquidador debe tener al menos teléfono o correo.'; break;
-                    }
 
-                    // Si es nuevo (sin id), persistirlo en liquidadores (dedupe por compania+nombre)
-                    if ($liq_id === '' && $compania_sin !== '') {
+                    // Si vino nombre de liquidador nuevo (sin id), persistirlo en liquidadores
+                    // (dedupe por compania+nombre). Solo si tiene al menos nombre + algo más.
+                    if ($liq_id === '' && $liq_nombre !== '' && $compania_sin !== '') {
                         $c  = sqlesc($compania_sin);
                         $ln = sqlesc($liq_nombre);
                         $lt = sql_text_or_null($liq_telefono);
@@ -308,6 +429,8 @@ else {
             } else {
                 promover_cadena_al_entregar($link, $id_siniestro, $codigo_tarea, $ramo_sin, $usuario);
             }
+            // Correos automáticos asociados al cierre de la tarea (no bloquean si fallan).
+            @disparar_correo_evento_tarea($link, $id_siniestro, $codigo_tarea, $ramo_sin, $usuario);
         }
 
         // ¿Se acaba de cerrar el último pendiente del Cliente?
