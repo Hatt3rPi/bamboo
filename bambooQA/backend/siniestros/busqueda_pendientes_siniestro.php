@@ -20,7 +20,7 @@ if ($id_siniestro !== '') {
                             WHERE p.id_siniestro = '$id_siniestro'
                             ORDER BY
                                 CASE p.estado WHEN 'Pendiente' THEN 0 WHEN 'Entregado' THEN 1 ELSE 2 END,
-                                CASE p.responsable WHEN 'Cliente' THEN 0 WHEN 'Liquidador' THEN 1 ELSE 2 END,
+                                p.fecha_entrega DESC NULLS LAST,
                                 p.fecha_creacion DESC");
     while ($row = db_fetch_object($res)) {
         $data[] = array(

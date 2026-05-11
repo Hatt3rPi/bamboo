@@ -1409,7 +1409,9 @@ function fechaHoyIso() {
 function fmtFechaHora(s) {
     if (!s) return '—';
     var raw = String(s);
-    var iso = raw.replace(' ', 'T');
+    // Postgres timestamptz se serializa como '2026-05-11 03:48:19.284377+00'.
+    // JS Date requiere offset con minutos ('+00:00'), así que normalizamos.
+    var iso = raw.replace(' ', 'T').replace(/([+-]\d{2})$/, '$1:00');
     var d = new Date(iso);
     if (isNaN(d.getTime())) return raw;
     var hasTime = raw.indexOf(':') !== -1;
