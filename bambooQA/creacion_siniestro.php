@@ -1787,13 +1787,16 @@ function guardarResolverPendiente() {
             if (resp && resp.ok) {
                 $('#modalResolverPendiente').modal('hide');
                 if (resp.cliente_completo && resp.liquidador && resp.liquidador.correo) {
+                    // Mostrar el modal "Notificar liquidador". La recarga del form se
+                    // hace al cerrar ese modal (listener hidden.bs.modal más abajo).
                     liquidadorContacto = resp.liquidador;
                     $('#notif_liq_nombre').text(resp.liquidador.nombre || '(sin nombre)');
                     $('#notif_liq_correo').text(resp.liquidador.correo);
                     $('#modalNotificarLiquidador').modal('show');
+                } else {
+                    // Recargar para reflejar cambios en form (numero_siniestro, liquidador, etc.)
+                    location.reload();
                 }
-                // Recargar para reflejar cambios en form (numero_siniestro, liquidador, etc.)
-                location.reload();
             } else {
                 alert('No se pudo: ' + (resp && resp.mensaje ? resp.mensaje : 'error'));
             }
@@ -1801,6 +1804,12 @@ function guardarResolverPendiente() {
             alert('Error de red al guardar.');
         });
 }
+
+// Cuando el modal de "Notificar liquidador" se cierre (por cancelar o tras
+// enviar el correo), recargar para reflejar los cambios en el form.
+$(document).on('hidden.bs.modal', '#modalNotificarLiquidador', function() {
+    location.reload();
+});
 
 function guardarPendiente() {
     var id_siniestro = $('#id_siniestro').val();
