@@ -296,7 +296,7 @@ switch ($accion) {
             }
 
             // Pendiente inicial "Creación siniestro" como registro del autor (auto-Entregado)
-            $u_sql = $sqlesc($usuario);
+            $u_sql = str_replace("'", "''", (string)$usuario);
             db_query($link, "INSERT INTO siniestros_pendientes
                                 (id_siniestro, responsable, descripcion, estado,
                                  fecha_entrega, dias_alarma, auto_generada,
