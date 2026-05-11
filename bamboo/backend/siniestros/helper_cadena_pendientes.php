@@ -76,7 +76,7 @@ if (!function_exists('descripcion_tarea_compania')) {
 if (!function_exists('descripcion_tarea_liquidador')) {
     function descripcion_tarea_liquidador($ramo) {
         return ramo_es_vehiculo($ramo)
-            ? 'Liquidador toma contacto con el cliente.'
+            ? 'Liquidador toma contacto con el cliente y le entrega los datos del taller designado.'
             : 'Liquidador pide antecedentes al cliente.';
     }
 }
