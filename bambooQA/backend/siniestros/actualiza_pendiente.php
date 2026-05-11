@@ -133,17 +133,20 @@ else {
 
                 case 'liquidador_contacto':
                     if (ramo_es_vehiculo($ramo_sin)) {
-                        // Por cada bien propio vehicular: taller_nombre, taller_telefono
+                        // Por cada bien propio vehicular: taller_nombre, taller_telefono, taller_correo
                         foreach ($payload_bienes as $id_bien => $datos) {
                             $id_bien = preg_replace('/[^0-9]/','',$id_bien);
                             if ($id_bien === '') continue;
-                            $tn = isset($datos['taller_nombre']) ? trim($datos['taller_nombre']) : '';
+                            $tn = isset($datos['taller_nombre'])   ? trim($datos['taller_nombre'])   : '';
                             $tt = isset($datos['taller_telefono']) ? trim($datos['taller_telefono']) : '';
+                            $tc = isset($datos['taller_correo'])   ? trim($datos['taller_correo'])   : '';
                             $tn_sql = sql_text_or_null($tn);
                             $tt_sql = sql_text_or_null($tt);
+                            $tc_sql = sql_text_or_null($tc);
                             db_query($link, "UPDATE siniestros_bienes_afectados SET
                                                 taller_nombre   = COALESCE($tn_sql, taller_nombre),
-                                                taller_telefono = COALESCE($tt_sql, taller_telefono)
+                                                taller_telefono = COALESCE($tt_sql, taller_telefono),
+                                                taller_correo   = COALESCE($tc_sql, taller_correo)
                                              WHERE id='$id_bien' AND id_siniestro='$id_siniestro'");
                         }
                     } else {
@@ -249,16 +252,16 @@ else {
         $r  = sqlesc($responsable);
         $e  = sqlesc($estado);
         // fecha_entrega ahora es timestamp. Reglas:
-        // - Si el modal Resolver lo marca Entregado AHORA: usar NOW() (timestamp con hora actual).
-        // - Si el modal de edición manda una fecha YYYY-MM-DD distinta de hoy: parsea con hora 00:00.
-        // - Si viene vacío: NULL.
-        $hoy = date('Y-m-d');
-        if ($esta_entregando && ($fecha_entrega === '' || $fecha_entrega === $hoy)) {
+        // - Si está pasando a Entregado y la fecha viene SIN hora (input date) o vacía:
+        //   usar NOW() — robusto frente a desfase de zona horaria entre navegador y server.
+        // - Si viene una fecha distinta a la actual (edición tradicional): parsear como timestamp.
+        // - Si el pendiente ya estaba Entregado y la fecha (YYYY-MM-DD) no cambió, preservar
+        //   la hora original para no degradar a 00:00 al editar otros campos.
+        $tiene_hora = (strpos($fecha_entrega, ':') !== false);
+        if ($esta_entregando && ($fecha_entrega === '' || !$tiene_hora)) {
             $fe = "NOW()";
         } elseif ($fecha_entrega !== '') {
-            // Si el pendiente ya estaba Entregado y la fecha (YYYY-MM-DD) no cambió,
-            // preservar la hora original para no degradar a 00:00 al editar otros campos.
-            if ($est_anterior === 'Entregado') {
+            if ($est_anterior === 'Entregado' && !$tiene_hora) {
                 $fe = "CASE
                           WHEN to_char(fecha_entrega, 'YYYY-MM-DD') = '" . sqlesc($fecha_entrega) . "'
                           THEN fecha_entrega

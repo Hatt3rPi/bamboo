@@ -108,11 +108,12 @@ function sincroniza_bienes($link, $id_siniestro, $bienes_array, $usuario, $liqui
         $marca          = ($categoria === 'vehiculo') ? ($b['marca']         ?? '') : '';
         $modelo         = ($categoria === 'vehiculo') ? ($b['modelo']        ?? '') : '';
         $anio           = ($categoria === 'vehiculo') ? (string)($b['anio_vehiculo'] ?? '') : '';
-        $taller_nombre  = ($categoria === 'vehiculo') ? ($b['taller_nombre']   ?? '') : '';
+        $taller_nombre   = ($categoria === 'vehiculo') ? ($b['taller_nombre']   ?? '') : '';
         $taller_telefono = ($categoria === 'vehiculo') ? ($b['taller_telefono'] ?? '') : '';
+        $taller_correo   = ($categoria === 'vehiculo') ? ($b['taller_correo']   ?? '') : '';
         // Defensa de etapas: sin liquidador asignado no se aceptan datos de taller.
         if (!$liquidador_asignado) {
-            $taller_nombre = $taller_telefono = '';
+            $taller_nombre = $taller_telefono = $taller_correo = '';
         }
 
         $d  = $sqlesc($descripcion);
@@ -124,6 +125,7 @@ function sincroniza_bienes($link, $id_siniestro, $bienes_array, $usuario, $liqui
         $mo = $sqlesc($modelo);
         $tn = $sqlesc($taller_nombre);
         $tt = $sqlesc($taller_telefono);
+        $tc = $sqlesc($taller_correo);
         $fa = ($fecha_alarma !== '') ? "NULLIF('" . $sqlesc($fecha_alarma) . "','')::date" : "NULL";
         $av = ctype_digit($anio) ? "'$anio'::integer" : "NULL";
 
@@ -148,6 +150,7 @@ function sincroniza_bienes($link, $id_siniestro, $bienes_array, $usuario, $liqui
                                 anio_vehiculo = $av,
                                 taller_nombre = '$tn',
                                 taller_telefono = '$tt',
+                                taller_correo = '$tc',
                                 updated_at = NOW()
                              WHERE id = '$bien_id'");
 
@@ -161,10 +164,10 @@ function sincroniza_bienes($link, $id_siniestro, $bienes_array, $usuario, $liqui
             db_query($link, "INSERT INTO siniestros_bienes_afectados
                                 (id_siniestro, tipo, categoria, descripcion, direccion, item_afectado,
                                  estado, observaciones, fecha_alarma,
-                                 patente, marca, modelo, anio_vehiculo, taller_nombre, taller_telefono)
+                                 patente, marca, modelo, anio_vehiculo, taller_nombre, taller_telefono, taller_correo)
                              VALUES ('$id_siniestro', '$tipo', '$categoria', '$d', '$dir', '$ia',
                                      '$estado', '$o', $fa,
-                                     '$p', '$ma', '$mo', $av, '$tn', '$tt')");
+                                     '$p', '$ma', '$mo', $av, '$tn', '$tt', '$tc')");
             $r = db_query($link, "SELECT currval('siniestros_bienes_afectados_id_seq') AS id");
             $id_nuevo = null;
             while ($fila = db_fetch_object($r)) { $id_nuevo = (int)$fila->id; }

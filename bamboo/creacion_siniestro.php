@@ -993,7 +993,7 @@ function toggleCamposVehiculoBien() {
     // Pestaña Taller: visible solo si es vehículo Y el bien ya tiene taller persistido.
     // Los inputs taller_nombre/telefono se llenan desde la cadena de pendientes,
     // no desde este modal en el momento de creación.
-    var tieneTaller = !!($.trim($('#bien_taller_nombre').val()) || $.trim($('#bien_taller_telefono').val()));
+    var tieneTaller = !!($.trim($('#bien_taller_nombre').val()) || $.trim($('#bien_taller_telefono').val()) || $.trim($('#bien_taller_correo').val()));
     setTallerTabVisible(esVeh && tieneTaller);
 }
 
@@ -1067,7 +1067,7 @@ function nuevoBien(tipo) {
     $('#bien_descripcion').val('');
     $('#bien_direccion').val(''); $('#bien_item_afectado').val('');
     $('#bien_patente').val(''); $('#bien_marca').val(''); $('#bien_modelo').val(''); $('#bien_anio').val('');
-    $('#bien_taller_nombre').val(''); $('#bien_taller_telefono').val('');
+    $('#bien_taller_nombre').val(''); $('#bien_taller_telefono').val(''); $('#bien_taller_correo').val('');
     $('#bien_estado').val('Abierto');
     $('#bien_estado_original').val('');
     $('#bien_fecha_alarma').val(fechaEnDiasDesdeHoy(7));
@@ -1119,6 +1119,7 @@ function editarBien(memkey) {
     $('#bien_anio').val(b.anio_vehiculo || '');
     $('#bien_taller_nombre').val(b.taller_nombre || '');
     $('#bien_taller_telefono').val(b.taller_telefono || '');
+    $('#bien_taller_correo').val(b.taller_correo || '');
     $('#bien_estado').val(b.estado);
     $('#bien_estado_original').val(b.estado);
     $('#bien_fecha_alarma').val(b.fecha_alarma || '');
@@ -1131,7 +1132,7 @@ function editarBien(memkey) {
 
     // Pestaña Taller visible solo si el bien es vehículo y ya tiene datos persistidos
     var esVeh = (b.categoria === 'vehiculo');
-    var tieneTaller = !!(b.taller_nombre || b.taller_telefono);
+    var tieneTaller = !!(b.taller_nombre || b.taller_telefono || b.taller_correo);
     setTallerTabVisible(esVeh && tieneTaller);
     setItemAfectadoVisible();
 
@@ -1167,7 +1168,8 @@ function guardarBien() {
         modelo:          categoria === 'vehiculo' ? $('#bien_modelo').val() : '',
         anio_vehiculo:   categoria === 'vehiculo' ? $('#bien_anio').val() : '',
         taller_nombre:   categoria === 'vehiculo' ? $('#bien_taller_nombre').val() : '',
-        taller_telefono: categoria === 'vehiculo' ? $('#bien_taller_telefono').val() : ''
+        taller_telefono: categoria === 'vehiculo' ? $('#bien_taller_telefono').val() : '',
+        taller_correo:   categoria === 'vehiculo' ? $('#bien_taller_correo').val() : ''
     };
 
     if (memkey) {
@@ -1503,7 +1505,7 @@ function renderResolver_companiaEntrega(p) {
         }
 
         var helperText = hayConocidos
-            ? 'Mínimo: nombre + (teléfono o correo). Si seleccionás un liquidador conocido, sus datos se reusan; los nuevos se persisten para futuros siniestros de la misma compañía.'
+            ? 'Mínimo: nombre + (teléfono o correo). Si selecciona un liquidador conocido, sus datos se reusan; los nuevos se persisten para futuros siniestros de la misma compañía.'
             : 'Mínimo: nombre + (teléfono o correo). Se persiste para futuros siniestros de la misma compañía.';
 
         var html =
@@ -1552,26 +1554,32 @@ function onResolverLiquidadorSelect() {
 function renderResolver_liquidadorContactoVeh(p) {
     var vehs = bienesPropiosVehiculares();
     if (!vehs.length) {
-        $('#resolver_body').html('<div class="alert alert-warning">No hay bienes propios vehiculares persistidos. Guardá el siniestro primero.</div>');
+        $('#resolver_body').html('<div class="alert alert-warning">No hay bienes propios vehiculares persistidos. Guarde el siniestro primero.</div>');
         return;
     }
-    var html = '<p class="text-muted">El liquidador designó el taller. Capturá los datos de contacto por bien:</p>';
+    var html = '<p class="text-muted">El liquidador designó el taller. Capture los datos de contacto por bien:</p>';
     vehs.forEach(function(b) {
         html += '<div class="border rounded p-2 mb-2">' +
                   '<strong>🚗 ' + escHtml(b.descripcion) + '</strong>' +
                   '<div class="form-row mt-2">' +
-                    '<div class="col-md-6 form-group mb-1">' +
+                    '<div class="col-md-4 form-group mb-1">' +
                       '<label>Nombre del taller</label>' +
                       '<input type="text" class="form-control rp-bien"' +
                       ' data-bien="' + b.id + '" data-field="taller_nombre"' +
                       ' value="' + escAttr(b.taller_nombre || '') + '">' +
                     '</div>' +
-                    '<div class="col-md-6 form-group mb-1">' +
-                      '<label>Teléfono del taller</label>' +
+                    '<div class="col-md-4 form-group mb-1">' +
+                      '<label>Teléfono</label>' +
                       '<input type="text" class="form-control rp-bien"' +
                       ' data-bien="' + b.id + '" data-field="taller_telefono"' +
                       ' value="' + escAttr(b.taller_telefono || '') + '"' +
                       ' placeholder="56 9 XXXX XXXX">' +
+                    '</div>' +
+                    '<div class="col-md-4 form-group mb-1">' +
+                      '<label>Correo</label>' +
+                      '<input type="email" class="form-control rp-bien"' +
+                      ' data-bien="' + b.id + '" data-field="taller_correo"' +
+                      ' value="' + escAttr(b.taller_correo || '') + '">' +
                     '</div>' +
                   '</div>' +
                 '</div>';
@@ -1593,7 +1601,7 @@ function renderResolver_liquidadorContactoNoVeh(p) {
 function renderResolver_clienteEntrega(p) {
     $('#resolver_body').html(
         '<p class="text-muted">El cliente entregó los antecedentes solicitados. ' +
-        'Podés agregar notas en el campo de abajo si querés dejar registro de qué entregó.</p>'
+        'Puede agregar notas en el campo de abajo si desea dejar registro de qué entregó.</p>'
     );
 }
 
@@ -1735,7 +1743,7 @@ function renderResolver_companiaPago(p) {
 function renderResolver_generico(p) {
     $('#resolver_body').html(
         '<p class="text-muted">Esta tarea no requiere captura de datos adicionales. ' +
-        'Podés agregar una nota libre y marcar entregado.</p>'
+        'Puede agregar una nota libre y marcar entregado.</p>'
     );
 }
 
@@ -2026,13 +2034,17 @@ function enviarCorreoLiquidador() {
             </div>
             <div id="bien_campos_taller">
               <div class="form-row">
-                <div class="col-md-6 form-group">
+                <div class="col-md-4 form-group">
                   <label>Nombre</label>
                   <input type="text" class="form-control" id="bien_taller_nombre">
                 </div>
-                <div class="col-md-6 form-group">
+                <div class="col-md-4 form-group">
                   <label>Teléfono</label>
                   <input type="text" class="form-control" id="bien_taller_telefono" placeholder="56 9 XXXX XXXX">
+                </div>
+                <div class="col-md-4 form-group">
+                  <label>Correo</label>
+                  <input type="email" class="form-control" id="bien_taller_correo">
                 </div>
               </div>
             </div>
