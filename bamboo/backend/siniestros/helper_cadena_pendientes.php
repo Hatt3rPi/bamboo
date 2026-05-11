@@ -179,7 +179,7 @@ if (!function_exists('promover_al_liquidador')) {
         if ($id_comp > 0) {
             $u = str_replace("'", "''", $usuario);
             db_query($link, "UPDATE siniestros_pendientes
-                             SET estado='Entregado', fecha_entrega=CURRENT_DATE, updated_at=NOW()
+                             SET estado='Entregado', fecha_entrega=NOW(), updated_at=NOW()
                              WHERE id='$id_comp' AND estado='Pendiente'");
             db_query($link, "INSERT INTO siniestros_pendientes_bitacora
                                 (id_pendiente, accion, estado_anterior, estado_nuevo, usuario)

@@ -1334,7 +1334,7 @@ function renderPendientes() {
             '<td>' + escHtml(p.descripcion) + '</td>' +
             '<td>' + bienDesc + '</td>' +
             '<td>' + badgeEstadoPend(p.estado) + '</td>' +
-            '<td>' + (p.fecha_entrega || '—') + '</td>' +
+            '<td>' + fmtFechaHora(p.fecha_entrega) + '</td>' +
             '<td><small>' + notasHtml + '</small></td>' +
             '<td style="white-space:nowrap">' +
                 botonResolver +
@@ -1365,7 +1365,7 @@ function abrirModalPendiente(id) {
         $('#pend_id').val(p.id);
         $('#pend_responsable').val(p.responsable);
         $('#pend_estado').val(p.estado);
-        $('#pend_fecha_entrega').val(p.fecha_entrega || '');
+        $('#pend_fecha_entrega').val(p.fecha_entrega ? String(p.fecha_entrega).slice(0,10) : '');
         $('#pend_descripcion').val(p.descripcion);
         $('#pend_notas').val(p.notas || '');
         $('#pend_id_bien').val(p.id_bien || '');
@@ -1400,6 +1400,20 @@ $(document).on('change', '#pend_estado', function() {
 function fechaHoyIso() {
     var d = new Date();
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+// Formatea timestamp ISO (o fecha) como 'YYYY-MM-DD HH:MM'. Si es solo fecha, devuelve la fecha.
+function fmtFechaHora(s) {
+    if (!s) return '—';
+    // Postgres devuelve timestamp como '2026-05-11 03:23:28.123456' o '2026-05-10' si es solo date.
+    var iso = String(s).replace(' ', 'T');
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return s;
+    var p = function(n){ return String(n).padStart(2,'0'); };
+    var fecha = d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate());
+    // Si la string original no traía hora, devolver solo fecha
+    if (String(s).indexOf(':') === -1) return fecha;
+    return fecha + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
 }
 
 function bienesPropiosVehiculares() {
@@ -1459,16 +1473,39 @@ function renderResolver_companiaEntrega(p) {
     $.getJSON('/bambooQA/backend/siniestros/busqueda_liquidadores_compania.php',
         { id_siniestro: p.id_siniestro }, function(resp) {
         var liqs = (resp && resp.data) || [];
-        var compania = (resp && resp.compania) || '(sin compañía)';
-        var opts = '<option value="">— Nuevo liquidador —</option>';
-        liqs.forEach(function(l) {
-            opts += '<option value="' + l.id + '"' +
-                    ' data-nombre="'   + escAttr(l.nombre)   + '"' +
-                    ' data-telefono="' + escAttr(l.telefono) + '"' +
-                    ' data-correo="'   + escAttr(l.correo)   + '">' +
-                    escHtml(l.nombre) + (l.correo ? ' — ' + escHtml(l.correo) : '') +
-                    '</option>';
-        });
+        var compania = (resp && resp.compania) || '';
+        var hayConocidos = liqs.length > 0;
+
+        // Header del bloque liquidador: si tenemos compañía, mostrarla.
+        var headerLiquidador = '<h6>Liquidador asignado' +
+            (compania ? ' <small class="text-muted">(' + escHtml(compania) + ')</small>' : '') +
+            '</h6>';
+
+        // Dropdown de liquidadores conocidos (solo si hay alguno).
+        var dropdownHtml = '';
+        if (hayConocidos) {
+            var opts = '<option value="">— Nuevo liquidador —</option>';
+            liqs.forEach(function(l) {
+                opts += '<option value="' + l.id + '"' +
+                        ' data-nombre="'   + escAttr(l.nombre)   + '"' +
+                        ' data-telefono="' + escAttr(l.telefono) + '"' +
+                        ' data-correo="'   + escAttr(l.correo)   + '">' +
+                        escHtml(l.nombre) + (l.correo ? ' — ' + escHtml(l.correo) : '') +
+                        '</option>';
+            });
+            dropdownHtml =
+              '<div class="form-group">' +
+                '<label>Liquidador conocido</label>' +
+                '<select class="form-control" id="rp_liquidador_id" onchange="onResolverLiquidadorSelect()">' +
+                  opts +
+                '</select>' +
+              '</div>';
+        }
+
+        var helperText = hayConocidos
+            ? 'Mínimo: nombre + (teléfono o correo). Si seleccionás un liquidador conocido, sus datos se reusan; los nuevos se persisten para futuros siniestros de la misma compañía.'
+            : 'Mínimo: nombre + (teléfono o correo). Se persiste para futuros siniestros de la misma compañía.';
+
         var html =
           '<div class="form-group">' +
             '<label>N° Siniestro Compañía <span class="text-danger">*</span></label>' +
@@ -1476,13 +1513,8 @@ function renderResolver_companiaEntrega(p) {
             ' placeholder="Número entregado por la compañía">' +
           '</div>' +
           '<hr>' +
-          '<h6>Liquidador asignado <small class="text-muted">(' + escHtml(compania) + ')</small></h6>' +
-          '<div class="form-group">' +
-            '<label>Liquidador conocido</label>' +
-            '<select class="form-control" id="rp_liquidador_id" onchange="onResolverLiquidadorSelect()">' +
-              opts +
-            '</select>' +
-          '</div>' +
+          headerLiquidador +
+          dropdownHtml +
           '<div class="form-row">' +
             '<div class="col-md-4 form-group">' +
               '<label>Nombre <span class="text-danger">*</span></label>' +
@@ -1498,7 +1530,7 @@ function renderResolver_companiaEntrega(p) {
               '<input type="email" class="form-control" id="rp_liquidador_correo">' +
             '</div>' +
           '</div>' +
-          '<small class="text-muted">Mínimo: nombre + (teléfono o correo). Si seleccionás un liquidador conocido, sus datos se reusan; los nuevos se persisten para futuros siniestros de la misma compañía.</small>';
+          '<small class="text-muted">' + helperText + '</small>';
         $('#resolver_body').html(html);
     });
 }

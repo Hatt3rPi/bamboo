@@ -62,7 +62,7 @@ else {
         $compania_sin = '';
         $rs_meta = db_query($link, "SELECT COALESCE(s.ramo,'') AS ramo, COALESCE(p.compania,'') AS compania
                                     FROM siniestros s
-                                    LEFT JOIN polizas p ON p.id = s.id_poliza
+                                    LEFT JOIN polizas_2 p ON p.id = s.id_poliza
                                     WHERE s.id='$id_siniestro'");
         while ($row = db_fetch_object($rs_meta)) {
             $ramo_sin     = $row->ramo;
@@ -248,7 +248,28 @@ else {
         $n  = sqlesc($notas);
         $r  = sqlesc($responsable);
         $e  = sqlesc($estado);
-        $fe = ($fecha_entrega !== '') ? "NULLIF('$fecha_entrega','')::date" : "NULL";
+        // fecha_entrega ahora es timestamp. Reglas:
+        // - Si el modal Resolver lo marca Entregado AHORA: usar NOW() (timestamp con hora actual).
+        // - Si el modal de edición manda una fecha YYYY-MM-DD distinta de hoy: parsea con hora 00:00.
+        // - Si viene vacío: NULL.
+        $hoy = date('Y-m-d');
+        if ($esta_entregando && ($fecha_entrega === '' || $fecha_entrega === $hoy)) {
+            $fe = "NOW()";
+        } elseif ($fecha_entrega !== '') {
+            // Si el pendiente ya estaba Entregado y la fecha (YYYY-MM-DD) no cambió,
+            // preservar la hora original para no degradar a 00:00 al editar otros campos.
+            if ($est_anterior === 'Entregado') {
+                $fe = "CASE
+                          WHEN to_char(fecha_entrega, 'YYYY-MM-DD') = '" . sqlesc($fecha_entrega) . "'
+                          THEN fecha_entrega
+                          ELSE NULLIF('" . sqlesc($fecha_entrega) . "','')::timestamp
+                       END";
+            } else {
+                $fe = "NULLIF('" . sqlesc($fecha_entrega) . "','')::timestamp";
+            }
+        } else {
+            $fe = "NULL";
+        }
         db_query($link, "UPDATE siniestros_pendientes SET
                             responsable   = '$r',
                             descripcion   = '$d',

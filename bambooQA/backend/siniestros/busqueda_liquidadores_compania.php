@@ -18,7 +18,7 @@ $data = array();
 if ($id_siniestro !== '') {
     $rs = db_query($link, "SELECT COALESCE(p.compania, '') AS compania
                            FROM siniestros s
-                           LEFT JOIN polizas p ON p.id = s.id_poliza
+                           LEFT JOIN polizas_2 p ON p.id = s.id_poliza
                            WHERE s.id = '$id_siniestro'");
     while ($row = db_fetch_object($rs)) { $compania = trim($row->compania); }
 
