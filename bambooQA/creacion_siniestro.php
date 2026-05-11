@@ -416,8 +416,7 @@ if (!$es_ramo_vehiculo_php) {
               box-shadow:0 -2px 4px rgba(0,0,0,0.05)">
     <div class="container" style="text-align:right">
       <button type="button" class="btn" style="background-color:#536656;color:white"
-        id="boton_registrar" onclick="registraSiniestro(false)"
-        <?php echo ($camino == 'modifica_siniestro') ? '' : 'disabled'; ?>>
+        id="boton_registrar" onclick="registraSiniestro(false)" disabled>
         <?php echo ($camino == 'modifica_siniestro') ? 'Guardar cambios' : 'Registrar Siniestro'; ?>
       </button>
       <?php if (!$bloqueo_compania): ?>
@@ -725,14 +724,25 @@ function validaSiniestro() {
 // Bandera de modo creación, leída desde PHP
 var MODO_CREACION = '<?php echo $camino; ?>' === 'crear_siniestro';
 
-// Aplica disabled al botón Registrar Siniestro según validez (solo en modo creación)
+// En edición: el botón "Guardar cambios" arranca disabled y se habilita solo
+// cuando se detecta mutación en el form (inputs visibles, bienes, etc.).
+var formMutado = false;
+
+function marcarFormMutado() {
+    if (MODO_CREACION) return;
+    formMutado = true;
+    actualizarBotonRegistrar();
+}
+
+// Aplica disabled al botón según el modo:
+// - Creación: requiere siniestroEsValido().
+// - Edición: requiere formMutado (al menos un cambio detectado).
 function actualizarBotonRegistrar() {
-    if (!MODO_CREACION) return;
     var $btn = $('#boton_registrar');
-    if (siniestroEsValido()) {
-        $btn.prop('disabled', false);
+    if (MODO_CREACION) {
+        $btn.prop('disabled', !siniestroEsValido());
     } else {
-        $btn.prop('disabled', true);
+        $btn.prop('disabled', !formMutado);
     }
 }
 
@@ -870,8 +880,19 @@ $(document).ready(function() {
     if (MODO_CREACION) {
         $('#numero_poliza, #tipo_siniestro, #fecha_ocurrencia').on('change input', actualizarBotonRegistrar);
         // El listener de #items_seleccionados ya está en cargarItemsPoliza al hookear .chk_item
-        actualizarBotonRegistrar();
+    } else {
+        // Modo edición: cualquier cambio en inputs del form principal marca mutación.
+        // Excluimos inputs dentro de modales (.modal *) para que la edición de un bien
+        // no dispare aquí — el guardado del bien (guardarBien) llama marcarFormMutado()
+        // explícitamente cuando confirma cambios.
+        $('#formulario_siniestro').on('input change', 'input, select, textarea', function() {
+            if ($(this).closest('.modal').length === 0) {
+                marcarFormMutado();
+            }
+        });
+        // Checkboxes de ítems están dentro del form, ya pasan por el listener delegado.
     }
+    actualizarBotonRegistrar();
 });
 
 // =========================================================================
@@ -1155,6 +1176,7 @@ function guardarBien() {
     } else {
         bienesMem.push(Object.assign({ memkey: ++bienMemSeq }, datos));
     }
+    marcarFormMutado();
 
     var cerrar = function() {
         $('#modalBien').modal('hide');
@@ -1175,6 +1197,7 @@ function eliminarBien(memkey) {
         : '¿Quitar este bien del formulario?';
     if (!confirm(msg)) return;
     bienesMem = bienesMem.filter(function(x){ return x.memkey !== memkey; });
+    marcarFormMutado();
     renderTodosBienes();
 }
 
