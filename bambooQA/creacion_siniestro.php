@@ -390,21 +390,27 @@ if (!$es_ramo_vehiculo_php) {
     </ul>
     <div class="tab-content pt-3">
       <div class="tab-pane fade show active" id="tab-propios" role="tabpanel">
+        <?php if ($camino != 'modifica_siniestro'): ?>
         <button type="button" class="btn btn-sm btn-primary mb-2" onclick="nuevoBien('propio')">+ Agregar bien propio</button>
+        <?php endif; ?>
         <table class="table table-sm table-bordered" id="tabla_bienes_propios">
-          <thead><tr><th style="width:14%">Categoría</th><th style="width:30%">Descripción</th><th>Estado</th><th>Alarma</th><th>Docs</th><th>Acciones</th></tr></thead>
+          <thead><tr><th style="width:14%">Categoría</th><th style="width:30%">Descripción</th><th>Estado</th><th>Alarma</th><th>Acciones</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
       <div class="tab-pane fade" id="tab-terceros" role="tabpanel">
+        <?php if ($camino != 'modifica_siniestro'): ?>
         <button type="button" class="btn btn-sm btn-primary mb-2" onclick="nuevoBien('tercero')">+ Agregar bien tercero</button>
+        <?php endif; ?>
         <table class="table table-sm table-bordered" id="tabla_bienes_terceros">
-          <thead><tr><th style="width:14%">Categoría</th><th style="width:30%">Descripción</th><th>Estado</th><th>Alarma</th><th>Docs</th><th>Acciones</th></tr></thead>
+          <thead><tr><th style="width:14%">Categoría</th><th style="width:30%">Descripción</th><th>Estado</th><th>Alarma</th><th>Acciones</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </div>
-    <small class="text-muted">Los bienes se guardan junto con el siniestro al presionar <em>Registrar Siniestro</em>. El Checklist de documentos requiere un bien ya persistido.</small>
+    <?php if ($camino != 'modifica_siniestro'): ?>
+    <small class="text-muted">Los bienes se guardan junto con el siniestro al presionar <em>Registrar Siniestro</em>.</small>
+    <?php endif; ?>
     <br><br>
 
   </form>
@@ -944,24 +950,29 @@ function renderTablaBienes(selector, lista) {
     var tbody = $(selector);
     tbody.empty();
     if (lista.length === 0) {
-        tbody.append('<tr><td colspan="6"><em>Sin bienes registrados.</em></td></tr>');
+        tbody.append('<tr><td colspan="5"><em>Sin bienes registrados.</em></td></tr>');
         return;
     }
     lista.forEach(function(b) {
         var badge = badgeBien(b.estado);
         var alarma = b.fecha_alarma ? b.fecha_alarma : '<em>—</em>';
         var catLabel = catBienLabel(b.categoria);
-        var docs = b.id && b.total_docs > 0 ? (b.entregados + '/' + b.total_docs + ' entregados') :
-                   (b.id ? '<em>sin marcar</em>' : '<em>sin guardar</em>');
+        // En modo edición, los bienes se declararon al crear el siniestro: solo "Ver".
+        // En modo creación, se pueden editar y eliminar mientras se arma el form.
+        var btnEditar = MODO_CREACION
+            ? '<button type="button" class="btn btn-sm btn-outline-info mr-1" onclick="editarBien(' + b.memkey + ')" title="Editar">✏️ Editar</button>'
+            : '<button type="button" class="btn btn-sm btn-outline-info mr-1" onclick="editarBien(' + b.memkey + ')" title="Ver">👁️ Ver</button>';
+        var btnEliminar = MODO_CREACION
+            ? '<button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarBien(' + b.memkey + ')" title="Eliminar">🗑️ Eliminar</button>'
+            : '';
         var fila = '<tr data-memkey="' + b.memkey + '">' +
             '<td>' + catLabel + '</td>' +
             '<td>' + escHtml(b.descripcion) + '</td>' +
             '<td>' + badge + '</td>' +
             '<td>' + alarma + '</td>' +
-            '<td>' + docs + '</td>' +
             '<td style="white-space:nowrap">' +
-              '<button type="button" class="btn btn-sm btn-outline-info mr-1" onclick="editarBien(' + b.memkey + ')" title="Editar / Ver documentación">✏️ Editar</button>' +
-              '<button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarBien(' + b.memkey + ')" title="Eliminar">🗑️ Eliminar</button>' +
+              btnEditar +
+              btnEliminar +
             '</td>' +
         '</tr>';
         tbody.append(fila);
@@ -1204,57 +1215,10 @@ function eliminarBien(memkey) {
 }
 
 // =========================================================================
-// CHECKLIST INLINE (integrado al modal del bien, tab Documentación)
-// =========================================================================
-function cargarChecklistBien(id_bien) {
-    var body = $('#bien_docs_body');
-    if (!id_bien) {
-        $('#bien_docs_msg_nuevo').show();
-        $('#bien_docs_wrap').hide();
-        body.empty();
-        return;
-    }
-    $('#bien_docs_msg_nuevo').hide();
-    $('#bien_docs_wrap').show();
-    body.html('<tr><td colspan="4"><em>Cargando…</em></td></tr>');
-    $.getJSON('/bambooQA/backend/siniestros/busqueda_checklist_bien.php', { id_bien: id_bien }, function(resp) {
-        body.empty();
-        (resp.data || []).forEach(function(d) {
-            var estados = ['Pendiente','En revisión','Entregado','Rechazado','No aplica'];
-            var opts = estados.map(function(e) {
-                return '<option value="' + e + '"' + (e === d.estado ? ' selected' : '') + '>' + e + '</option>';
-            }).join('');
-            var fila =
-                '<tr data-id-doc="' + d.id_documento + '">' +
-                  '<td>' + escHtml(d.nombre) + '</td>' +
-                  '<td><select class="form-control form-control-sm cl-estado">' + opts + '</select></td>' +
-                  '<td><input type="date" class="form-control form-control-sm cl-fecha" value="' + (d.fecha_entrega || '') + '"></td>' +
-                  '<td><input type="text" class="form-control form-control-sm cl-notas" value="' + escAttr(d.notas || '') + '"></td>' +
-                '</tr>';
-            body.append(fila);
-        });
-        if ((resp.data || []).length === 0) {
-            body.html('<tr><td colspan="4"><em>No hay documentos activos en el catálogo.</em></td></tr>');
-        }
-    });
-}
-// Persiste los cambios del checklist inline (llamado desde guardarBien cuando hay id).
-function persistirChecklistBien(id_bien, cb) {
-    var filas = $('#bien_docs_body tr[data-id-doc]');
-    if (filas.length === 0) { cb(); return; }
-    var promesas = [];
-    filas.each(function() {
-        var $tr = $(this);
-        promesas.push($.post('/bambooQA/backend/siniestros/actualiza_documento_bien.php', {
-            id_bien: id_bien,
-            id_documento: $tr.data('id-doc'),
-            estado: $tr.find('.cl-estado').val(),
-            fecha_entrega: $tr.find('.cl-fecha').val(),
-            notas: $tr.find('.cl-notas').val()
-        }));
-    });
-    $.when.apply($, promesas).always(cb);
-}
+// CHECKLIST INLINE — desactivado (Adriana decidió no usar la pestaña Documentación,
+// reunión 11-may). Stubs para no romper las llamadas existentes desde nuevoBien/editarBien/guardarBien.
+function cargarChecklistBien(id_bien) { /* no-op */ }
+function persistirChecklistBien(id_bien, cb) { if (cb) cb(); }
 
 // =========================================================================
 // PENDIENTES POR RESPONSABLE (Cliente / Liquidador / Compañía / Taller)
@@ -1998,7 +1962,6 @@ function enviarCorreoLiquidador() {
           <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tab-bien-desc" role="tab">Descripción</a></li>
           <li class="nav-item" id="li_tab_taller"><a class="nav-link" data-toggle="tab" href="#tab-bien-taller" role="tab">Taller</a></li>
           <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-bien-seg" role="tab">Seguimiento</a></li>
-          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-bien-docs" role="tab">Documentación</a></li>
         </ul>
 
         <div class="tab-content pt-3">
@@ -2105,27 +2068,6 @@ function enviarCorreoLiquidador() {
             </div>
           </div>
 
-          <!-- TAB 4: Documentación -->
-          <div class="tab-pane fade" id="tab-bien-docs" role="tabpanel">
-            <div id="bien_docs_msg_nuevo" class="alert alert-warning" style="display:none">
-              Guarda primero el bien para gestionar los documentos. Al guardar aparecerán pendientes todos los documentos activos del catálogo.
-            </div>
-            <div id="bien_docs_wrap">
-              <table class="table table-sm table-bordered mb-0">
-                <thead>
-                  <tr>
-                    <th>Documento</th>
-                    <th style="width:20%">Estado</th>
-                    <th style="width:18%">Fecha entrega</th>
-                    <th style="width:30%">Notas</th>
-                  </tr>
-                </thead>
-                <tbody id="bien_docs_body">
-                  <tr><td colspan="4"><em>Cargando…</em></td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
         </div>
       </div>
       <div class="modal-footer">
