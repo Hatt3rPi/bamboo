@@ -113,17 +113,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["accion"]) && $_POST["a
         );
     }
     $items_seleccionados_csv = implode(',', $items_pre);
-    db_close($link);
-}
-if (!isset($vehiculos_pre)) $vehiculos_pre = array();
 
-// Estado de tareas relevantes de la cadena (para render contextual del form en edición).
-// Si compania_entrega_numero está Pendiente, los campos N°/Estado/Liquidador no se muestran.
-$compania_entrega_pendiente = false;
-if ($camino == 'modifica_siniestro' && $id_siniestro !== '') {
-    require_once "/home/gestio10/public_html/backend/config.php";
-    db_set_charset($link, 'utf8');
-    db_select_db($link, DB_NAME);
+    // Estado de tareas relevantes de la cadena (para render contextual del form).
+    // Si compania_entrega_numero está Pendiente, los campos N°/Estado/Liquidador no se muestran.
+    $compania_entrega_pendiente = false;
     $rs_t = db_query($link, "SELECT estado FROM siniestros_pendientes
                              WHERE id_siniestro='" . $id_siniestro . "'
                                AND codigo_tarea='compania_entrega_numero'
@@ -131,8 +124,13 @@ if ($camino == 'modifica_siniestro' && $id_siniestro !== '') {
     while ($row = db_fetch_object($rs_t)) {
         if ($row->estado === 'Pendiente') { $compania_entrega_pendiente = true; }
     }
+
     db_close($link);
+} else {
+    $compania_entrega_pendiente = false;
 }
+if (!isset($vehiculos_pre)) $vehiculos_pre = array();
+
 // "Bloqueado" = los datos de la compañía aún no llegaron, ya sea porque estamos en
 // creación, o estamos en edición pero la tarea sigue Pendiente.
 $bloqueo_compania = ($camino != 'modifica_siniestro') || $compania_entrega_pendiente;
