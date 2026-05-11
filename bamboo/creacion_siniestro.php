@@ -1404,18 +1404,38 @@ function fechaHoyIso() {
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
-// Formatea timestamp ISO (o fecha) como 'YYYY-MM-DD HH:MM'. Si es solo fecha, devuelve la fecha.
+// Formatea timestamp como 'YYYY-MM-DD HH:MM' en zona Santiago de Chile.
+// Si es solo fecha (sin ':' en la entrada), devuelve solo 'YYYY-MM-DD'.
 function fmtFechaHora(s) {
     if (!s) return '—';
-    // Postgres devuelve timestamp como '2026-05-11 03:23:28.123456' o '2026-05-10' si es solo date.
-    var iso = String(s).replace(' ', 'T');
+    var raw = String(s);
+    var iso = raw.replace(' ', 'T');
     var d = new Date(iso);
-    if (isNaN(d.getTime())) return s;
-    var p = function(n){ return String(n).padStart(2,'0'); };
-    var fecha = d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate());
-    // Si la string original no traía hora, devolver solo fecha
-    if (String(s).indexOf(':') === -1) return fecha;
-    return fecha + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    if (isNaN(d.getTime())) return raw;
+    var hasTime = raw.indexOf(':') !== -1;
+    try {
+        var fmt = new Intl.DateTimeFormat('es-CL', {
+            timeZone: 'America/Santiago',
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: hasTime ? '2-digit' : undefined,
+            minute: hasTime ? '2-digit' : undefined,
+            hour12: false
+        });
+        var parts = fmt.formatToParts(d);
+        var get = function(t) {
+            var p = parts.find(function(x){ return x.type === t; });
+            return p ? p.value : '';
+        };
+        var fecha = get('year') + '-' + get('month') + '-' + get('day');
+        if (!hasTime) return fecha;
+        return fecha + ' ' + get('hour') + ':' + get('minute');
+    } catch (e) {
+        // Fallback: hora local del navegador
+        var p = function(n){ return String(n).padStart(2,'0'); };
+        var fecha = d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate());
+        if (!hasTime) return fecha;
+        return fecha + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    }
 }
 
 function bienesPropiosVehiculares() {
@@ -1613,6 +1633,7 @@ function renderResolver_liquidadorAccionVeh(p) {
     }
     var html = '<p class="text-muted">El liquidador emitió la orden de reparación. Por bien:</p>';
     vehs.forEach(function(b) {
+        var obsStyle = b.importacion_repuestos ? '' : ' style="display:none"';
         html += '<div class="border rounded p-2 mb-2">' +
                   '<strong>🚗 ' + escHtml(b.descripcion) + '</strong>' +
                   '<div class="form-row mt-2">' +
@@ -1624,7 +1645,7 @@ function renderResolver_liquidadorAccionVeh(p) {
                     '</div>' +
                     '<div class="col-md-7 form-group mb-1 d-flex align-items-end">' +
                       '<div class="form-check mb-2">' +
-                        '<input type="checkbox" class="form-check-input rp-bien"' +
+                        '<input type="checkbox" class="form-check-input rp-bien rp-toggle-imp"' +
                         ' id="rp_imp_' + b.id + '"' +
                         ' data-bien="' + b.id + '" data-field="importacion_repuestos" value="1"' +
                         (b.importacion_repuestos ? ' checked' : '') + '>' +
@@ -1632,7 +1653,7 @@ function renderResolver_liquidadorAccionVeh(p) {
                       '</div>' +
                     '</div>' +
                   '</div>' +
-                  '<div class="form-group mb-0">' +
+                  '<div class="form-group mb-0 rp-obs-wrap" data-for-bien="' + b.id + '"' + obsStyle + '>' +
                     '<label>Observación de importación <small class="text-muted">(opcional)</small></label>' +
                     '<textarea class="form-control rp-bien"' +
                     ' data-bien="' + b.id + '" data-field="importacion_repuestos_obs" rows="1">' +
@@ -1642,6 +1663,12 @@ function renderResolver_liquidadorAccionVeh(p) {
     });
     $('#resolver_body').html(html);
 }
+
+// Toggle del textarea "Observación de importación" según checkbox
+$(document).on('change', '.rp-toggle-imp', function() {
+    var idBien = $(this).data('bien');
+    $('.rp-obs-wrap[data-for-bien="' + idBien + '"]').toggle($(this).is(':checked'));
+});
 
 function renderResolver_liquidadorAccionNoVeh(p) {
     $('#resolver_body').html(
