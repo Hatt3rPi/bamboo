@@ -458,7 +458,6 @@ if (!$es_ramo_vehiculo_php) {
       <tr>
         <th>Responsable</th>
         <th>Descripción</th>
-        <th>Bien asociado</th>
         <th>Estado</th>
         <th>Fecha entrega</th>
         <th>Notas</th>
@@ -466,7 +465,7 @@ if (!$es_ramo_vehiculo_php) {
       </tr>
     </thead>
     <tbody id="filas_pendientes">
-      <tr><td colspan="7" class="text-center text-muted"><em>Cargando…</em></td></tr>
+      <tr><td colspan="6" class="text-center text-muted"><em>Cargando…</em></td></tr>
     </tbody>
   </table>
   <br><br>
@@ -1226,11 +1225,12 @@ function persistirChecklistBien(id_bien, cb) { if (cb) cb(); }
 var pendientesMem = [];
 var liquidadorContacto = { nombre: '', correo: '', numero_siniestro: '', numero_poliza: '', nombre_asegurado: '' };
 
-function badgeResp(resp) {
+function badgeResp(resp, usuario) {
     if (resp === 'Cliente')    return '<span class="badge badge-info">Cliente</span>';
     if (resp === 'Liquidador') return '<span class="badge badge-warning">Liquidador</span>';
     if (resp === 'Compañía')  return '<span class="badge badge-dark">Compañía</span>';
     if (resp === 'Taller')     return '<span class="badge" style="background:#8e44ad;color:#fff">🔧 Taller</span>';
+    if (resp === 'Usuario')    return '<span class="badge" style="background:#0d6efd;color:#fff">👤 ' + escHtml(usuario || 'Usuario') + '</span>';
     return '<span class="badge badge-light">—</span>';
 }
 function badgeEstadoPend(est) {
@@ -1279,34 +1279,37 @@ function refrescarSelectBienesPendiente() {
 function renderPendientes() {
     var $body = $('#filas_pendientes');
     if (!pendientesMem.length) {
-        $body.html('<tr><td colspan="7" class="text-center text-muted"><em>Sin pendientes registrados.</em></td></tr>');
+        $body.html('<tr><td colspan="6" class="text-center text-muted"><em>Sin pendientes registrados.</em></td></tr>');
         calcularQuienLleva();
         return;
     }
     var html = '';
     pendientesMem.forEach(function(p) {
-        var bienDesc = p.bien_descripcion
-            ? '<small>' + (p.bien_tipo === 'propio' ? '🔵' : '🟡') + ' ' + escHtml(p.bien_descripcion) + '</small>'
-            : '<small class="text-muted">—</small>';
         var notasHtml = p.notas ? escHtml(p.notas) : '';
-        var botonRecordatorio = (p.estado === 'Pendiente')
+        var esRegistroHistorico = (p.responsable === 'Usuario' || p.codigo_tarea === 'creacion_siniestro');
+        var botonRecordatorio = (p.estado === 'Pendiente' && !esRegistroHistorico)
             ? '<button type="button" class="btn btn-sm btn-outline-primary mr-1" title="Enviar recordatorio amigable" onclick="enviarRecordatorio(' + p.id + ')">✉️</button>'
             : '';
-        var botonResolver = (p.estado === 'Pendiente')
+        var botonResolver = (p.estado === 'Pendiente' && !esRegistroHistorico)
             ? '<button type="button" class="btn btn-sm btn-success mr-1" title="Marcar como Entregado" onclick="abrirModalResolver(' + p.id + ')">✅</button>'
             : '';
+        var botonEditar = !esRegistroHistorico
+            ? '<button type="button" class="btn btn-sm btn-outline-secondary mr-1" onclick="abrirModalPendiente(' + p.id + ')">✏️</button>'
+            : '';
+        var botonEliminar = !esRegistroHistorico
+            ? '<button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarPendiente(' + p.id + ')">🗑️</button>'
+            : '';
         html += '<tr>' +
-            '<td>' + badgeResp(p.responsable) + '</td>' +
+            '<td>' + badgeResp(p.responsable, p.usuario_creacion) + '</td>' +
             '<td>' + escHtml(p.descripcion) + '</td>' +
-            '<td>' + bienDesc + '</td>' +
             '<td>' + badgeEstadoPend(p.estado) + '</td>' +
             '<td>' + fmtFechaHora(p.fecha_entrega) + '</td>' +
             '<td><small>' + notasHtml + '</small></td>' +
             '<td style="white-space:nowrap">' +
                 botonResolver +
                 botonRecordatorio +
-                '<button type="button" class="btn btn-sm btn-outline-secondary mr-1" onclick="abrirModalPendiente(' + p.id + ')">✏️</button>' +
-                '<button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarPendiente(' + p.id + ')">🗑️</button>' +
+                botonEditar +
+                botonEliminar +
             '</td>' +
         '</tr>';
     });

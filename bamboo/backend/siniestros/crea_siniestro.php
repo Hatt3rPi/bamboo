@@ -295,6 +295,16 @@ switch ($accion) {
                 }
             }
 
+            // Pendiente inicial "Creación siniestro" como registro del autor (auto-Entregado)
+            $u_sql = $sqlesc($usuario);
+            db_query($link, "INSERT INTO siniestros_pendientes
+                                (id_siniestro, responsable, descripcion, estado,
+                                 fecha_entrega, dias_alarma, auto_generada,
+                                 codigo_tarea, usuario_creacion)
+                             VALUES
+                                ('$id_nuevo', 'Usuario', 'Creación siniestro', 'Entregado',
+                                 NOW(), 0, TRUE, 'creacion_siniestro', '$u_sql')");
+
             // Cadena automática de pendientes iniciales
             bootstrap_cadena_siniestro($link, $id_nuevo, $ramo, $numero_siniestro, $usuario);
         }
