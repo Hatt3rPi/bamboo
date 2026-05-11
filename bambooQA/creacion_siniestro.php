@@ -1658,12 +1658,15 @@ function renderResolver_clienteIngresoTaller(p) {
     }
     var html = '<p class="text-muted">Fecha en que el cliente ingresó el vehículo al taller:</p>';
     vehs.forEach(function(b) {
-        html += '<div class="form-row align-items-end mb-2">' +
-                  '<div class="col-md-7"><strong>🚗 ' + escHtml(b.descripcion) + '</strong></div>' +
-                  '<div class="col-md-5">' +
-                    '<input type="date" class="form-control rp-bien"' +
-                    ' data-bien="' + b.id + '" data-field="cliente_fecha_ingreso_taller"' +
-                    ' value="' + (b.cliente_fecha_ingreso_taller || fechaHoyIso()) + '">' +
+        html += '<div class="border rounded p-2 mb-2">' +
+                  '<strong>🚗 ' + escHtml(b.descripcion) + '</strong>' +
+                  '<div class="form-row mt-2">' +
+                    '<div class="col-md-6 form-group mb-0">' +
+                      '<label>Fecha de ingreso al taller</label>' +
+                      '<input type="date" class="form-control rp-bien"' +
+                      ' data-bien="' + b.id + '" data-field="cliente_fecha_ingreso_taller"' +
+                      ' value="' + (b.cliente_fecha_ingreso_taller || fechaHoyIso()) + '">' +
+                    '</div>' +
                   '</div>' +
                 '</div>';
     });
@@ -1689,12 +1692,15 @@ function renderResolver_tallerFechaEntrega(p) {
     }
     var html = '<p class="text-muted">Fecha que confirmó el taller para la entrega del vehículo:</p>';
     vehs.forEach(function(b) {
-        html += '<div class="form-row align-items-end mb-2">' +
-                  '<div class="col-md-7"><strong>🚗 ' + escHtml(b.descripcion) + '</strong></div>' +
-                  '<div class="col-md-5">' +
-                    '<input type="date" class="form-control rp-bien"' +
-                    ' data-bien="' + b.id + '" data-field="taller_fecha_compromiso_entrega"' +
-                    ' value="' + (b.taller_fecha_compromiso_entrega || '') + '">' +
+        html += '<div class="border rounded p-2 mb-2">' +
+                  '<strong>🚗 ' + escHtml(b.descripcion) + '</strong>' +
+                  '<div class="form-row mt-2">' +
+                    '<div class="col-md-6 form-group mb-0">' +
+                      '<label>Fecha compromiso de entrega</label>' +
+                      '<input type="date" class="form-control rp-bien"' +
+                      ' data-bien="' + b.id + '" data-field="taller_fecha_compromiso_entrega"' +
+                      ' value="' + (b.taller_fecha_compromiso_entrega || '') + '">' +
+                    '</div>' +
                   '</div>' +
                 '</div>';
     });
