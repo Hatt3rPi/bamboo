@@ -23,15 +23,17 @@ Fuente de verdad: `bamboo/backend/siniestros/helper_cadena_pendientes.php` y
 ┌─────────────────────────────────────────────────────────────┐
 │  [1] COMPAÑÍA · 24h          codigo: compania_entrega_numero│
 │  ─────────────────────────────────────────────────────────  │
-│  "Compañía debe entregar N° de siniestro y liquidador       │
-│   asignado."                                                │
+│  "Compañía debe entregar N° de siniestro, liquidador        │
+│   asignado y taller."                                       │
 │                                                             │
 │  📥 Al cerrar pide:                                         │
 │    • N° Siniestro Compañía                                  │
 │    • Liquidador: dropdown (conocidos) o nombre + tel/correo │
+│    • Taller por bien vehicular: nombre / teléfono / correo  │
 │                                                             │
 │  💾 Persiste en: siniestros.numero_siniestro,               │
 │     liquidador_nombre/telefono/correo + tabla liquidadores  │
+│     + siniestros_bienes_afectados.taller_* (por bien)       │
 │  ⚡ Efecto: estado siniestro → Abierto                      │
 └─────────────────────────────────────────────────────────────┘
                           │
@@ -39,15 +41,12 @@ Fuente de verdad: `bamboo/backend/siniestros/helper_cadena_pendientes.php` y
 ┌─────────────────────────────────────────────────────────────┐
 │  [2] LIQUIDADOR · 24h            codigo: liquidador_contacto│
 │  ─────────────────────────────────────────────────────────  │
-│  "Liquidador toma contacto con el cliente y le entrega los  │
-│   datos del taller designado."                              │
+│  "Liquidador toma contacto con el cliente."                 │
 │                                                             │
-│  📥 Al cerrar pide (por cada bien vehicular):               │
-│    • Nombre del taller                                      │
-│    • Teléfono del taller                                    │
-│    • Correo del taller                                      │
+│  📥 Al cerrar pide:                                         │
+│    • N° Carpeta Liquidador (opcional)                       │
 │                                                             │
-│  💾 Persiste en: siniestros_bienes_afectados.taller_*       │
+│  💾 Persiste en: siniestros.numero_carpeta_liquidador       │
 └─────────────────────────────────────────────────────────────┘
                           │
                           ▼
@@ -238,7 +237,7 @@ Fuente de verdad: `bamboo/backend/siniestros/helper_cadena_pendientes.php` y
 
 | # | Punto | Vehículo | No vehículo |
 |---|---|---|---|
-| 2 | Captura tras `liquidador_contacto` | **Taller** (nombre/tel/correo) por bien | N° Carpeta Liquidador (opcional) |
+| 1 | Captura tras `compania_entrega_numero` | N° + liquidador + **taller por bien** | N° + liquidador |
 | 3 | Descripción `cliente_entrega` | "Lleva el vehículo al taller" | "Entrega antecedentes" |
 | 4 | `liquidador_accion` | "Emite orden de reparación" + fecha + flag importación | "Genera finiquito" + fecha |
 | 5 | Tarea siguiente | `cliente_ingreso_taller` | `cliente_firma_finiquito` |

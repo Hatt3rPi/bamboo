@@ -79,6 +79,7 @@ else {
 
                 case 'compania_entrega_numero':
                     // Espera: numero_siniestro + datos del liquidador (id existente o nuevo).
+                    // En vehículo también: datos del taller por cada bien vehicular.
                     $numero_siniestro = isset($payload['numero_siniestro']) ? trim($payload['numero_siniestro']) : '';
                     $liq_id           = isset($payload['liquidador_id']) ? preg_replace('/[^0-9]/','',$payload['liquidador_id']) : '';
                     $liq_nombre       = isset($payload['liquidador_nombre']) ? trim($payload['liquidador_nombre']) : '';
@@ -129,11 +130,9 @@ else {
                                         liquidador_correo   = $lc_sql,
                                         estado              = 'Abierto'
                                      WHERE id='$id_siniestro'");
-                    break;
 
-                case 'liquidador_contacto':
+                    // Vehículo: además persistir el taller por bien
                     if (ramo_es_vehiculo($ramo_sin)) {
-                        // Por cada bien propio vehicular: taller_nombre, taller_telefono, taller_correo
                         foreach ($payload_bienes as $id_bien => $datos) {
                             $id_bien = preg_replace('/[^0-9]/','',$id_bien);
                             if ($id_bien === '') continue;
@@ -149,14 +148,16 @@ else {
                                                 taller_correo   = COALESCE($tc_sql, taller_correo)
                                              WHERE id='$id_bien' AND id_siniestro='$id_siniestro'");
                         }
-                    } else {
-                        // No-vehículo: opcional numero_carpeta_liquidador
-                        $ncl = isset($payload['numero_carpeta_liquidador']) ? trim($payload['numero_carpeta_liquidador']) : '';
-                        if ($ncl !== '') {
-                            $ncl_sql = sql_text_or_null($ncl);
-                            db_query($link, "UPDATE siniestros SET numero_carpeta_liquidador = $ncl_sql
-                                             WHERE id='$id_siniestro'");
-                        }
+                    }
+                    break;
+
+                case 'liquidador_contacto':
+                    // Captura opcional del N° de carpeta del liquidador (cuando ya lo entregó).
+                    $ncl = isset($payload['numero_carpeta_liquidador']) ? trim($payload['numero_carpeta_liquidador']) : '';
+                    if ($ncl !== '') {
+                        $ncl_sql = sql_text_or_null($ncl);
+                        db_query($link, "UPDATE siniestros SET numero_carpeta_liquidador = $ncl_sql
+                                         WHERE id='$id_siniestro'");
                     }
                     break;
 

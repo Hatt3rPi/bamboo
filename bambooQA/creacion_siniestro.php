@@ -1431,7 +1431,7 @@ function abrirModalResolver(id_pendiente) {
             renderResolver_companiaEntrega(p);
             break;
         case 'liquidador_contacto':
-            esVeh ? renderResolver_liquidadorContactoVeh(p) : renderResolver_liquidadorContactoNoVeh(p);
+            renderResolver_liquidadorContacto(p, esVeh);
             break;
         case 'cliente_entrega':
             renderResolver_clienteEntrega(p);
@@ -1466,8 +1466,10 @@ function renderResolver_companiaEntrega(p) {
         var liqs = (resp && resp.data) || [];
         var compania = (resp && resp.compania) || '';
         var hayConocidos = liqs.length > 0;
+        var ramo = ($('#ramo').val() || '').toUpperCase();
+        var esVeh = ramo.indexOf('VEH') !== -1 || ramo.indexOf('AUTO') !== -1;
 
-        // Header del bloque liquidador: si tenemos compañía, mostrarla.
+        // Header del bloque liquidador
         var headerLiquidador = '<h6>Liquidador asignado' +
             (compania ? ' <small class="text-muted">(' + escHtml(compania) + ')</small>' : '') +
             '</h6>';
@@ -1497,6 +1499,42 @@ function renderResolver_companiaEntrega(p) {
             ? 'Mínimo: nombre + (teléfono o correo). Si selecciona un liquidador conocido, sus datos se reusan; los nuevos se persisten para futuros siniestros de la misma compañía.'
             : 'Mínimo: nombre + (teléfono o correo). Se persiste para futuros siniestros de la misma compañía.';
 
+        // Bloque taller (solo en vehículo, por cada bien vehicular)
+        var bloqueTaller = '';
+        if (esVeh) {
+            var vehs = bienesPropiosVehiculares();
+            if (vehs.length > 0) {
+                bloqueTaller = '<hr><h6>Taller designado por la compañía</h6>';
+                vehs.forEach(function(b) {
+                    bloqueTaller +=
+                      '<div class="border rounded p-2 mb-2">' +
+                        '<strong>🚗 ' + escHtml(b.descripcion) + '</strong>' +
+                        '<div class="form-row mt-2">' +
+                          '<div class="col-md-4 form-group mb-1">' +
+                            '<label>Nombre del taller</label>' +
+                            '<input type="text" class="form-control rp-bien"' +
+                            ' data-bien="' + b.id + '" data-field="taller_nombre"' +
+                            ' value="' + escAttr(b.taller_nombre || '') + '">' +
+                          '</div>' +
+                          '<div class="col-md-4 form-group mb-1">' +
+                            '<label>Teléfono</label>' +
+                            '<input type="text" class="form-control rp-bien"' +
+                            ' data-bien="' + b.id + '" data-field="taller_telefono"' +
+                            ' value="' + escAttr(b.taller_telefono || '') + '"' +
+                            ' placeholder="56 9 XXXX XXXX">' +
+                          '</div>' +
+                          '<div class="col-md-4 form-group mb-1">' +
+                            '<label>Correo</label>' +
+                            '<input type="email" class="form-control rp-bien"' +
+                            ' data-bien="' + b.id + '" data-field="taller_correo"' +
+                            ' value="' + escAttr(b.taller_correo || '') + '">' +
+                          '</div>' +
+                        '</div>' +
+                      '</div>';
+                });
+            }
+        }
+
         var html =
           '<div class="form-group">' +
             '<label>N° Siniestro Compañía <span class="text-danger">*</span></label>' +
@@ -1521,7 +1559,8 @@ function renderResolver_companiaEntrega(p) {
               '<input type="email" class="form-control" id="rp_liquidador_correo">' +
             '</div>' +
           '</div>' +
-          '<small class="text-muted">' + helperText + '</small>';
+          '<small class="text-muted">' + helperText + '</small>' +
+          bloqueTaller;
         $('#resolver_body').html(html);
     });
 }
@@ -1540,45 +1579,12 @@ function onResolverLiquidadorSelect() {
     }
 }
 
-function renderResolver_liquidadorContactoVeh(p) {
-    var vehs = bienesPropiosVehiculares();
-    if (!vehs.length) {
-        $('#resolver_body').html('<div class="alert alert-warning">No hay bienes propios vehiculares persistidos. Guarde el siniestro primero.</div>');
-        return;
-    }
-    var html = '<p class="text-muted">El liquidador designó el taller. Capture los datos de contacto por bien:</p>';
-    vehs.forEach(function(b) {
-        html += '<div class="border rounded p-2 mb-2">' +
-                  '<strong>🚗 ' + escHtml(b.descripcion) + '</strong>' +
-                  '<div class="form-row mt-2">' +
-                    '<div class="col-md-4 form-group mb-1">' +
-                      '<label>Nombre del taller</label>' +
-                      '<input type="text" class="form-control rp-bien"' +
-                      ' data-bien="' + b.id + '" data-field="taller_nombre"' +
-                      ' value="' + escAttr(b.taller_nombre || '') + '">' +
-                    '</div>' +
-                    '<div class="col-md-4 form-group mb-1">' +
-                      '<label>Teléfono</label>' +
-                      '<input type="text" class="form-control rp-bien"' +
-                      ' data-bien="' + b.id + '" data-field="taller_telefono"' +
-                      ' value="' + escAttr(b.taller_telefono || '') + '"' +
-                      ' placeholder="56 9 XXXX XXXX">' +
-                    '</div>' +
-                    '<div class="col-md-4 form-group mb-1">' +
-                      '<label>Correo</label>' +
-                      '<input type="email" class="form-control rp-bien"' +
-                      ' data-bien="' + b.id + '" data-field="taller_correo"' +
-                      ' value="' + escAttr(b.taller_correo || '') + '">' +
-                    '</div>' +
-                  '</div>' +
-                '</div>';
-    });
-    $('#resolver_body').html(html);
-}
-
-function renderResolver_liquidadorContactoNoVeh(p) {
+function renderResolver_liquidadorContacto(p, esVeh) {
+    var msg = esVeh
+        ? 'Liquidador tomó contacto con el cliente.'
+        : 'Liquidador tomó contacto y pidió antecedentes al cliente.';
     $('#resolver_body').html(
-        '<p class="text-muted">Liquidador tomó contacto y pidió antecedentes al cliente.</p>' +
+        '<p class="text-muted">' + msg + '</p>' +
         '<div class="form-group">' +
             '<label>N° Carpeta Liquidador <small class="text-muted">(opcional)</small></label>' +
             '<input type="text" class="form-control" id="rp_numero_carpeta_liquidador"' +
