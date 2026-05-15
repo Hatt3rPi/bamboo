@@ -14,9 +14,11 @@
 if (!function_exists('brevo_config')) {
     function brevo_config() {
         return array(
-            'api_key'      => getenv('BREVO_API_KEY')      ?: ($_ENV['BREVO_API_KEY']      ?? ''),
-            'sender_email' => getenv('BREVO_SENDER_EMAIL') ?: ($_ENV['BREVO_SENDER_EMAIL'] ?? ''),
-            'sender_name'  => getenv('BREVO_SENDER_NAME')  ?: ($_ENV['BREVO_SENDER_NAME']  ?? 'Bamboo')
+            'api_key'        => getenv('BREVO_API_KEY')        ?: ($_ENV['BREVO_API_KEY']        ?? ''),
+            'sender_email'   => getenv('BREVO_SENDER_EMAIL')   ?: ($_ENV['BREVO_SENDER_EMAIL']   ?? ''),
+            'sender_name'    => getenv('BREVO_SENDER_NAME')    ?: ($_ENV['BREVO_SENDER_NAME']    ?? 'Bamboo'),
+            'reply_to_email' => getenv('BREVO_REPLY_TO_EMAIL') ?: ($_ENV['BREVO_REPLY_TO_EMAIL'] ?? ''),
+            'reply_to_name'  => getenv('BREVO_REPLY_TO_NAME')  ?: ($_ENV['BREVO_REPLY_TO_NAME']  ?? '')
         );
     }
 }
@@ -42,6 +44,12 @@ if (!function_exists('enviar_correo_brevo')) {
             'htmlContent' => '<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5">' . $html . '</div>',
             'textContent' => $text_body
         );
+        if ($c['reply_to_email'] !== '') {
+            $payload['replyTo'] = array(
+                'email' => $c['reply_to_email'],
+                'name'  => $c['reply_to_name'] ?: $c['reply_to_email']
+            );
+        }
         $ch = curl_init('https://api.brevo.com/v3/smtp/email');
         curl_setopt_array($ch, array(
             CURLOPT_RETURNTRANSFER => true,
