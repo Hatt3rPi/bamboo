@@ -93,7 +93,7 @@ if (!function_exists('descripcion_tarea_liquidador_accion')) {
     function descripcion_tarea_liquidador_accion($ramo) {
         return ramo_es_vehiculo($ramo)
             ? 'Liquidador emite la orden de reparación.'
-            : 'Liquidador genera el preinforme.';
+            : 'Liquidador genera el finiquito.';
     }
 }
 

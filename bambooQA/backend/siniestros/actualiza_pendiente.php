@@ -20,9 +20,23 @@ function sql_text_or_null($v) {
 
 /**
  * Dispara un correo automático según el codigo_tarea que acaba de cerrarse.
- * - cliente_entrega (vehículo) → liquidador (aviso "cliente llevó vehículo").
- * - taller_disponibilidad_repuestos → cliente (aviso "hay repuestos disponibles").
- * Registra el envío en siniestros_notificaciones_enviadas.
+ *
+ * ╔══════════════════════════════════════════════════════════════════════════╗
+ * ║ MAPA DE CORREOS AUTOMÁTICOS POR EVENTO (canonical)                       ║
+ * ╠══════════════════════════════════════════════════════════════════════════╣
+ * ║ EVENTO                              DESTINATARIO  PLANTILLA              ║
+ * ║ ──────────────────────────────────  ────────────  ─────────────────────  ║
+ * ║ cliente_entrega   + vehículo     →  liquidador    siniestro_cliente_llevo_vehiculo  ║
+ * ║ cliente_entrega   + no-vehículo  →  liquidador    siniestro_liquidador_no_vehiculo  ║
+ * ║ taller_disponibilidad_repuestos  →  cliente       siniestro_taller_disponibilidad_repuestos ║
+ * ║ cliente_firma_finiquito           →  liquidador    siniestro_liquidador_cliente_firmo ║
+ * ╚══════════════════════════════════════════════════════════════════════════╝
+ *
+ * Cuando Brevo no está configurado (BREVO_API_KEY vacío), el envío real
+ * falla y queda registrado como "omitido" en siniestros_notificaciones_enviadas
+ * — sin interrumpir el flujo. Activar Brevo basta con setear las env vars.
+ *
+ * Registra cada intento en siniestros_notificaciones_enviadas.
  */
 function disparar_correo_evento_tarea($link, $id_siniestro, $codigo_tarea, $ramo, $usuario) {
     $es_veh = ramo_es_vehiculo($ramo);
@@ -35,6 +49,10 @@ function disparar_correo_evento_tarea($link, $id_siniestro, $codigo_tarea, $ramo
         'correo_asegurado'    => '',
         'liquidador_nombre'   => '',
         'liquidador_correo'   => '',
+        'numero_carpeta_liquidador' => '',
+        'numero_poliza'       => '',
+        'ramo'                => $ramo,
+        'carpeta_suffix'      => '',
         'taller_nombre'       => '',
         'taller_telefono'     => '',
         'taller_correo'       => '',
@@ -45,14 +63,19 @@ function disparar_correo_evento_tarea($link, $id_siniestro, $codigo_tarea, $ramo
                                   COALESCE(s.nombre_asegurado,'')   AS nombre_asegurado,
                                   COALESCE(s.correo_asegurado,'')   AS correo_asegurado,
                                   COALESCE(s.liquidador_nombre,'')  AS liquidador_nombre,
-                                  COALESCE(s.liquidador_correo,'')  AS liquidador_correo
+                                  COALESCE(s.liquidador_correo,'')  AS liquidador_correo,
+                                  COALESCE(s.numero_carpeta_liquidador,'') AS ncl,
+                                  COALESCE(s.numero_poliza,'')      AS numero_poliza
                            FROM siniestros s WHERE s.id='$id_siniestro'");
     while ($r = db_fetch_object($rs)) {
-        $datos['numero_siniestro']   = $r->numero_siniestro;
-        $datos['nombre_asegurado']   = $r->nombre_asegurado;
-        $datos['correo_asegurado']   = $r->correo_asegurado;
-        $datos['liquidador_nombre']  = $r->liquidador_nombre;
-        $datos['liquidador_correo']  = $r->liquidador_correo;
+        $datos['numero_siniestro']           = $r->numero_siniestro;
+        $datos['nombre_asegurado']           = $r->nombre_asegurado;
+        $datos['correo_asegurado']           = $r->correo_asegurado;
+        $datos['liquidador_nombre']          = $r->liquidador_nombre;
+        $datos['liquidador_correo']          = $r->liquidador_correo;
+        $datos['numero_carpeta_liquidador']  = $r->ncl;
+        $datos['numero_poliza']              = $r->numero_poliza;
+        $datos['carpeta_suffix']             = ($r->ncl !== '') ? (' — Carpeta ' . $r->ncl) : '';
     }
     // Primer bien propio vehicular (para sacar taller + descripción del vehículo)
     $rs = db_query($link, "SELECT COALESCE(taller_nombre,'')   AS taller_nombre,
@@ -77,15 +100,27 @@ function disparar_correo_evento_tarea($link, $id_siniestro, $codigo_tarea, $ramo
         $datos['vehiculo_descripcion'] = $desc;
     }
 
-    // Decidir plantilla y destinatario
+    // Decidir plantilla y destinatario (ver mapa en el header de la función).
     if ($codigo_tarea === 'cliente_entrega' && $es_veh) {
+        // Punto 1: cliente llevó vehículo a evaluación → avisar al liquidador
         $plantilla = 'siniestro_cliente_llevo_vehiculo';
         $destinatario_correo = $datos['liquidador_correo'];
         $destinatario_nombre = $datos['liquidador_nombre'] ?: 'Liquidador';
+    } elseif ($codigo_tarea === 'cliente_entrega' && !$es_veh) {
+        // Punto 2: cliente entregó antecedentes (no-veh) → avisar al liquidador
+        $plantilla = 'siniestro_liquidador_no_vehiculo';
+        $destinatario_correo = $datos['liquidador_correo'];
+        $destinatario_nombre = $datos['liquidador_nombre'] ?: 'Liquidador';
     } elseif ($codigo_tarea === 'taller_disponibilidad_repuestos') {
+        // Punto 3: taller confirmó disponibilidad → avisar al cliente
         $plantilla = 'siniestro_taller_disponibilidad_repuestos';
         $destinatario_correo = $datos['correo_asegurado'];
         $destinatario_nombre = $datos['nombre_asegurado'] ?: 'Cliente';
+    } elseif ($codigo_tarea === 'cliente_firma_finiquito') {
+        // Punto 4: cliente firmó finiquito → avisar al liquidador
+        $plantilla = 'siniestro_liquidador_cliente_firmo';
+        $destinatario_correo = $datos['liquidador_correo'];
+        $destinatario_nombre = $datos['liquidador_nombre'] ?: 'Liquidador';
     } else {
         return; // No hay correo automático para esta tarea
     }

@@ -268,6 +268,21 @@ Fuente de verdad: `bamboo/backend/siniestros/helper_cadena_pendientes.php` y
 - Captura de datos al "Marcar Entregado": `bamboo/backend/siniestros/actualiza_pendiente.php` (switch por `codigo_tarea`).
 - Render del modal: `bamboo/creacion_siniestro.php` funciones `renderResolver_*`.
 
+## Correos automáticos al cerrar tarea
+
+Disparados desde `disparar_correo_evento_tarea()` en `actualiza_pendiente.php`. Si Brevo
+no está configurado, el envío se registra como "omitido" en `siniestros_notificaciones_enviadas`
+sin interrumpir el flujo.
+
+| # | Evento (tarea + ramo)                        | Destinatario | Plantilla Brevo                            |
+|---|----------------------------------------------|--------------|--------------------------------------------|
+| 1 | `cliente_entrega` + vehículo                 | Liquidador   | `siniestro_cliente_llevo_vehiculo`         |
+| 2 | `cliente_entrega` + no-vehículo              | Liquidador   | `siniestro_liquidador_no_vehiculo`         |
+| 3 | `taller_disponibilidad_repuestos` (vehículo) | Cliente      | `siniestro_taller_disponibilidad_repuestos`|
+| 4 | `cliente_firma_finiquito` (no-vehículo)      | Liquidador   | `siniestro_liquidador_cliente_firmo`       |
+
+Las plantillas son editables por Adriana desde `admin_email_templates.php`.
+
 ## Pendientes futuros respecto a este diagrama
 
 - **Etapa "Cliente coordina fecha de revisión"** previa a `cliente_ingreso_taller` (no modelada todavía).
