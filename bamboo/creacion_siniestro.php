@@ -1941,8 +1941,28 @@ function guardarResolverPendiente() {
                     $('#notif_liq_correo').text(resp.liquidador.correo);
                     $('#modalNotificarLiquidador').modal('show');
                 } else {
-                    // Recargar para reflejar cambios en form (numero_siniestro, liquidador, etc.)
-                    location.reload();
+                    // Refresh parcial: la mayoría de tareas solo modifican datos del bien
+                    // o crean la siguiente tarea, no cambian el form principal.
+                    // Para tareas que sí cambian campos visibles del siniestro mismo
+                    // (N° siniestro, Estado, Liquidador, contacto compañía, cierre),
+                    // recargamos toda la página porque pueden revelar/ocultar bloques.
+                    var TAREAS_QUE_RECARGAN_FORM = [
+                        'compania_entrega_numero',   // N°, Estado→Abierto, Liquidador revelado
+                        'liquidador_contacto',       // N° Carpeta Liquidador (no-veh)
+                        'liquidador_envio_compania', // fecha envío, contacto compañía (no-veh)
+                        'compania_pago'              // fecha pago + estado→Cerrado
+                    ];
+                    if (TAREAS_QUE_RECARGAN_FORM.indexOf(codigo) !== -1) {
+                        location.reload();
+                    } else {
+                        // Refresh parcial: tabla de pendientes + bienesMem.
+                        // No se pierde scroll ni hay flash de recarga.
+                        var id_sin = $('#id_siniestro').val();
+                        if (id_sin) {
+                            cargarPendientes(id_sin);
+                            cargarBienesAfectados(id_sin);
+                        }
+                    }
                 }
             } else {
                 alert('No se pudo: ' + (resp && resp.mensaje ? resp.mensaje : 'error'));
