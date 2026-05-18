@@ -18,7 +18,11 @@ if (!function_exists('brevo_config')) {
             'sender_email'   => getenv('BREVO_SENDER_EMAIL')   ?: ($_ENV['BREVO_SENDER_EMAIL']   ?? ''),
             'sender_name'    => getenv('BREVO_SENDER_NAME')    ?: ($_ENV['BREVO_SENDER_NAME']    ?? 'Bamboo'),
             'reply_to_email' => getenv('BREVO_REPLY_TO_EMAIL') ?: ($_ENV['BREVO_REPLY_TO_EMAIL'] ?? ''),
-            'reply_to_name'  => getenv('BREVO_REPLY_TO_NAME')  ?: ($_ENV['BREVO_REPLY_TO_NAME']  ?? '')
+            'reply_to_name'  => getenv('BREVO_REPLY_TO_NAME')  ?: ($_ENV['BREVO_REPLY_TO_NAME']  ?? ''),
+            // BCC para testing: copia oculta de cada envío a este correo.
+            // Útil durante QA para que el dev vea todos los correos automáticos.
+            'bcc_email'      => getenv('BREVO_BCC_EMAIL')      ?: ($_ENV['BREVO_BCC_EMAIL']      ?? ''),
+            'bcc_name'       => getenv('BREVO_BCC_NAME')       ?: ($_ENV['BREVO_BCC_NAME']       ?? '')
         );
     }
 }
@@ -49,6 +53,12 @@ if (!function_exists('enviar_correo_brevo')) {
                 'email' => $c['reply_to_email'],
                 'name'  => $c['reply_to_name'] ?: $c['reply_to_email']
             );
+        }
+        if ($c['bcc_email'] !== '') {
+            $payload['bcc'] = array(array(
+                'email' => $c['bcc_email'],
+                'name'  => $c['bcc_name'] ?: $c['bcc_email']
+            ));
         }
         $ch = curl_init('https://api.brevo.com/v3/smtp/email');
         curl_setopt_array($ch, array(
