@@ -225,7 +225,11 @@ if (!$es_ramo_vehiculo_php) {
         <select class="form-control" id="tipo_siniestro" name="tipo_siniestro">
           <option value="">-- Seleccione --</option>
           <?php
+          // En no-vehículo, "Choque/Colisión" no aplica (Adriana 18-may).
           $tipos = ['Robo', 'Choque/Colisión', 'Incendio', 'Daños materiales', 'Responsabilidad civil'];
+          if (!$es_ramo_vehiculo_php) {
+              $tipos = array_values(array_diff($tipos, ['Choque/Colisión']));
+          }
           foreach ($tipos as $t) {
               $sel = ($tipo_siniestro == $t) ? 'selected' : '';
               echo "<option value=\"$t\" $sel>$t</option>";
@@ -1011,6 +1015,23 @@ function toggleCamposVehiculoBien() {
     setTallerTabVisible(esVeh && tieneTaller);
 }
 
+// Filtra las opciones del dropdown de categoría del bien según el ramo de la póliza.
+// En no-vehículo, "Vehículo" no aplica (Adriana 18-may).
+function filtrarCategoriasBienSegunRamo() {
+    var ramo = ($('#ramo').val() || '').toUpperCase();
+    var esVeh = ramo.indexOf('VEH') !== -1 || ramo.indexOf('AUTO') !== -1;
+    var $opt = $('#bien_categoria option[value="vehiculo"]');
+    if (esVeh) {
+        $opt.prop('disabled', false).show();
+    } else {
+        $opt.prop('disabled', true).hide();
+        // Si la categoría actual era vehiculo, cambiarla al default
+        if ($('#bien_categoria').val() === 'vehiculo') {
+            $('#bien_categoria').val('inmueble');
+        }
+    }
+}
+
 // Muestra/oculta la pestaña Taller del modal del bien.
 // Si la pestaña activa era Taller y se oculta, redirige a Descripción.
 function setTallerTabVisible(visible) {
@@ -1076,6 +1097,7 @@ function nuevoBien(tipo) {
     $('#bien_id').val('');
     $('#bien_memkey').val('');
     $('#bien_tipo').val(tipo);
+    filtrarCategoriasBienSegunRamo();
     var cat = (tipo === 'propio') ? categoriaDefaultSegunRamo() : 'otro';
     $('#bien_categoria').val(cat);
     $('#bien_descripcion').val('');
@@ -1134,6 +1156,7 @@ function editarBien(memkey) {
     $('#bien_id').val(b.id || '');
     $('#bien_memkey').val(b.memkey);
     $('#bien_tipo').val(b.tipo);
+    filtrarCategoriasBienSegunRamo();
     $('#bien_categoria').val(b.categoria || 'otro');
     $('#bien_descripcion').val(b.descripcion);
     $('#bien_direccion').val(b.direccion || '');
