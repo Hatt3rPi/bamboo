@@ -1440,6 +1440,23 @@ function tieneCaptura(codigo_tarea) {
 function abrirModalResolver(id_pendiente) {
     var p = pendientesMem.find(function(x){ return x.id == id_pendiente; });
     if (!p) return;
+    // Refrescar bienesMem desde BD antes de abrir el modal, así los inputs
+    // pre-cargados reflejan datos actualizados (importante al editar tareas
+    // ya entregadas tras un location.reload reciente).
+    var id_siniestro = $('#id_siniestro').val();
+    if (id_siniestro) {
+        $.ajax({
+            url: '/bambooQA/backend/siniestros/busqueda_bienes_siniestro.php',
+            data: { id_siniestro: id_siniestro },
+            dataType: 'json',
+            async: false  // necesitamos los datos antes de renderizar
+        }).done(function(resp) {
+            var fromDb = (resp.data || []).map(function(b) {
+                return Object.assign({ memkey: ++bienMemSeq, _persisted: true }, b);
+            });
+            bienesMem = fromDb;
+        });
+    }
     // Si la tarea ya está Entregada, el modal está en modo "ver/editar datos"
     var modoEdicion = (p.estado === 'Entregado');
     $('#modalResolverPendiente .modal-title').html(
