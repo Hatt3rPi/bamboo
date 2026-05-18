@@ -1708,9 +1708,9 @@ $(document).on('change', '.rp-toggle-imp', function() {
 
 function renderResolver_liquidadorAccionNoVeh(p) {
     $('#resolver_body').html(
-        '<p class="text-muted">El liquidador generó el finiquito.</p>' +
+        '<p class="text-muted">El liquidador generó el preinforme.</p>' +
         '<div class="form-group">' +
-            '<label>Fecha de generación del finiquito</label>' +
+            '<label>Fecha de generación del preinforme</label>' +
             '<input type="date" class="form-control" id="rp_liquidador_fecha_finiquito"' +
             ' value="' + fechaHoyIso() + '">' +
         '</div>'
