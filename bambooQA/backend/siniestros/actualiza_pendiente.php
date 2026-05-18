@@ -192,11 +192,16 @@ else {
         }
 
         // ============================================================
-        // CAPTURA POR TAREA (solo cuando se está pasando a Entregado)
+        // CAPTURA POR TAREA
+        // Se ejecuta cuando:
+        //   (a) la tarea está pasando de Pendiente a Entregado, o
+        //   (b) la tarea ya estaba Entregada y se quieren editar/actualizar
+        //       los datos capturados (modo edición vía modal Resolver).
         // ============================================================
         $esta_entregando = ($est_anterior === 'Pendiente' && $estado === 'Entregado');
+        $editando_entregada = ($est_anterior === 'Entregado' && $estado === 'Entregado');
 
-        if ($esta_entregando && $codigo_tarea !== '') {
+        if (($esta_entregando || $editando_entregada) && $codigo_tarea !== '') {
             switch ($codigo_tarea) {
 
                 case 'compania_entrega_numero':

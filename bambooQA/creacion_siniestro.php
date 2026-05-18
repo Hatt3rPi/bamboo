@@ -1293,8 +1293,13 @@ function renderPendientes() {
         var botonResolver = (p.estado === 'Pendiente' && !esRegistroHistorico)
             ? '<button type="button" class="btn btn-sm btn-success mr-1" title="Marcar como Entregado" onclick="abrirModalResolver(' + p.id + ')">✅</button>'
             : '';
+        // Si la tarea está Entregada y tiene datos capturables, el lápiz abre el modal
+        // Resolver pre-cargado (para ver/editar lo capturado). Si no, modal genérico.
+        var btnEditarOnclick = (p.estado === 'Entregado' && tieneCaptura(p.codigo_tarea))
+            ? 'abrirModalResolver(' + p.id + ')'
+            : 'abrirModalPendiente(' + p.id + ')';
         var botonEditar = !esRegistroHistorico
-            ? '<button type="button" class="btn btn-sm btn-outline-secondary mr-1" onclick="abrirModalPendiente(' + p.id + ')">✏️</button>'
+            ? '<button type="button" class="btn btn-sm btn-outline-secondary mr-1" onclick="' + btnEditarOnclick + '">✏️</button>'
             : '';
         var botonEliminar = !esRegistroHistorico
             ? '<button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarPendiente(' + p.id + ')">🗑️</button>'
@@ -1413,9 +1418,37 @@ function bienesPropiosVehiculares() {
     });
 }
 
+// Lista de codigos de tarea que capturan datos al cerrar.
+// Si una tarea con este código ya está Entregada y se quiere editar sus datos,
+// se abre el modal Resolver en modo "Editar datos" en lugar del modal genérico.
+var TAREAS_CON_CAPTURA = [
+    'compania_entrega_numero',
+    'liquidador_contacto',
+    'liquidador_accion',
+    'cliente_ingreso_taller',
+    'cliente_firma_finiquito',
+    'taller_fecha_entrega',
+    'liquidador_envio_compania',
+    'compania_pago',
+    'taller_disponibilidad_repuestos'
+];
+
+function tieneCaptura(codigo_tarea) {
+    return codigo_tarea && TAREAS_CON_CAPTURA.indexOf(codigo_tarea) !== -1;
+}
+
 function abrirModalResolver(id_pendiente) {
     var p = pendientesMem.find(function(x){ return x.id == id_pendiente; });
     if (!p) return;
+    // Si la tarea ya está Entregada, el modal está en modo "ver/editar datos"
+    var modoEdicion = (p.estado === 'Entregado');
+    $('#modalResolverPendiente .modal-title').html(
+        modoEdicion ? '✏️ Editar datos de la tarea' : '✅ Marcar como Entregado'
+    );
+    $('#modalResolverPendiente .btn-success').text(
+        modoEdicion ? 'Guardar cambios' : 'Marcar Entregado'
+    );
+    $('#modalResolverPendiente').data('modo_edicion', modoEdicion);
     $('#resolver_pend_id').val(p.id);
     $('#resolver_codigo_tarea').val(p.codigo_tarea || '');
     $('#resolver_descripcion').html('<strong>' + escHtml(p.descripcion) + '</strong>');
@@ -1538,10 +1571,17 @@ function renderResolver_companiaEntrega(p) {
             }
         }
 
+        // Pre-cargar valores actuales del siniestro (modo edición tras Entregado).
+        var actNS  = $.trim($('#numero_siniestro').val() || '');
+        var actLN  = $.trim($('#liquidador_nombre').val() || '');
+        var actLT  = $.trim($('#liquidador_telefono').val() || '');
+        var actLC  = $.trim($('#liquidador_correo').val() || '');
+
         var html =
           '<div class="form-group">' +
             '<label>N° Siniestro Compañía <span class="text-danger">*</span></label>' +
             '<input type="text" class="form-control" id="rp_numero_siniestro"' +
+            ' value="' + escAttr(actNS) + '"' +
             ' placeholder="Número entregado por la compañía">' +
           '</div>' +
           '<hr>' +
@@ -1550,16 +1590,17 @@ function renderResolver_companiaEntrega(p) {
           '<div class="form-row">' +
             '<div class="col-md-4 form-group">' +
               '<label>Nombre</label>' +
-              '<input type="text" class="form-control" id="rp_liquidador_nombre">' +
+              '<input type="text" class="form-control" id="rp_liquidador_nombre" value="' + escAttr(actLN) + '">' +
             '</div>' +
             '<div class="col-md-4 form-group">' +
               '<label>Teléfono</label>' +
               '<input type="text" class="form-control" id="rp_liquidador_telefono"' +
+              ' value="' + escAttr(actLT) + '"' +
               ' placeholder="56 9 XXXX XXXX">' +
             '</div>' +
             '<div class="col-md-4 form-group">' +
               '<label>Correo</label>' +
-              '<input type="email" class="form-control" id="rp_liquidador_correo">' +
+              '<input type="email" class="form-control" id="rp_liquidador_correo" value="' + escAttr(actLC) + '">' +
             '</div>' +
           '</div>' +
           '<small class="text-muted">' + helperText + '</small>' +
@@ -1794,12 +1835,18 @@ function guardarResolverPendiente() {
         }
     });
 
+    // Si la tarea ya estaba Entregada, conservamos su fecha original para no
+    // sobrescribirla con la fecha de hoy.
+    var modoEdicion = $('#modalResolverPendiente').data('modo_edicion') === true;
+    var fechaEnvio = modoEdicion && p.fecha_entrega
+        ? String(p.fecha_entrega).slice(0, 19).replace('T', ' ')
+        : fechaHoyIso();
     var data = {
         id:             p.id,
         responsable:    p.responsable,
         descripcion:    p.descripcion,
         estado:         'Entregado',
-        fecha_entrega:  fechaHoyIso(),
+        fecha_entrega:  fechaEnvio,
         notas:          $('#resolver_notas').val(),
         payload:        payload,
         payload_bienes: payload_bienes
