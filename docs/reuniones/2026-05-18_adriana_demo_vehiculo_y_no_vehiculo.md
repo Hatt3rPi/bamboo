@@ -60,6 +60,16 @@ Adriana describió el caso real:
 
 Decisión: NO modelar el rechazo ahora. *"Hasta hasta que ahí llegamos ahí llegamos."* La descripción del estado se queda como "finiquito" (no "preinforme") en `cliente_firma_finiquito` por ahora.
 
+## Caso "documentos faltantes" (sí se modela)
+
+Post-reunión Felipe pidió modelarlo. El liquidador, al revisar lo que el cliente entregó, puede identificar documentos faltantes — mientras no los tenga, no puede preparar el borrador del finiquito.
+
+Implementación (commit `eb107ea`):
+- Modal de cierre de `cliente_entrega` (solo no-veh) tiene un textarea opcional "Documentos faltantes".
+- Si se llena, se crea sub-tarea `cliente_entrega_faltantes` (Cliente, 4 días) con la lista. La cadena NO avanza a `liquidador_accion`.
+- Al cerrarse `cliente_entrega_faltantes`, recién se crea `liquidador_accion`.
+- Si se vuelve a faltar algo, se puede crear otra `cliente_entrega_faltantes` manualmente (no iterativo automático).
+
 ## Migración a producción
 
 - **Lunes 25-may ~20:30**: Felipe migra BD. Adriana no debe trabajar desde las 17:00.
