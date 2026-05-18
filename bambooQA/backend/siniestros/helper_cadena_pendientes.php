@@ -97,6 +97,16 @@ if (!function_exists('descripcion_tarea_liquidador_accion')) {
     }
 }
 
+if (!function_exists('descripcion_tarea_cliente_entrega_faltantes')) {
+    function descripcion_tarea_cliente_entrega_faltantes($faltantes = '') {
+        $base = 'Cliente debe entregar documentos faltantes al liquidador.';
+        if ($faltantes !== '') {
+            $base .= "\nFalta: " . $faltantes;
+        }
+        return $base;
+    }
+}
+
 if (!function_exists('descripcion_tarea_cliente_ingreso_taller')) {
     function descripcion_tarea_cliente_ingreso_taller() {
         return 'Cliente debe avisar el día de ingreso del vehículo al taller.';
@@ -216,6 +226,9 @@ if (!function_exists('promover_cadena_al_entregar')) {
                 break;
 
             case 'cliente_entrega':
+            case 'cliente_entrega_faltantes':
+                // Tras entregar antecedentes (sea entrega inicial o faltantes),
+                // el liquidador debe accionar (orden de reparación / preinforme).
                 crear_pendiente_auto(
                     $link, $id_siniestro, 'liquidador_accion', 'Liquidador',
                     descripcion_tarea_liquidador_accion($ramo), 1, $usuario

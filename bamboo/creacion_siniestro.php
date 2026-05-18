@@ -551,7 +551,11 @@ function recalcEtapas() {
 
     var $bc = $('#bloque_contacto_compania');
     if ($bc.is(':visible')) {
-        bloquearGrupo($bc, !tieneLiquidador,
+        // En modo creación el contacto compañía es opcional desde el inicio
+        // (Adriana puede ya tenerlo). En modo edición se mantiene la lógica
+        // de "se habilita cuando hay liquidador".
+        var bloquearBc = !MODO_CREACION && !tieneLiquidador;
+        bloquearGrupo($bc, bloquearBc,
             'El contacto en la compañía se registra cuando el liquidador ya esté asignado.');
     }
 
@@ -1100,6 +1104,17 @@ function nuevoBien(tipo) {
             if (descSugerida) $('#bien_descripcion').val(descSugerida);
         }
     }
+    // Pre-poblar dirección desde el ítem (bien propio + no-vehículo: inmueble/incendio).
+    // El campo patente_ubicacion de la póliza lleva la dirección en este caso.
+    if (tipo === 'propio' && cat !== 'vehiculo') {
+        var csv = ($('#items_seleccionados').val() || '').split(',').map(function(x){ return $.trim(x); }).filter(Boolean);
+        if (csv.length && itemsCache.length) {
+            var it = itemsCache.find(function(x){ return String(x.numero_item) === csv[0]; });
+            if (it && it.patente_ubicacion) {
+                $('#bien_direccion').val(colapsaSaltos(it.patente_ubicacion));
+            }
+        }
+    }
 
     // Reset al tab Descripción y checklist vacío (bien no persistido todavía)
     $('#modalBien .nav-tabs a[href="#tab-bien-desc"]').tab('show');
@@ -1424,6 +1439,8 @@ function bienesPropiosVehiculares() {
 var TAREAS_CON_CAPTURA = [
     'compania_entrega_numero',
     'liquidador_contacto',
+    'cliente_entrega',
+    'cliente_entrega_faltantes',
     'liquidador_accion',
     'cliente_ingreso_taller',
     'cliente_firma_finiquito',
@@ -1485,6 +1502,12 @@ function abrirModalResolver(id_pendiente) {
             break;
         case 'cliente_entrega':
             renderResolver_clienteEntrega(p);
+            break;
+        case 'cliente_entrega_faltantes':
+            $('#resolver_body').html(
+                '<p class="text-muted">El cliente entregó los documentos que faltaban. ' +
+                'Al guardar, el flujo continúa con el liquidador para preparar el borrador del finiquito.</p>'
+            );
             break;
         case 'liquidador_accion':
             esVeh ? renderResolver_liquidadorAccionVeh(p) : renderResolver_liquidadorAccionNoVeh(p);
@@ -1655,10 +1678,24 @@ function renderResolver_liquidadorContacto(p, esVeh) {
 }
 
 function renderResolver_clienteEntrega(p) {
-    $('#resolver_body').html(
-        '<p class="text-muted">El cliente entregó los antecedentes solicitados. ' +
-        'Puede agregar notas en el campo de abajo si desea dejar registro de qué entregó.</p>'
-    );
+    var ramo = ($('#ramo').val() || '').toUpperCase();
+    var esVeh = ramo.indexOf('VEH') !== -1 || ramo.indexOf('AUTO') !== -1;
+    var html = '<p class="text-muted">El cliente entregó los antecedentes solicitados. ' +
+        'Puede agregar notas en el campo de abajo si desea dejar registro de qué entregó.</p>';
+    // En no-vehículo: opción para registrar documentos que aún faltan.
+    // Si se llena, no avanza directo a liquidador_accion sino que crea una
+    // sub-tarea cliente_entrega_faltantes hasta que se entreguen.
+    if (!esVeh) {
+        html +=
+          '<hr>' +
+          '<div class="form-group">' +
+            '<label>Documentos faltantes <small class="text-muted">(opcional)</small></label>' +
+            '<textarea class="form-control" id="rp_documentos_faltantes" rows="2"' +
+            ' placeholder="Si el liquidador identifica documentos que aún faltan, lístelos aquí. Se creará una sub-tarea para el cliente."></textarea>' +
+            '<small class="text-muted">Si lo deja vacío, el flujo avanza al liquidador para que prepare el borrador del finiquito.</small>' +
+          '</div>';
+    }
+    $('#resolver_body').html(html);
 }
 
 function renderResolver_liquidadorAccionVeh(p) {

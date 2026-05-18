@@ -287,6 +287,21 @@ else {
                     }
                     break;
 
+                case 'cliente_entrega':
+                    // Si el liquidador identifica documentos faltantes al recibir los antecedentes,
+                    // se crea una sub-tarea para el cliente con la lista. La cadena automática
+                    // NO promueve a liquidador_accion hasta que esa sub-tarea se cierre.
+                    $faltantes = isset($payload['documentos_faltantes']) ? trim($payload['documentos_faltantes']) : '';
+                    if ($faltantes !== '' && !ramo_es_vehiculo($ramo_sin)) {
+                        crear_pendiente_auto(
+                            $link, $id_siniestro, 'cliente_entrega_faltantes', 'Cliente',
+                            descripcion_tarea_cliente_entrega_faltantes($faltantes), 4, $usuario
+                        );
+                        // Bandera: skippeamos la promoción automática a liquidador_accion.
+                        $GLOBALS['__skip_promover_cadena'] = true;
+                    }
+                    break;
+
                 case 'liquidador_accion':
                     if (ramo_es_vehiculo($ramo_sin)) {
                         // Por bien: fecha orden reparación + flag importación + obs
@@ -431,7 +446,7 @@ else {
             if ($codigo_tarea === 'compania_entrega_numero') {
                 // promover_al_liquidador requiere que numero_siniestro esté en BD; ya lo seteamos arriba.
                 promover_al_liquidador($link, $id_siniestro, $ramo_sin, $usuario);
-            } else {
+            } elseif (empty($GLOBALS['__skip_promover_cadena'])) {
                 promover_cadena_al_entregar($link, $id_siniestro, $codigo_tarea, $ramo_sin, $usuario);
             }
             // Correos automáticos asociados al cierre de la tarea (no bloquean si fallan).
