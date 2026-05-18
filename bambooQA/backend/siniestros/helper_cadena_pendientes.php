@@ -84,7 +84,7 @@ if (!function_exists('descripcion_tarea_liquidador')) {
 if (!function_exists('descripcion_tarea_cliente')) {
     function descripcion_tarea_cliente($ramo) {
         return ramo_es_vehiculo($ramo)
-            ? 'Cliente lleva el vehículo al taller designado.'
+            ? 'Cliente lleva el vehículo al taller designado para evaluación.'
             : 'Cliente entrega los antecedentes solicitados.';
     }
 }
