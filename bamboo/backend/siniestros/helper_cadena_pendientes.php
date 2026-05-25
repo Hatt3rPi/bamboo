@@ -5,8 +5,12 @@
  *
  * Códigos de tarea en `siniestros_pendientes.codigo_tarea`:
  *   - 'compania_entrega_numero'   — al crear sin N°, resp. Compañía, 24h.
- *   - 'liquidador_contacto'       — al recibir N°, resp. Liquidador, 24h.
- *   - 'cliente_entrega'           — tras liquidador_contacto, resp. Cliente, 4 días.
+ *   - 'liquidador_contacto'       — (no-veh) al recibir N°, resp. Liquidador, 24h.
+ *                                   En vehículo se OMITE: la compañía ya entrega el taller
+ *                                   al cliente en compania_entrega_numero (decisión Adriana
+ *                                   18-may-2026), así que se salta directo a cliente_entrega.
+ *   - 'cliente_entrega'           — (no-veh) tras liquidador_contacto / (veh) tras recibir N°,
+ *                                   resp. Cliente, 4 días.
  *   - 'liquidador_accion'         — tras cliente_entrega, resp. Liquidador, 24h.
  *                                   (finiquito si no-veh, orden reparación si veh)
  *   - 'cliente_ingreso_taller'    — (veh) tras liquidador_accion, resp. Cliente, 2 días.
@@ -35,6 +39,21 @@ if (!function_exists('pendiente_existe')) {
                                 WHERE id_siniestro='$id_siniestro' AND codigo_tarea='$c' LIMIT 1");
         while ($row = db_fetch_object($res)) { return (int)$row->id; }
         return 0;
+    }
+}
+
+/**
+ * ¿Algún bien del siniestro requiere importación de repuestos? El flag se marca por
+ * bien al cerrar liquidador_accion (orden de reparación). Determina si la cadena debe
+ * pasar por taller_disponibilidad_repuestos o saltarla. Decisión Adriana 11-may-2026.
+ */
+if (!function_exists('siniestro_requiere_importacion')) {
+    function siniestro_requiere_importacion($link, $id_siniestro) {
+        $res = db_query($link, "SELECT 1 FROM siniestros_bienes_afectados
+                                WHERE id_siniestro='$id_siniestro'
+                                  AND importacion_repuestos = TRUE LIMIT 1");
+        while ($row = db_fetch_object($res)) { return true; }
+        return false;
     }
 }
 
@@ -84,7 +103,7 @@ if (!function_exists('descripcion_tarea_liquidador')) {
 if (!function_exists('descripcion_tarea_cliente')) {
     function descripcion_tarea_cliente($ramo) {
         return ramo_es_vehiculo($ramo)
-            ? 'Cliente lleva el vehículo al taller designado.'
+            ? 'Cliente lleva el vehículo al taller designado para evaluación.'
             : 'Cliente entrega los antecedentes solicitados.';
     }
 }
@@ -97,9 +116,25 @@ if (!function_exists('descripcion_tarea_liquidador_accion')) {
     }
 }
 
+if (!function_exists('descripcion_tarea_cliente_entrega_faltantes')) {
+    function descripcion_tarea_cliente_entrega_faltantes($faltantes = '') {
+        $base = 'Cliente debe entregar documentos faltantes al liquidador.';
+        if ($faltantes !== '') {
+            $base .= "\nFalta: " . $faltantes;
+        }
+        return $base;
+    }
+}
+
 if (!function_exists('descripcion_tarea_cliente_ingreso_taller')) {
     function descripcion_tarea_cliente_ingreso_taller() {
         return 'Cliente debe avisar el día de ingreso del vehículo al taller.';
+    }
+}
+
+if (!function_exists('descripcion_tarea_taller_disponibilidad')) {
+    function descripcion_tarea_taller_disponibilidad() {
+        return 'Taller debe confirmar disponibilidad de repuestos.';
     }
 }
 
@@ -149,9 +184,31 @@ if (!function_exists('cerrar_siniestro_por_pago')) {
 }
 
 /**
+ * Primera tarea de la cadena una vez que el siniestro ya tiene N°.
+ * - No-vehículo: el liquidador toma contacto / pide antecedentes (liquidador_contacto, 24h).
+ * - Vehículo: NO hay contacto previo del liquidador (la compañía ya entregó el taller al
+ *   cliente en compania_entrega_numero). Se salta directo a que el cliente lleve el vehículo
+ *   a evaluación (cliente_entrega, 4 días). Decisión Adriana 18-may-2026.
+ */
+if (!function_exists('crear_tarea_tras_numero')) {
+    function crear_tarea_tras_numero($link, $id_siniestro, $ramo, $usuario) {
+        if (ramo_es_vehiculo($ramo)) {
+            return crear_pendiente_auto(
+                $link, $id_siniestro, 'cliente_entrega', 'Cliente',
+                descripcion_tarea_cliente($ramo), 4, $usuario
+            );
+        }
+        return crear_pendiente_auto(
+            $link, $id_siniestro, 'liquidador_contacto', 'Liquidador',
+            descripcion_tarea_liquidador($ramo), 1, $usuario
+        );
+    }
+}
+
+/**
  * Llamado al crear un siniestro. Decide qué tarea auto-inicial crear:
  * - Sin N° siniestro → tarea Compañía.
- * - Con N° siniestro ya al crear → tarea Liquidador directamente.
+ * - Con N° siniestro ya al crear → primera tarea según ramo (ver crear_tarea_tras_numero).
  */
 if (!function_exists('bootstrap_cadena_siniestro')) {
     function bootstrap_cadena_siniestro($link, $id_siniestro, $ramo, $numero_siniestro, $usuario) {
@@ -161,17 +218,15 @@ if (!function_exists('bootstrap_cadena_siniestro')) {
                 descripcion_tarea_compania($ramo), 1, $usuario
             );
         } else {
-            crear_pendiente_auto(
-                $link, $id_siniestro, 'liquidador_contacto', 'Liquidador',
-                descripcion_tarea_liquidador($ramo), 1, $usuario
-            );
+            crear_tarea_tras_numero($link, $id_siniestro, $ramo, $usuario);
         }
     }
 }
 
 /**
  * Llamado cuando se actualiza un siniestro y `numero_siniestro` deja de estar vacío.
- * Cierra la tarea compañía (si existe) y crea la tarea liquidador.
+ * Cierra la tarea compañía (si existe) y crea la primera tarea según ramo
+ * (liquidador_contacto en no-veh, cliente_entrega directo en veh).
  */
 if (!function_exists('promover_al_liquidador')) {
     function promover_al_liquidador($link, $id_siniestro, $ramo, $usuario) {
@@ -179,17 +234,14 @@ if (!function_exists('promover_al_liquidador')) {
         if ($id_comp > 0) {
             $u = str_replace("'", "''", $usuario);
             db_query($link, "UPDATE siniestros_pendientes
-                             SET estado='Entregado', fecha_entrega=CURRENT_DATE, updated_at=NOW()
+                             SET estado='Entregado', fecha_entrega=NOW(), updated_at=NOW()
                              WHERE id='$id_comp' AND estado='Pendiente'");
             db_query($link, "INSERT INTO siniestros_pendientes_bitacora
                                 (id_pendiente, accion, estado_anterior, estado_nuevo, usuario)
                              VALUES
                                 ('$id_comp', 'Auto-entregado (ingreso N° siniestro)', 'Pendiente', 'Entregado', '$u')");
         }
-        crear_pendiente_auto(
-            $link, $id_siniestro, 'liquidador_contacto', 'Liquidador',
-            descripcion_tarea_liquidador($ramo), 1, $usuario
-        );
+        crear_tarea_tras_numero($link, $id_siniestro, $ramo, $usuario);
     }
 }
 
@@ -210,6 +262,9 @@ if (!function_exists('promover_cadena_al_entregar')) {
                 break;
 
             case 'cliente_entrega':
+            case 'cliente_entrega_faltantes':
+                // Tras entregar antecedentes (sea entrega inicial o faltantes),
+                // el liquidador debe accionar (orden de reparación / preinforme).
                 crear_pendiente_auto(
                     $link, $id_siniestro, 'liquidador_accion', 'Liquidador',
                     descripcion_tarea_liquidador_accion($ramo), 1, $usuario
@@ -218,16 +273,35 @@ if (!function_exists('promover_cadena_al_entregar')) {
 
             case 'liquidador_accion':
                 if ($es_veh) {
-                    crear_pendiente_auto(
-                        $link, $id_siniestro, 'cliente_ingreso_taller', 'Cliente',
-                        descripcion_tarea_cliente_ingreso_taller(), 2, $usuario
-                    );
+                    if (siniestro_requiere_importacion($link, $id_siniestro)) {
+                        // Hubo importación de repuestos: el taller (o el liquidador) debe
+                        // confirmar disponibilidad antes de que el cliente reingrese.
+                        // Bucle de seguimiento cada 4 días hasta confirmar.
+                        crear_pendiente_auto(
+                            $link, $id_siniestro, 'taller_disponibilidad_repuestos', 'Taller',
+                            descripcion_tarea_taller_disponibilidad(), 4, $usuario
+                        );
+                    } else {
+                        // Sin importación: se omite la espera de repuestos y el cliente
+                        // coordina directamente el reingreso al taller. Decisión Adriana 11-may.
+                        crear_pendiente_auto(
+                            $link, $id_siniestro, 'cliente_ingreso_taller', 'Cliente',
+                            descripcion_tarea_cliente_ingreso_taller(), 2, $usuario
+                        );
+                    }
                 } else {
                     crear_pendiente_auto(
                         $link, $id_siniestro, 'cliente_firma_finiquito', 'Cliente',
                         descripcion_tarea_cliente_firma(), 4, $usuario
                     );
                 }
+                break;
+
+            case 'taller_disponibilidad_repuestos':
+                crear_pendiente_auto(
+                    $link, $id_siniestro, 'cliente_ingreso_taller', 'Cliente',
+                    descripcion_tarea_cliente_ingreso_taller(), 2, $usuario
+                );
                 break;
 
             case 'cliente_ingreso_taller':
@@ -246,10 +320,16 @@ if (!function_exists('promover_cadena_al_entregar')) {
                 break;
 
             case 'liquidador_envio_compania':
-                crear_pendiente_auto(
-                    $link, $id_siniestro, 'compania_pago', 'Compañía',
-                    descripcion_tarea_compania_pago(), 3, $usuario
-                );
+                if ($es_veh) {
+                    // Vehículo: no hay pago al cliente (recibe el vehículo reparado).
+                    // El siniestro se cierra acá directamente.
+                    cerrar_siniestro_por_pago($link, $id_siniestro, $usuario);
+                } else {
+                    crear_pendiente_auto(
+                        $link, $id_siniestro, 'compania_pago', 'Compañía',
+                        descripcion_tarea_compania_pago(), 3, $usuario
+                    );
+                }
                 break;
 
             case 'compania_pago':

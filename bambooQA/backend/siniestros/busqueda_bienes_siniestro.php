@@ -16,6 +16,14 @@ $res = db_query($link, "SELECT b.id, b.id_siniestro, b.tipo, b.categoria, b.desc
                                COALESCE(b.item_afectado,'') AS item_afectado,
                                b.patente, b.marca, b.modelo, b.anio_vehiculo,
                                b.taller_nombre, b.taller_telefono,
+                               COALESCE(b.taller_correo, '') AS taller_correo,
+                               b.liquidador_fecha_orden_reparacion,
+                               COALESCE(b.importacion_repuestos, FALSE) AS importacion_repuestos,
+                               COALESCE(b.importacion_repuestos_obs, '') AS importacion_repuestos_obs,
+                               b.cliente_fecha_ingreso_taller,
+                               b.cliente_fecha_firma_finiquito,
+                               b.taller_fecha_compromiso_entrega,
+                               b.liquidador_fecha_finiquito,
                                b.created_at, b.updated_at,
                                COALESCE(d.total, 0) AS total_docs,
                                COALESCE(d.pendientes, 0) AS pendientes,
@@ -50,6 +58,18 @@ while ($row = db_fetch_object($res)) {
         'anio_vehiculo'   => $row->anio_vehiculo,
         'taller_nombre'   => $row->taller_nombre,
         'taller_telefono' => $row->taller_telefono,
+        'taller_correo'   => $row->taller_correo,
+        // Fechas normalizadas a 'YYYY-MM-DD' (lo que acepta <input type="date">)
+        'liquidador_fecha_orden_reparacion' => $row->liquidador_fecha_orden_reparacion ? substr((string)$row->liquidador_fecha_orden_reparacion, 0, 10) : null,
+        // Postgres devuelve booleans como string 't'/'f' via pg_fetch_object (no como
+        // booleano PHP). FILTER_VALIDATE_BOOLEAN no reconoce 't'/'f' → siempre false.
+        // Usar comparación explícita.
+        'importacion_repuestos'             => in_array($row->importacion_repuestos, array('t', 'true', '1', 1, true), true),
+        'importacion_repuestos_obs'         => $row->importacion_repuestos_obs,
+        'cliente_fecha_ingreso_taller'      => $row->cliente_fecha_ingreso_taller ? substr((string)$row->cliente_fecha_ingreso_taller, 0, 10) : null,
+        'cliente_fecha_firma_finiquito'     => $row->cliente_fecha_firma_finiquito ? substr((string)$row->cliente_fecha_firma_finiquito, 0, 10) : null,
+        'taller_fecha_compromiso_entrega'   => $row->taller_fecha_compromiso_entrega ? substr((string)$row->taller_fecha_compromiso_entrega, 0, 10) : null,
+        'liquidador_fecha_finiquito'        => $row->liquidador_fecha_finiquito ? substr((string)$row->liquidador_fecha_finiquito, 0, 10) : null,
         'total_docs'      => (int)$row->total_docs,
         'pendientes'      => (int)$row->pendientes,
         'entregados'      => (int)$row->entregados,

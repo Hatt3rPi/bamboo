@@ -12,7 +12,14 @@ function run($cmd) {
 }
 
 $log = "";
-$log .= run("cd $src && git pull origin master");
+// Asegurar que el repo está exactamente en origin/master (descarta cualquier
+// otro branch o cambio local que algun otro deploy haya dejado, p.ej. la rama
+// `redesign` que comparte destino vía .cpanel.yml).
+$log .= run("cd $src && git fetch origin --prune");
+$log .= run("cd $src && git checkout master");
+$log .= run("cd $src && git checkout -- .");
+$log .= run("cd $src && git clean -fd");
+$log .= run("cd $src && git merge --ff-only origin/master");
 $log .= run("mkdir -p $dst/bamboo $dst/bambooQA $dst/assets $dst/backend $dst/vendor");
 $log .= run("cp -R $src/bamboo/. $dst/bamboo/");
 $log .= run("cp -R $src/bambooQA/. $dst/bambooQA/");
