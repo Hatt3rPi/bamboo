@@ -5,8 +5,12 @@
  *
  * Códigos de tarea en `siniestros_pendientes.codigo_tarea`:
  *   - 'compania_entrega_numero'   — al crear sin N°, resp. Compañía, 24h.
- *   - 'liquidador_contacto'       — al recibir N°, resp. Liquidador, 24h.
- *   - 'cliente_entrega'           — tras liquidador_contacto, resp. Cliente, 4 días.
+ *   - 'liquidador_contacto'       — (no-veh) al recibir N°, resp. Liquidador, 24h.
+ *                                   En vehículo se OMITE: la compañía ya entrega el taller
+ *                                   al cliente en compania_entrega_numero (decisión Adriana
+ *                                   18-may-2026), así que se salta directo a cliente_entrega.
+ *   - 'cliente_entrega'           — (no-veh) tras liquidador_contacto / (veh) tras recibir N°,
+ *                                   resp. Cliente, 4 días.
  *   - 'liquidador_accion'         — tras cliente_entrega, resp. Liquidador, 24h.
  *                                   (finiquito si no-veh, orden reparación si veh)
  *   - 'cliente_ingreso_taller'    — (veh) tras liquidador_accion, resp. Cliente, 2 días.
@@ -165,9 +169,31 @@ if (!function_exists('cerrar_siniestro_por_pago')) {
 }
 
 /**
+ * Primera tarea de la cadena una vez que el siniestro ya tiene N°.
+ * - No-vehículo: el liquidador toma contacto / pide antecedentes (liquidador_contacto, 24h).
+ * - Vehículo: NO hay contacto previo del liquidador (la compañía ya entregó el taller al
+ *   cliente en compania_entrega_numero). Se salta directo a que el cliente lleve el vehículo
+ *   a evaluación (cliente_entrega, 4 días). Decisión Adriana 18-may-2026.
+ */
+if (!function_exists('crear_tarea_tras_numero')) {
+    function crear_tarea_tras_numero($link, $id_siniestro, $ramo, $usuario) {
+        if (ramo_es_vehiculo($ramo)) {
+            return crear_pendiente_auto(
+                $link, $id_siniestro, 'cliente_entrega', 'Cliente',
+                descripcion_tarea_cliente($ramo), 4, $usuario
+            );
+        }
+        return crear_pendiente_auto(
+            $link, $id_siniestro, 'liquidador_contacto', 'Liquidador',
+            descripcion_tarea_liquidador($ramo), 1, $usuario
+        );
+    }
+}
+
+/**
  * Llamado al crear un siniestro. Decide qué tarea auto-inicial crear:
  * - Sin N° siniestro → tarea Compañía.
- * - Con N° siniestro ya al crear → tarea Liquidador directamente.
+ * - Con N° siniestro ya al crear → primera tarea según ramo (ver crear_tarea_tras_numero).
  */
 if (!function_exists('bootstrap_cadena_siniestro')) {
     function bootstrap_cadena_siniestro($link, $id_siniestro, $ramo, $numero_siniestro, $usuario) {
@@ -177,17 +203,15 @@ if (!function_exists('bootstrap_cadena_siniestro')) {
                 descripcion_tarea_compania($ramo), 1, $usuario
             );
         } else {
-            crear_pendiente_auto(
-                $link, $id_siniestro, 'liquidador_contacto', 'Liquidador',
-                descripcion_tarea_liquidador($ramo), 1, $usuario
-            );
+            crear_tarea_tras_numero($link, $id_siniestro, $ramo, $usuario);
         }
     }
 }
 
 /**
  * Llamado cuando se actualiza un siniestro y `numero_siniestro` deja de estar vacío.
- * Cierra la tarea compañía (si existe) y crea la tarea liquidador.
+ * Cierra la tarea compañía (si existe) y crea la primera tarea según ramo
+ * (liquidador_contacto en no-veh, cliente_entrega directo en veh).
  */
 if (!function_exists('promover_al_liquidador')) {
     function promover_al_liquidador($link, $id_siniestro, $ramo, $usuario) {
@@ -202,10 +226,7 @@ if (!function_exists('promover_al_liquidador')) {
                              VALUES
                                 ('$id_comp', 'Auto-entregado (ingreso N° siniestro)', 'Pendiente', 'Entregado', '$u')");
         }
-        crear_pendiente_auto(
-            $link, $id_siniestro, 'liquidador_contacto', 'Liquidador',
-            descripcion_tarea_liquidador($ramo), 1, $usuario
-        );
+        crear_tarea_tras_numero($link, $id_siniestro, $ramo, $usuario);
     }
 }
 
