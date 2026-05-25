@@ -341,7 +341,7 @@ if (!$es_ramo_vehiculo_php) {
             value="<?php echo $liquidador_correo; ?>">
         </div>
       </div>
-      <div class="form-row">
+      <div class="form-row" id="bloque_carpeta_liquidador">
         <div class="col-md-4 mb-3">
           <label for="numero_carpeta_liquidador">N° Carpeta Liquidador</label>
           <input type="text" class="form-control" id="numero_carpeta_liquidador" name="numero_carpeta_liquidador"
@@ -522,6 +522,9 @@ function toggleVehiculo(ramo) {
     // El bloque de contacto compañía solo aplica en siniestros no-vehículo (incendio, etc.)
     var bc = document.getElementById('bloque_contacto_compania');
     if (bc) bc.style.display = esRamoVehiculo ? 'none' : '';
+    // N° carpeta liquidador no aplica en vehículo (liquidadores internos no usan carpeta).
+    var bcl = document.getElementById('bloque_carpeta_liquidador');
+    if (bcl) bcl.style.display = esRamoVehiculo ? 'none' : '';
     recalcEtapas();
 }
 

@@ -42,6 +42,21 @@ if (!function_exists('pendiente_existe')) {
     }
 }
 
+/**
+ * ¿Algún bien del siniestro requiere importación de repuestos? El flag se marca por
+ * bien al cerrar liquidador_accion (orden de reparación). Determina si la cadena debe
+ * pasar por taller_disponibilidad_repuestos o saltarla. Decisión Adriana 11-may-2026.
+ */
+if (!function_exists('siniestro_requiere_importacion')) {
+    function siniestro_requiere_importacion($link, $id_siniestro) {
+        $res = db_query($link, "SELECT 1 FROM siniestros_bienes_afectados
+                                WHERE id_siniestro='$id_siniestro'
+                                  AND importacion_repuestos = TRUE LIMIT 1");
+        while ($row = db_fetch_object($res)) { return true; }
+        return false;
+    }
+}
+
 if (!function_exists('crear_pendiente_auto')) {
     function crear_pendiente_auto($link, $id_siniestro, $codigo, $responsable, $descripcion, $dias_alarma, $usuario) {
         if (pendiente_existe($link, $id_siniestro, $codigo)) return 0;
@@ -258,13 +273,22 @@ if (!function_exists('promover_cadena_al_entregar')) {
 
             case 'liquidador_accion':
                 if ($es_veh) {
-                    // Antes de que el cliente reingrese al taller, el taller (o el
-                    // liquidador) debe confirmar disponibilidad de repuestos. Bucle de
-                    // seguimiento cada 4 días hasta confirmar.
-                    crear_pendiente_auto(
-                        $link, $id_siniestro, 'taller_disponibilidad_repuestos', 'Taller',
-                        descripcion_tarea_taller_disponibilidad(), 4, $usuario
-                    );
+                    if (siniestro_requiere_importacion($link, $id_siniestro)) {
+                        // Hubo importación de repuestos: el taller (o el liquidador) debe
+                        // confirmar disponibilidad antes de que el cliente reingrese.
+                        // Bucle de seguimiento cada 4 días hasta confirmar.
+                        crear_pendiente_auto(
+                            $link, $id_siniestro, 'taller_disponibilidad_repuestos', 'Taller',
+                            descripcion_tarea_taller_disponibilidad(), 4, $usuario
+                        );
+                    } else {
+                        // Sin importación: se omite la espera de repuestos y el cliente
+                        // coordina directamente el reingreso al taller. Decisión Adriana 11-may.
+                        crear_pendiente_auto(
+                            $link, $id_siniestro, 'cliente_ingreso_taller', 'Cliente',
+                            descripcion_tarea_cliente_ingreso_taller(), 2, $usuario
+                        );
+                    }
                 } else {
                     crear_pendiente_auto(
                         $link, $id_siniestro, 'cliente_firma_finiquito', 'Cliente',
