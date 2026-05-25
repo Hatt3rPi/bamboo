@@ -151,6 +151,71 @@ table.dataTable thead .sorting_desc { color: var(--bamboo-700); }
   padding: 5px 12px;
 }
 
+/* ============================================================
+   Botones de acción legacy dentro de filas-detalle de DataTables.
+   Las funciones format_*() en JS generan <button> SIN clase, algunos
+   con color inline (#FF0000 destructivo, #FFC107 precaución). Acá los
+   unificamos a icon-buttons cuadrados acordes al redesign, sin tocar JS.
+   ============================================================ */
+.dataTables_wrapper button:not(.btn):not(.close):not(.dt-button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 9px;
+  margin: 2px;
+  font-size: var(--text-sm);
+  line-height: 1;
+  color: var(--fg-muted);
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+  vertical-align: middle;
+}
+.dataTables_wrapper button:not(.btn):not(.close):not(.dt-button):hover {
+  color: var(--bamboo-700);
+  border-color: var(--bamboo-600) !important;
+  background: var(--bamboo-50) !important;
+}
+.dataTables_wrapper button:not(.btn):not(.close):not(.dt-button) i { font-size: 13px; }
+
+/* Variante destructiva (botones con rojo inline) */
+.dataTables_wrapper button:not(.btn):not(.close)[style*="FF0000"],
+.dataTables_wrapper button:not(.btn):not(.close)[style*="#FF0000"],
+.dataTables_wrapper button:not(.btn):not(.close)[style*="red"] {
+  color: var(--danger-700) !important;
+  border-color: var(--danger-500) !important;
+  background: var(--danger-50) !important;
+}
+.dataTables_wrapper button:not(.btn):not(.close)[style*="FF0000"]:hover,
+.dataTables_wrapper button:not(.btn):not(.close)[style*="#FF0000"]:hover,
+.dataTables_wrapper button:not(.btn):not(.close)[style*="red"]:hover {
+  color: #fff !important;
+  background: var(--danger-500) !important;
+  border-color: var(--danger-500) !important;
+}
+
+/* Variante precaución (botones con amarillo inline #FFC107) */
+.dataTables_wrapper button:not(.btn):not(.close)[style*="FFC107"] {
+  color: var(--warning-700) !important;
+  border-color: var(--warning-500) !important;
+  background: var(--warning-50) !important;
+}
+.dataTables_wrapper button:not(.btn):not(.close)[style*="FFC107"]:hover {
+  color: #fff !important;
+  background: var(--warning-500) !important;
+  border-color: var(--warning-500) !important;
+}
+
+/* Los separadores legacy "<a> - </a>" entre botones quedan tenues */
+.dataTables_wrapper td > a:empty,
+.dataTables_wrapper td > a:not([href]) { color: var(--fg-subtle); }
+
 /* Fix scrollX: cuando DataTables tiene scrollX:true clona el thead dentro
    de .dataTables_scrollBody como medida de "spacer". Nuestro padding/borde
    con !important lo dejaba visible (segunda fila fantasma con flechitas).
