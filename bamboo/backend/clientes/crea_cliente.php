@@ -15,6 +15,10 @@ $rut_completo = str_replace("-", "", estandariza_info($_POST["rut"]));
  $telefono=estandariza_info($_POST["telefono"]);
  $referido=estandariza_info($_POST["referido"]);
  $grupo=estandariza_info($_POST["grupo"]);
+ // Los campos apellido_paterno/materno existen en el form como inputs ocultos
+ // (Adriana usa solo "nombre" completo). Defaults para que no haya undefined.
+ $apellidop = isset($_POST['apellidop']) ? estandariza_info($_POST['apellidop']) : '';
+ $apellidom = isset($_POST['apellidom']) ? estandariza_info($_POST['apellidom']) : '';
 
 
 db_set_charset($link, 'utf8');
@@ -25,15 +29,16 @@ db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega client
 db_query($link, $query);
 
 //echo 'insert into clientes(nombre_cliente, rut_sin_dv, dv, direccion_personal, correo,direccion_laboral, telefono, referido, grupo) values (\''.$nombre.'\', \''.$rut.'\', \''.$dv.'\', \''.$direccionp.'\', \''.$correo_electronico.'\', \''.$direccionl.'\', \''.$telefono.'\', \''.$referido.'\', \''.$grupo.'\');';
-  foreach (array_keys($_POST['nombrecontact']) as $key) {
-    $nombrecontact = $_POST['nombrecontact'][$key];
-    $telefonocontact = $_POST['telefonocontact'][$key];
-    $emailcontact = $_POST['emailcontact'][$key];
-    $query_contactos="INSERT INTO clientes_contactos (id_cliente, nombre, telefono, correo) select id , '".$nombrecontact."', '".$telefonocontact."', '".$emailcontact."' from clientes where rut_sin_dv='".$rut."';";
-    db_query($link, $query_contactos);
-    db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega contactos', '".str_replace("'","**",$query_contactos)."','contacto',null, '".$_SERVER['PHP_SELF']."')");
-   
-    //echo "INSERT INTO clientes_contactos (id_cliente,indice, nombre, telefono, correo) select id , '".$nombrecontact."', '".$key."',, '".$telefonocontact."', '".$emailcontact."' from clientes where rut_sin_dv='".$rut."';";
+  if (isset($_POST['nombrecontact']) && is_array($_POST['nombrecontact'])) {
+    foreach (array_keys($_POST['nombrecontact']) as $key) {
+      $nombrecontact = isset($_POST['nombrecontact'][$key]) ? $_POST['nombrecontact'][$key] : '';
+      $telefonocontact = isset($_POST['telefonocontact'][$key]) ? $_POST['telefonocontact'][$key] : '';
+      $emailcontact = isset($_POST['emailcontact'][$key]) ? $_POST['emailcontact'][$key] : '';
+      if ($nombrecontact === '' && $telefonocontact === '' && $emailcontact === '') { continue; }
+      $query_contactos="INSERT INTO clientes_contactos (id_cliente, nombre, telefono, correo) select id , '".$nombrecontact."', '".$telefonocontact."', '".$emailcontact."' from clientes where rut_sin_dv='".$rut."';";
+      db_query($link, $query_contactos);
+      db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega contactos', '".str_replace("'","**",$query_contactos)."','contacto',null, '".$_SERVER['PHP_SELF']."')");
+    }
   }
   db_close($link);
 

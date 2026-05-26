@@ -26,16 +26,17 @@ db_query($link,$query);
 db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Modifica cliente', '".str_replace("'","**",$query)."','cliente',".$id.", '".$_SERVER['PHP_SELF']."')");
 $borrar=  'DELETE from clientes_contactos  WHERE id_cliente='.$id.';';
 db_query($link,$borrar);
-foreach (array_keys($_POST['nombrecontact']) as $key) {
-   
-    $nombrecontact = $_POST['nombrecontact'][$key];
-    $telefonocontact = $_POST['telefonocontact'][$key];
-    $emailcontact = $_POST['emailcontact'][$key];
-	
-	$agregar_contacto[$key] = 'INSERT INTO clientes_contactos (id_cliente, nombre, telefono, correo) values (\''.$id.'\', \''.$nombrecontact.'\',\''.$telefonocontact.'\',\''.$emailcontact.'\') ;';
+$agregar_contacto = array();
+if (isset($_POST['nombrecontact']) && is_array($_POST['nombrecontact'])) {
+  foreach (array_keys($_POST['nombrecontact']) as $key) {
+    $nombrecontact   = isset($_POST['nombrecontact'][$key])   ? $_POST['nombrecontact'][$key]   : '';
+    $telefonocontact = isset($_POST['telefonocontact'][$key]) ? $_POST['telefonocontact'][$key] : '';
+    $emailcontact    = isset($_POST['emailcontact'][$key])    ? $_POST['emailcontact'][$key]    : '';
+    if ($nombrecontact === '' && $telefonocontact === '' && $emailcontact === '') { continue; }
+    $agregar_contacto[$key] = 'INSERT INTO clientes_contactos (id_cliente, nombre, telefono, correo) values (\''.$id.'\', \''.$nombrecontact.'\',\''.$telefonocontact.'\',\''.$emailcontact.'\') ;';
     db_query($link, $agregar_contacto[$key]);
-    
   }
+}
   $vacio = "";
   $borrar2=  "DELETE from clientes_contactos  WHERE id_cliente=".$id." and nombre='".$vacio."';";
 db_query($link,$borrar2);
