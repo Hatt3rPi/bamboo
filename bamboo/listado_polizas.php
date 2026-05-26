@@ -37,9 +37,20 @@ require_once 'layout.php';
     <h1>Pólizas</h1>
     <div class="subtitle">Cartera vigente, vencida y cancelada</div>
   </div>
-  <button type="button" class="btn btn-secondary" onclick="window.location.href='/bamboo/backend/polizas/genera_excel_polizas.php'">
-    <i class="fas fa-file-excel mr-2"></i>Descargar Excel
-  </button>
+  <div class="d-flex flex-wrap" style="gap:var(--space-2)">
+    <a href="creacion_propuesta_poliza.php" class="btn btn-bamboo">
+      <i class="fas fa-plus mr-2"></i>Nueva propuesta
+    </a>
+    <button type="button" class="btn btn-secondary" onclick="crear_poliza_web()">
+      <i class="fas fa-globe mr-2"></i>Póliza web
+    </button>
+    <a href="listado_propuesta_polizas.php" class="btn btn-secondary">
+      <i class="fas fa-file-alt mr-2"></i>Ver propuestas
+    </a>
+    <button type="button" class="btn btn-secondary" onclick="window.location.href='/bamboo/backend/polizas/genera_excel_polizas.php'">
+      <i class="fas fa-file-excel mr-2"></i>Excel
+    </button>
+  </div>
 </div>
 
 <div class="card">
