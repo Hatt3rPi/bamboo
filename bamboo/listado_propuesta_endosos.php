@@ -37,7 +37,10 @@ require_once 'layout.php';
     <h1>Propuestas de endoso</h1>
     <div class="subtitle">Endosos en propuesta, pendientes de aprobación o emisión</div>
   </div>
-  <div class="d-flex" style="gap:var(--space-2)">
+  <div class="d-flex flex-wrap" style="gap:var(--space-2)">
+    <a href="endosos.php" class="btn btn-secondary">
+      <i class="fas fa-arrow-left mr-2"></i>Endosos
+    </a>
     <a href="creacion_propuesta_endoso.php" class="btn btn-bamboo">
       <i class="fas fa-plus mr-2"></i>Nueva propuesta
     </a>

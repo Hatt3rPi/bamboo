@@ -87,13 +87,10 @@ function bb_nav_class($id, $active) {
     <a href="/bamboo/listado_clientes.php" class="<?= bb_nav_class('clientes', $page_active) ?>">
       <i class="fas fa-users"></i><span>Clientes</span>
     </a>
-    <a href="/bamboo/listado_polizas.php" class="<?= bb_nav_class('polizas', $page_active) ?>">
+    <a href="/bamboo/polizas.php" class="<?= bb_nav_class('polizas', $page_active) ?>">
       <i class="fas fa-file-contract"></i><span>Pólizas</span>
     </a>
-    <a href="/bamboo/listado_propuesta_polizas.php" class="<?= bb_nav_class('propuestas', $page_active) ?>">
-      <i class="fas fa-file-alt"></i><span>Propuestas</span>
-    </a>
-    <a href="/bamboo/listado_endosos.php" class="<?= bb_nav_class('endosos', $page_active) ?>">
+    <a href="/bamboo/endosos.php" class="<?= bb_nav_class('endosos', $page_active) ?>">
       <i class="fas fa-file-signature"></i><span>Endosos</span>
     </a>
 

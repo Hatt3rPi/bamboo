@@ -23,9 +23,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"])==true){
 $buscar= estandariza_info($_POST["busqueda"]);
 }
 
-$page_title      = 'Propuestas · Bamboo Seguros';
-$page_active     = 'propuestas';
-$breadcrumb_main = 'Listado de propuestas';
+$page_title      = 'Propuestas de póliza · Bamboo Seguros';
+$page_active     = 'polizas';
+$breadcrumb_main = 'Propuestas de póliza';
 $breadcrumb_sub  = 'Pólizas';
 require_once 'layout.php';
 ?>
@@ -34,10 +34,13 @@ require_once 'layout.php';
 
 <div class="bb-page-header">
   <div>
-    <h1>Propuestas de pólizas</h1>
+    <h1>Propuestas de póliza</h1>
     <div class="subtitle">Propuestas en curso, aprobadas y emitidas</div>
   </div>
-  <div class="d-flex" style="gap:var(--space-2)">
+  <div class="d-flex flex-wrap" style="gap:var(--space-2)">
+    <a href="polizas.php" class="btn btn-secondary">
+      <i class="fas fa-arrow-left mr-2"></i>Pólizas
+    </a>
     <a href="creacion_propuesta_poliza.php" class="btn btn-bamboo">
       <i class="fas fa-plus mr-2"></i>Nueva propuesta
     </a>

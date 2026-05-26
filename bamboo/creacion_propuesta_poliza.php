@@ -183,7 +183,7 @@ function estandariza_info( $data ) {
 ?>
 <?php
 $page_title       = 'Propuesta de póliza · Bamboo Seguros';
-$page_active      = 'propuestas';
+$page_active      = 'polizas';
 $breadcrumb_main  = 'Crear / editar propuesta';
 $breadcrumb_sub   = 'Pólizas';
 require_once 'layout.php';

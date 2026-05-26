@@ -34,12 +34,17 @@ require_once 'layout.php';
 
 <div class="bb-page-header">
   <div>
-    <h1>Endosos</h1>
-    <div class="subtitle">Endosos emitidos sobre pólizas vigentes</div>
+    <h1>Endosos emitidos</h1>
+    <div class="subtitle">Historial de endosos firmados sobre pólizas vigentes</div>
   </div>
-  <button type="button" class="btn btn-secondary" onclick="window.location.href='/bamboo/backend/endosos/genera_excel_endosos.php'">
-    <i class="fas fa-file-excel mr-2"></i>Descargar Excel
-  </button>
+  <div class="d-flex flex-wrap" style="gap:var(--space-2)">
+    <a href="endosos.php" class="btn btn-secondary">
+      <i class="fas fa-arrow-left mr-2"></i>Endosos
+    </a>
+    <button type="button" class="btn btn-bamboo" onclick="window.location.href='/bamboo/backend/endosos/genera_excel_endosos.php'">
+      <i class="fas fa-file-excel mr-2"></i>Descargar Excel
+    </button>
+  </div>
 </div>
 
 <div class="card">

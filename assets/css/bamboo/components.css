@@ -475,3 +475,90 @@ label, .form-label {
 .rounded-bb-sm { border-radius: var(--radius-sm) !important; }
 .rounded-bb-md { border-radius: var(--radius-md) !important; }
 .rounded-bb-lg { border-radius: var(--radius-lg) !important; }
+
+/* ============================================================
+   HUB CARDS — landing de un módulo (Pólizas, Endosos, etc.)
+   Grid de tarjetas grandes que linkean a acciones / listados.
+   ============================================================ */
+.bb-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-5);
+  margin-top: var(--space-4);
+}
+.bb-hub-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-5);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  color: var(--fg-default);
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+  min-height: 132px;
+}
+.bb-hub-card:hover {
+  border-color: var(--bamboo-600);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  color: var(--fg-default);
+}
+.bb-hub-card-icon {
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--bamboo-50);
+  color: var(--bamboo-700);
+  font-size: 24px;
+}
+.bb-hub-card.is-warm .bb-hub-card-icon {
+  background: var(--earth-50, #f9f1e3);
+  color: var(--earth-700, #6e4f1f);
+}
+.bb-hub-card-body { flex: 1 1 auto; min-width: 0; }
+.bb-hub-card-body h3 {
+  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-xl);
+  color: var(--fg-default);
+  line-height: 1.2;
+}
+.bb-hub-card-body .desc {
+  margin: 0 0 var(--space-3);
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+.bb-hub-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--fg-subtle);
+}
+.bb-hub-card-meta .count {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--bamboo-700);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.bb-hub-card-meta .arrow {
+  color: var(--bamboo-600);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.bb-hub-card:hover .bb-hub-card-meta .arrow { transform: translateX(4px); }
