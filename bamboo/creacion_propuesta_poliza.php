@@ -89,8 +89,8 @@ $poliza_renovada='';
                 $venc_gtia[] = $row_item->venc_gtia;
             }
         }
-    }
       db_close($link);
+    }
     if ($_SERVER[ "REQUEST_METHOD" ] == "POST" and $_POST["accion"] == 'modifica_poliza')
     {
       $camino = $_POST["accion"];
@@ -171,8 +171,8 @@ $poliza_renovada='';
                 $venc_gtia[] = $row_item->venc_gtia;
             }
         }
+      db_close($link);
     }
-    db_close($link);
 function estandariza_info( $data ) {
   $data = trim( $data );
   $data = stripslashes( $data );
