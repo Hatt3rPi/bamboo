@@ -15,16 +15,17 @@ $poliza_renovada='';
   if ($_SERVER[ "REQUEST_METHOD" ] == "POST" and ($_POST["accion"] == 'actualiza_propuesta' or $_POST["accion"] == 'crear_poliza' or $_POST["accion"] == 'crear_poliza_web'))
     {
       $camino = $_POST["accion"];
-      $accion_secundaria=$_POST["accion_secundaria"];
+      $accion_secundaria = $_POST["accion_secundaria"] ?? '';
       if ($accion_secundaria=='renovar'){
-          $poliza_renovada=$_POST["numero_poliza"];
+          $poliza_renovada = $_POST["numero_poliza"] ?? '';
         $query = "select '' as numero_propuesta, a.id, a.rut_proponente,a.dv_proponente,b.nombre_cliente,a.fecha_propuesta, a.vigencia_inicial, a.vigencia_final, a.moneda_poliza, a.compania, a.ramo, a.comentarios_int, a.comentarios_ext, a.vendedor, a.forma_pago, a.valor_cuota, a.nro_cuotas, a.moneda_valor_cuota, a.fecha_primera_cuota, a.porcentaje_comision, count(e.numero_endoso) as numero_endosos from polizas_2 as a left join endosos as e on a.id=e.id_poliza left join clientes as b on a.rut_proponente=b.rut_sin_dv where a.numero_poliza='".$poliza_renovada."'";
         $query_item = "SELECT numero_item, rut_asegurado, dv_asegurado, materia_asegurada, patente_ubicacion, cobertura, deducible, tasa_afecta, tasa_exenta, prima_afecta, prima_exenta, prima_neta, prima_bruta_anual, monto_asegurado,venc_gtia FROM `items` where numero_poliza='".$poliza_renovada."' order by numero_item asc";
 
-      }    
+      }
       else{
-        $query = "select poliza_renovada, numero_propuesta, a.id, a.rut_proponente,a.dv_proponente,b.nombre_cliente,fecha_propuesta, vigencia_inicial, vigencia_final, moneda_poliza, compania, ramo, comentarios_int, comentarios_ext, vendedor, forma_pago, valor_cuota, nro_cuotas, moneda_valor_cuota, fecha_primera_cuota, porcentaje_comision, fecha_envio_propuesta from propuesta_polizas as a left join clientes as b on a.rut_proponente=b.rut_sin_dv where numero_propuesta='".$_POST["numero_propuesta"]."'";
-        $query_item = "SELECT numero_item, a.rut_asegurado, a.dv_asegurado, b.nombre_cliente , materia_asegurada, patente_ubicacion, cobertura, deducible, tasa_afecta, tasa_exenta, prima_afecta, prima_exenta, prima_neta, prima_bruta_anual, monto_asegurado,venc_gtia FROM `items` as a left join clientes as b on a.rut_asegurado=b.rut_sin_dv where numero_propuesta='".$_POST["numero_propuesta"]."'order by numero_item asc";
+        $num_propuesta = $_POST["numero_propuesta"] ?? '';
+        $query = "select poliza_renovada, numero_propuesta, a.id, a.rut_proponente,a.dv_proponente,b.nombre_cliente,fecha_propuesta, vigencia_inicial, vigencia_final, moneda_poliza, compania, ramo, comentarios_int, comentarios_ext, vendedor, forma_pago, valor_cuota, nro_cuotas, moneda_valor_cuota, fecha_primera_cuota, porcentaje_comision, fecha_envio_propuesta from propuesta_polizas as a left join clientes as b on a.rut_proponente=b.rut_sin_dv where numero_propuesta='".$num_propuesta."'";
+        $query_item = "SELECT numero_item, a.rut_asegurado, a.dv_asegurado, b.nombre_cliente , materia_asegurada, patente_ubicacion, cobertura, deducible, tasa_afecta, tasa_exenta, prima_afecta, prima_exenta, prima_neta, prima_bruta_anual, monto_asegurado,venc_gtia FROM `items` as a left join clientes as b on a.rut_asegurado=b.rut_sin_dv where numero_propuesta='".$num_propuesta."'order by numero_item asc";
 
       }
       require_once "/home/gestio10/public_html/backend/config.php";
@@ -94,9 +95,9 @@ $poliza_renovada='';
     if ($_SERVER[ "REQUEST_METHOD" ] == "POST" and $_POST["accion"] == 'modifica_poliza')
     {
       $camino = $_POST["accion"];
-        $accion_secundaria=$_POST["accion_secundaria"];
+        $accion_secundaria = $_POST["accion_secundaria"] ?? '';
         if ($accion_secundaria=='renovar'){
-            $poliza_renovada=$_POST["numero_poliza"];
+            $poliza_renovada = $_POST["numero_poliza"] ?? '';
         }
       require_once "/home/gestio10/public_html/backend/config.php";
       db_set_charset($link, 'utf8');
