@@ -614,9 +614,32 @@ $(document).ready(function() {
     // del switch(aux_base) se siguen aplicando: persisten sobre la tabla vacía
     // y se materializan en el primer reload real.
     var _shownTabs = {}, _cargado = {};
+    // B (filtro server-side): convierte IDs en formato "^1$|^2$" → "1,2".
+    function _parseIds(raw) {
+        if (!raw || raw === 'busqueda dummy') return '';
+        return raw.split('|')
+            .map(function (s) { return s.replace(/[^0-9]/g, ''); })
+            .filter(function (s) { return s !== ''; })
+            .join(',');
+    }
+    // IDs por los que el servidor debe filtrar esa tabla, o '' para traer todo
+    // (modo header, o tablas cuyo endpoint aún no soporta filtro server-side).
+    // En modo entidad sin IDs asociados devuelve '0' → el endpoint no trae nada
+    // (en vez de traer todo el dataset para mostrarlo vacío).
+    function _filtroParaKey(key) {
+        var base = document.getElementById('aux_base').value;
+        var esHeader = (base === 'header' || base === '');
+        if (key === 'siniestros') {
+            if (esHeader) return '';
+            return _parseIds(document.getElementById('var8_siniestro').value) || '0';
+        }
+        return '';
+    }
     function _lazyAjax(url, key) {
         return function(data, callback, settings) {
             if (!_shownTabs[key]) { callback({ data: [] }); return; }
+            var fids = _filtroParaKey(key);
+            if (fids) { data = data || {}; data.filtro_ids = fids; }
             $.ajax({ url: url, dataType: 'json', data: data, success: callback });
         };
     }

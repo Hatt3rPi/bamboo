@@ -8,6 +8,23 @@ require_once "/home/gestio10/public_html/backend/config.php";
     db_set_charset($link, 'utf8');
     db_select_db($link, DB_NAME);
 
+// Filtro opcional por IDs (usado por resumen2.php para traer solo los siniestros
+// asociados a la entidad consultada, en vez de todo el dataset). Si no viene el
+// parámetro, el listado general devuelve todo como siempre. IDs sanitizados a int.
+$where_filtro = '';
+if (isset($_REQUEST['filtro_ids']) && trim($_REQUEST['filtro_ids']) !== '') {
+    $ids = array_filter(
+        array_map('intval', explode(',', $_REQUEST['filtro_ids'])),
+        function ($v) { return $v > 0; }
+    );
+    if (count($ids) > 0) {
+        $where_filtro = ' AND s.id IN (' . implode(',', $ids) . ')';
+    } else {
+        // Parámetro presente pero sin IDs válidos → no devolver nada (evita listar todo).
+        $where_filtro = ' AND 1=0';
+    }
+}
+
 $sql = "SELECT s.id, s.numero_siniestro, s.numero_poliza, s.ramo, s.tipo_siniestro,
     s.fecha_ocurrencia, s.fecha_denuncia, s.estado, s.presentado,
     s.nombre_asegurado, s.rut_asegurado, s.dv_asegurado,
@@ -73,7 +90,7 @@ LEFT JOIN (
            ) ORDER BY tipo, id) as bienes_json
     FROM siniestros_bienes_afectados GROUP BY id_siniestro
 ) ba ON ba.id_siniestro = s.id
-WHERE COALESCE(s.estado, '') <> 'Eliminado'
+WHERE COALESCE(s.estado, '') <> 'Eliminado'$where_filtro
 ORDER BY s.fecha_ingreso DESC";
 
 $resultado = db_query($link, $sql);
