@@ -286,17 +286,18 @@ require_once 'layout.php';
             </div>
             <div class="modal-body">
               <div class="container-fluid">
-                <table id="listado_clientes" class="display" width="100%">
-                  <tr>
+                <table id="listado_clientes" class="display w-100">
                   <thead>
-                  <th></th>
-                    <th>Rut</th>
-                    <th>Nombre</th>
-                    <th>Referido por</th>
-                    <th>Grupo</th>
-                    <th>apellidop</th>
-                    </thead>
-                  </tr></table>
+                    <tr>
+                      <th></th>
+                      <th>Rut</th>
+                      <th>Nombre</th>
+                      <th>Referido por</th>
+                      <th>Grupo</th>
+                      <th>apellidop</th>
+                    </tr>
+                  </thead>
+                </table>
                 <div id="botones_cliente"></div>
               </div>
             </div>
@@ -1219,7 +1220,6 @@ $('#test1').on('shown.bs.modal', function() {
 var tabla_clientes = $('#listado_clientes').DataTable({
 
     "ajax": "/bamboo/backend/clientes/busqueda_listado_clientes.php",
-    "scrollX": true,
     "columns": [{
             "className": 'details-control',
             "orderable": false,
@@ -1277,6 +1277,11 @@ var tabla_clientes = $('#listado_clientes').DataTable({
             "sLast": "Última"
         }
     }
+});
+// El DataTable se inicializa con el modal oculto (display:none); al mostrarse,
+// reajustar anchos de columnas para que el header y las filas queden alineados.
+$('#modal_cliente').on('shown.bs.modal', function () {
+    tabla_clientes.columns.adjust();
 });
 var origen = '';
 var item='';
