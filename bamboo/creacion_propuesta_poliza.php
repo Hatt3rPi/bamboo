@@ -2802,7 +2802,9 @@ function vencimientogarantia(){
                                              };
                                });
  $(document).ready(function() {
-
+<?php if (!empty($id)): /* El listado de endosos solo aplica en edición/renovación
+    (hay una póliza con $id). En 'crear nuevo' no hay endosos y el AJAX con id vacío
+    devolvía JSON inválido → alerta de DataTables. */ ?>
      var listado_filtrado="/bamboo/backend/endosos/busqueda_listado_endosos_filtrada.php?id="+'<?php echo $id; ?>'
      var table_endosos = $('#listado_endosos').DataTable({
         "ajax": listado_filtrado,
@@ -2915,9 +2917,10 @@ function vencimientogarantia(){
             tr.addClass('shown');
         }
     });
+<?php endif; /* !empty($id) */ ?>
 
 
-    
+
    //$('#btAdd').click();
 
 
