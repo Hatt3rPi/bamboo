@@ -481,7 +481,7 @@ label, .form-label {
    Grid de tarjetas grandes que linkean a acciones / listados.
    ============================================================ */
 .bb-hub-section {
-  margin-top: var(--space-7);
+  margin-top: var(--space-10);
 }
 .bb-hub-section:first-of-type { margin-top: var(--space-4); }
 .bb-hub-section-title {
