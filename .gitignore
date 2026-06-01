@@ -1,0 +1,23 @@
+# Credenciales y config local
+.env
+.mcp.json
+backend/config.php
+
+# Logs
+error_log
+*.log
+
+# Dependencias
+node_modules/
+vendor/
+
+# Datos / dumps de migración (NO subir datos de producción)
+migrations/data/
+supabase_schema.json
+check_schema.js
+
+# Artefactos de herramientas
+.playwright-mcp/
+
+# Scripts one-shot / diagnóstico temporal
+bamboo/__fix_branch_one_shot.php
