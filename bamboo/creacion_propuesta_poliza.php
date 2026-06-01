@@ -2,6 +2,12 @@
 if ( !isset( $_SESSION ) ) {
   session_start();
 }
+// Este archivo legacy asume display_errors=Off (como producción gestio10). En QA
+// está On, y en modo 'crear nuevo' hay variables que quedan sin inicializar (sus
+// while no iteran), cuyos Warnings se inyectan DENTRO de los <script> y rompen el
+// JS con SyntaxError. Silenciar notices/warnings aquí replica el entorno de prod.
+error_reporting(E_ERROR | E_PARSE);
+@ini_set('display_errors', '0');
 $camino='crear_propuesta';
 
 //$_SERVER[ "REQUEST_METHOD" ] = "POST";
@@ -897,7 +903,16 @@ require_once 'layout.php';
   </div>
 </div>
 
+<?php require_once 'layout_end.php'; ?>
+
+<!-- Libs específicas de la propuesta -->
+<script src="/assets/js/validarRUT.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
+
 <script>
+// (movido después de layout_end: usa $ / jQuery, que se carga en el shell)
 $("#boton_submit").click(function(e){
     blnFormValidity= $('#formulario')[0].checkValidity();
     document.getElementById('formulario').classList.add('was-validated');
@@ -909,14 +924,6 @@ $("#boton_submit").click(function(e){
     genera_propuesta();
 });
 </script>
-
-<?php require_once 'layout_end.php'; ?>
-
-<!-- Libs específicas de la propuesta -->
-<script src="/assets/js/validarRUT.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-<script src="https://cdn.datatables.net/plug-ins/1.10.19/sorting/datetime-moment.js"></script>
 
 <script>
 var orgn='';
