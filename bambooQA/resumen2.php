@@ -606,9 +606,24 @@ function cambiacolor(id) {
 }
 
 $(document).ready(function() {
+    // ── Lazy-load por tab ──────────────────────────────────────────────
+    // Antes esta página disparaba los 8 AJAX (clientes, pólizas, tareas, …)
+    // al cargar, descargando datasets completos aunque el usuario mire 1 tab.
+    // Ahora cada tabla se crea pero su petición devuelve vacío hasta que su
+    // tab se abre (o es el tab objetivo del contexto de búsqueda). Los filtros
+    // del switch(aux_base) se siguen aplicando: persisten sobre la tabla vacía
+    // y se materializan en el primer reload real.
+    var _shownTabs = {}, _cargado = {};
+    function _lazyAjax(url, key) {
+        return function(data, callback, settings) {
+            if (!_shownTabs[key]) { callback({ data: [] }); return; }
+            $.ajax({ url: url, dataType: 'json', data: data, success: callback });
+        };
+    }
+
     var table = $('#listado_clientes').DataTable({
 
-        "ajax": "/bambooQA/backend/clientes/busqueda_listado_clientes.php",
+        "ajax": _lazyAjax("/bambooQA/backend/clientes/busqueda_listado_clientes.php", "clientes"),
         
         "initComplete": function(settings, json) {
             document.getElementById("clientes").innerHTML = "Clientes (" + $('#listado_clientes')
@@ -716,7 +731,7 @@ $(document).ready(function() {
     //inicio pólizas
 
     var table_polizas = $('#listado_polizas').DataTable({
-        "ajax": "/bambooQA/backend/polizas/busqueda_listado_polizas.php",
+        "ajax": _lazyAjax("/bambooQA/backend/polizas/busqueda_listado_polizas.php", "poliza"),
         "initComplete": function(settings, json) {
             document.getElementById("poliza").innerHTML = "Pólizas (" + $('#listado_polizas')
                 .DataTable().page.info().recordsDisplay + ")";
@@ -898,7 +913,7 @@ $(document).ready(function() {
     // inicio tareas
     var table_tareas = $('#listado_tareas').DataTable({
 
-        "ajax": "/bambooQA/backend/actividades/busqueda_listado_tareas_completas.php",
+        "ajax": _lazyAjax("/bambooQA/backend/actividades/busqueda_listado_tareas_completas.php", "tarea"),
         "initComplete": function(settings, json) {
             document.getElementById("tarea").innerHTML = "Tareas (" + $('#listado_tareas')
                 .DataTable().page.info().recordsDisplay + ")";
@@ -1062,7 +1077,7 @@ $(document).ready(function() {
     // inicio tareas_recurrentes
     var table_tareas_recurrentes = $('#listado_tareas_recurrentes').DataTable({
 
-        "ajax": "/bambooQA/backend/actividades/busqueda_listado_tareas_recurrentes.php",
+        "ajax": _lazyAjax("/bambooQA/backend/actividades/busqueda_listado_tareas_recurrentes.php", "tarea_rec"),
         
         "initComplete": function(settings, json) {
             document.getElementById("tarea_rec").innerHTML = "Tareas recurrentes (" + $(
@@ -1187,7 +1202,7 @@ $(document).ready(function() {
     //fin tareas recurrents
     //inicio propuestas
     var table_propuesta_poliza = $('#listado_propuesta_polizas').DataTable({
-        "ajax": "/bambooQA/backend/propuesta_polizas/busqueda_listado_propuesta_polizas.php",
+        "ajax": _lazyAjax("/bambooQA/backend/propuesta_polizas/busqueda_listado_propuesta_polizas.php", "propuestas"),
         
         "initComplete": function(settings, json) {
             document.getElementById("propuestas").innerHTML = "Prop. Póliza (" + $(
@@ -1368,7 +1383,7 @@ $(document).ready(function() {
     //fin propuestas
     //inicio endosos
          var   table_endosos = $('#listado_endosos').DataTable({
-        "ajax": "/bambooQA/backend/endosos/busqueda_listado_endosos.php",
+        "ajax": _lazyAjax("/bambooQA/backend/endosos/busqueda_listado_endosos.php", "endosos"),
         
         "initComplete": function(settings, json) {
                 document.getElementById("endosos").innerHTML = "Endosos (" + $(
@@ -1488,7 +1503,7 @@ $(document).ready(function() {
     //fin endosos
     // inicio propuesta_endosos
         var table_propuestas_endosos = $('#listado_propuesta_endosos').DataTable({
-        "ajax": "/bambooQA/backend/endosos/busqueda_listado_propuesta_endoso.php",
+        "ajax": _lazyAjax("/bambooQA/backend/endosos/busqueda_listado_propuesta_endoso.php", "propuestas_endosos"),
         "initComplete": function(settings, json) {
                 document.getElementById("propuestas_endosos").innerHTML = "Prop. Endosos (" + $(
                     '#listado_propuesta_endosos').DataTable().page.info().recordsDisplay + ")";
@@ -1629,7 +1644,7 @@ $(document).ready(function() {
 
     // inicio siniestros
     var table_siniestros = $('#listado_siniestros_resumen').DataTable({
-        "ajax": "/bambooQA/backend/siniestros/busqueda_listado_siniestros.php",
+        "ajax": _lazyAjax("/bambooQA/backend/siniestros/busqueda_listado_siniestros.php", "siniestros"),
         "initComplete": function(settings, json) {
             document.getElementById("siniestros").innerHTML = "Siniestros (" + $('#listado_siniestros_resumen').DataTable().page.info().recordsDisplay + ")";
         },
@@ -1819,7 +1834,42 @@ switch (document.getElementById("aux_base").value) {
         }
     }
 
-    
+    // ── Disparo de carga del tab objetivo + lazy-load al navegar ──────────
+    // Las tablas ya están creadas y con sus filtros de contexto aplicados
+    // (sobre datos vacíos). Aquí cargamos de verdad solo el tab que importa.
+    var _tablas = {
+        clientes: table, poliza: table_polizas, tarea: table_tareas,
+        tarea_rec: table_tareas_recurrentes, propuestas: table_propuesta_poliza,
+        endosos: table_endosos, propuestas_endosos: table_propuestas_endosos,
+        siniestros: table_siniestros
+    };
+    // Labels de los contadores de cada tab. Como initComplete corre en la
+    // carga vacía inicial, el contador real se refresca tras el reload.
+    var _labels = {
+        clientes: 'Clientes', poliza: 'Pólizas', tarea: 'Tareas',
+        tarea_rec: 'Tareas recurrentes', propuestas: 'Prop. Póliza',
+        endosos: 'Endosos', propuestas_endosos: 'Prop. Endosos', siniestros: 'Siniestros'
+    };
+    function cargarTab(key) {
+        if (!key || _cargado[key] || !_tablas[key]) return;
+        _cargado[key] = true; _shownTabs[key] = true;
+        _tablas[key].ajax.reload(function() {
+            var el = document.getElementById(key);
+            if (el) el.innerHTML = _labels[key] + " (" + _tablas[key].page.info().recordsDisplay + ")";
+        }, false);
+    }
+    // Al abrir cualquier tab, carga su tabla la primera vez que se muestra.
+    $('#nav-tab a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+        cargarTab(e.target.id);
+    });
+    // Carga inmediata solo del tab que corresponde al contexto de búsqueda.
+    var _mapBaseTab = {
+        'cliente': 'clientes', 'poliza': 'poliza', 'propuesta': 'propuestas',
+        'tarea': 'tarea', 'tarea recurrente': 'tarea_rec', 'endoso': 'endosos',
+        'propuesta_endoso': 'propuestas_endosos', 'header': 'clientes', '': 'clientes'
+    };
+    cargarTab(_mapBaseTab[document.getElementById("aux_base").value] || 'clientes');
+
 });
 function format_propuesta(d) {
     // `d` is the original data object for the row
