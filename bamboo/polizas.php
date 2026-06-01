@@ -32,54 +32,64 @@ require_once 'layout.php';
   </div>
 </div>
 
-<div class="bb-hub-grid">
+<div class="bb-hub-section">
+  <div class="bb-hub-section-title">Crear</div>
+  <div class="bb-hub-grid">
 
-  <a href="creacion_propuesta_poliza.php" class="bb-hub-card">
-    <div class="bb-hub-card-icon"><i class="fas fa-file-signature"></i></div>
-    <div class="bb-hub-card-body">
-      <h3>Nueva propuesta</h3>
-      <p class="desc">Crear una propuesta de póliza desde cero (formulario tradicional).</p>
-      <div class="bb-hub-card-meta">
-        <span>Crear</span><span class="arrow">→</span>
+    <a href="creacion_propuesta_poliza.php" class="bb-hub-card">
+      <div class="bb-hub-card-icon"><i class="fas fa-file-signature"></i></div>
+      <div class="bb-hub-card-body">
+        <h3>Nueva propuesta</h3>
+        <p class="desc">Crear una propuesta de póliza desde cero (formulario tradicional).</p>
+        <div class="bb-hub-card-meta">
+          <span>Crear</span><span class="arrow">→</span>
+        </div>
       </div>
-    </div>
-  </a>
+    </a>
 
-  <a href="listado_propuesta_polizas.php" class="bb-hub-card">
-    <div class="bb-hub-card-icon"><i class="fas fa-file-alt"></i></div>
-    <div class="bb-hub-card-body">
-      <h3>Propuestas de póliza</h3>
-      <p class="desc">Propuestas en curso, aprobadas y emitidas — historial completo.</p>
-      <div class="bb-hub-card-meta">
-        <span class="count"><?= $count_propuestas ?? '—' ?> registradas</span>
-        <span class="arrow">→</span>
+    <a href="#" onclick="crear_poliza_web(); return false;" class="bb-hub-card is-warm">
+      <div class="bb-hub-card-icon"><i class="fas fa-globe"></i></div>
+      <div class="bb-hub-card-body">
+        <h3>Póliza web</h3>
+        <p class="desc">Modo agilizado para emitir una póliza ya cotizada en la web de la compañía.</p>
+        <div class="bb-hub-card-meta">
+          <span>Crear</span><span class="arrow">→</span>
+        </div>
       </div>
-    </div>
-  </a>
+    </a>
 
-  <a href="#" onclick="crear_poliza_web(); return false;" class="bb-hub-card is-warm">
-    <div class="bb-hub-card-icon"><i class="fas fa-globe"></i></div>
-    <div class="bb-hub-card-body">
-      <h3>Póliza web</h3>
-      <p class="desc">Modo agilizado para emitir una póliza ya cotizada en la web de la compañía.</p>
-      <div class="bb-hub-card-meta">
-        <span>Crear</span><span class="arrow">→</span>
+  </div>
+</div>
+
+<div class="bb-hub-section">
+  <div class="bb-hub-section-title">Consultar</div>
+  <div class="bb-hub-grid">
+
+    <a href="listado_propuesta_polizas.php" class="bb-hub-card">
+      <div class="bb-hub-card-icon"><i class="fas fa-file-alt"></i></div>
+      <div class="bb-hub-card-body">
+        <h3>Propuestas de póliza</h3>
+        <p class="desc">Propuestas en curso, aprobadas y emitidas — historial completo.</p>
+        <div class="bb-hub-card-meta">
+          <span class="count"><?= $count_propuestas ?? '—' ?> registradas</span>
+          <span class="arrow">→</span>
+        </div>
       </div>
-    </div>
-  </a>
+    </a>
 
-  <a href="listado_polizas.php" class="bb-hub-card">
-    <div class="bb-hub-card-icon"><i class="fas fa-file-contract"></i></div>
-    <div class="bb-hub-card-body">
-      <h3>Pólizas</h3>
-      <p class="desc">Cartera de pólizas vigentes, vencidas, canceladas y anuladas.</p>
-      <div class="bb-hub-card-meta">
-        <span class="count"><?= $count_polizas ?? '—' ?> vigentes</span>
-        <span class="arrow">→</span>
+    <a href="listado_polizas.php" class="bb-hub-card">
+      <div class="bb-hub-card-icon"><i class="fas fa-file-contract"></i></div>
+      <div class="bb-hub-card-body">
+        <h3>Pólizas</h3>
+        <p class="desc">Cartera de pólizas vigentes, vencidas, canceladas y anuladas.</p>
+        <div class="bb-hub-card-meta">
+          <span class="count"><?= $count_polizas ?? '—' ?> vigentes</span>
+          <span class="arrow">→</span>
+        </div>
       </div>
-    </div>
-  </a>
+    </a>
 
+  </div>
 </div>
 
 <?php require_once 'layout_end.php'; ?>

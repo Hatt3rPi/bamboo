@@ -31,43 +31,53 @@ require_once 'layout.php';
   </div>
 </div>
 
-<div class="bb-hub-grid">
+<div class="bb-hub-section">
+  <div class="bb-hub-section-title">Crear</div>
+  <div class="bb-hub-grid">
 
-  <a href="creacion_propuesta_endoso.php" class="bb-hub-card">
-    <div class="bb-hub-card-icon"><i class="fas fa-file-signature"></i></div>
-    <div class="bb-hub-card-body">
-      <h3>Nueva propuesta de endoso</h3>
-      <p class="desc">Crear una propuesta de endoso vía formulario manual o web.</p>
-      <div class="bb-hub-card-meta">
-        <span>Crear</span><span class="arrow">→</span>
+    <a href="creacion_propuesta_endoso.php" class="bb-hub-card">
+      <div class="bb-hub-card-icon"><i class="fas fa-file-signature"></i></div>
+      <div class="bb-hub-card-body">
+        <h3>Nueva propuesta de endoso</h3>
+        <p class="desc">Crear una propuesta de endoso vía formulario manual o web.</p>
+        <div class="bb-hub-card-meta">
+          <span>Crear</span><span class="arrow">→</span>
+        </div>
       </div>
-    </div>
-  </a>
+    </a>
 
-  <a href="listado_propuesta_endosos.php" class="bb-hub-card">
-    <div class="bb-hub-card-icon"><i class="fas fa-file-alt"></i></div>
-    <div class="bb-hub-card-body">
-      <h3>Propuestas de endoso</h3>
-      <p class="desc">Propuestas en curso, pendientes de aprobación o emisión.</p>
-      <div class="bb-hub-card-meta">
-        <span class="count"><?= $count_propuestas ?? '—' ?> registradas</span>
-        <span class="arrow">→</span>
+  </div>
+</div>
+
+<div class="bb-hub-section">
+  <div class="bb-hub-section-title">Consultar</div>
+  <div class="bb-hub-grid">
+
+    <a href="listado_propuesta_endosos.php" class="bb-hub-card">
+      <div class="bb-hub-card-icon"><i class="fas fa-file-alt"></i></div>
+      <div class="bb-hub-card-body">
+        <h3>Propuestas de endoso</h3>
+        <p class="desc">Propuestas en curso, pendientes de aprobación o emisión.</p>
+        <div class="bb-hub-card-meta">
+          <span class="count"><?= $count_propuestas ?? '—' ?> registradas</span>
+          <span class="arrow">→</span>
+        </div>
       </div>
-    </div>
-  </a>
+    </a>
 
-  <a href="listado_endosos.php" class="bb-hub-card">
-    <div class="bb-hub-card-icon"><i class="fas fa-file-contract"></i></div>
-    <div class="bb-hub-card-body">
-      <h3>Endosos</h3>
-      <p class="desc">Endosos emitidos sobre pólizas vigentes — historial completo.</p>
-      <div class="bb-hub-card-meta">
-        <span class="count"><?= $count_endosos ?? '—' ?> emitidos</span>
-        <span class="arrow">→</span>
+    <a href="listado_endosos.php" class="bb-hub-card">
+      <div class="bb-hub-card-icon"><i class="fas fa-file-contract"></i></div>
+      <div class="bb-hub-card-body">
+        <h3>Endosos</h3>
+        <p class="desc">Endosos emitidos sobre pólizas vigentes — historial completo.</p>
+        <div class="bb-hub-card-meta">
+          <span class="count"><?= $count_endosos ?? '—' ?> emitidos</span>
+          <span class="arrow">→</span>
+        </div>
       </div>
-    </div>
-  </a>
+    </a>
 
+  </div>
 </div>
 
 <?php require_once 'layout_end.php'; ?>
