@@ -27,7 +27,7 @@ $schema = [
     '@type' => 'BreadcrumbList',
     'itemListElement' => [
       ['@type' => 'ListItem', 'position' => 1, 'name' => 'Inicio', 'item' => $SITE['url'] . '/'],
-      ['@type' => 'ListItem', 'position' => 2, 'name' => 'Seguros', 'item' => $SITE['url'] . '/#servicios'],
+      ['@type' => 'ListItem', 'position' => 2, 'name' => 'Seguros', 'item' => $SITE['url'] . '/'],
       ['@type' => 'ListItem', 'position' => 3, 'name' => $s['nombre'], 'item' => $SITE['url'] . '/seguros/' . $s['slug']],
     ],
   ],

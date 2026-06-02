@@ -17,15 +17,9 @@ $page = [
   'desc'  => $SITE['default_desc'],
   'canonical' => '/',
   'active' => '',
-  'schema' => [[
-    '@context' => 'https://schema.org',
-    '@type' => 'FAQPage',
-    'mainEntity' => array_map(fn($f) => [
-      '@type' => 'Question',
-      'name' => $f['q'],
-      'acceptedAnswer' => ['@type' => 'Answer', 'text' => $f['a']],
-    ], $home_faqs),
-  ]],
+  // FAQPage vive solo en /faq y en las páginas de ramo (evita solape de intent
+  // entre home y /faq). El acordeón visual del home se mantiene sin schema.
+  'schema' => [],
 ];
 
 $insurers = ['sura','bci','mapfre','chubb','hdi','consorcio','reale','renta','southbridge','continental','chilena','confuturo','orsan','unnio'];
@@ -80,10 +74,10 @@ require __DIR__ . '/partials/head.php';
   <div class="container">
     <p class="insurers__label">Comparamos entre las mejores aseguradoras de Chile · <b>trabajamos con más de 15 compañías</b></p>
   </div>
-  <div class="marquee">
+  <div class="marquee" aria-hidden="true">
     <div class="marquee__track">
       <?php foreach ($insurers as $key): $e = $ext[$key] ?? 'png'; ?>
-        <img src="/assets/img/companies/<?= e($key === 'sura' ? 'sura' : $key) ?>.<?= e($e) ?>" alt="<?= e($insurer_names[$key] ?? ucfirst($key)) ?>" loading="lazy" height="38">
+        <img src="/assets/img/companies/<?= e($key) ?>.<?= e($e) ?>" alt="<?= e($insurer_names[$key] ?? ucfirst($key)) ?>" loading="lazy" height="38">
       <?php endforeach; ?>
     </div>
   </div>
@@ -151,13 +145,13 @@ require __DIR__ . '/partials/head.php';
     </div>
     <div class="reveal" style="text-align:center">
       <div class="segtabs" role="tablist" aria-label="Personas o Pymes" data-segtabs>
-        <button class="segtab" role="tab" aria-selected="true"  data-target="persona">Para ti y tu familia</button>
-        <button class="segtab" role="tab" aria-selected="false" data-target="pyme">Para tu Pyme o empresa</button>
+        <button class="segtab" role="tab" id="tab-persona" aria-controls="panel-persona" aria-selected="true"  tabindex="0"  data-target="persona">Para ti y tu familia</button>
+        <button class="segtab" role="tab" id="tab-pyme"    aria-controls="panel-pyme"    aria-selected="false" tabindex="-1" data-target="pyme">Para tu Pyme o empresa</button>
       </div>
     </div>
 
     <?php foreach (['persona', 'pyme'] as $seg): ?>
-      <div class="svc-grid reveal" data-segpanel="<?= $seg ?>"<?= $seg === 'pyme' ? ' hidden' : '' ?> style="margin-top:8px">
+      <div class="svc-grid reveal" data-segpanel="<?= $seg ?>" role="tabpanel" id="panel-<?= $seg ?>" aria-labelledby="tab-<?= $seg ?>" tabindex="0"<?= $seg === 'pyme' ? ' hidden' : '' ?> style="margin-top:8px">
         <?php foreach (seguros_por_segmento($seg) as $s): ?>
           <a class="svc" href="/seguros/<?= e($s['slug']) ?>">
             <div class="svc__ic"><?= bb_icon($s['icon']) ?></div>

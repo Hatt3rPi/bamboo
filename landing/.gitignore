@@ -1,2 +1,3 @@
 # Leads capturados en runtime (datos personales — nunca versionar)
 backend/leads.log
+backend/leads.log.*

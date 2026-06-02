@@ -20,11 +20,11 @@
           <div class="qf__steplabel">Paso 1 de 3</div>
           <h4>¿Qué quieres asegurar?</h4>
           <p>Elige una opción y te ayudamos a encontrar la mejor entre más de 15 compañías.</p>
-          <div class="qf__types" role="radiogroup" aria-label="Tipo de seguro">
-            <?php foreach ($SEGUROS as $s): ?>
-              <button type="button" class="qf__type" role="radio" aria-checked="false"
-                      data-value="<?= e($s['nombre']) ?>" data-slug="<?= e($s['slug']) ?>">
-                <?= bb_icon($s['icon']) ?><b><?= e($s['menu']) ?></b>
+          <div class="qf__types" role="group" aria-label="Tipo de seguro">
+            <?php foreach ($SEGUROS as $svc): ?>
+              <button type="button" class="qf__type" aria-pressed="false"
+                      data-value="<?= e($svc['nombre']) ?>" data-slug="<?= e($svc['slug']) ?>">
+                <?= bb_icon($svc['icon']) ?><b><?= e($svc['menu']) ?></b>
               </button>
             <?php endforeach; ?>
           </div>
@@ -40,10 +40,10 @@
           <h4>Cuéntanos un poco más</h4>
           <p>Mientras más nos cuentes, mejor será tu cotización. (Opcional)</p>
           <div class="field">
-            <label>¿Es para ti o para tu empresa?</label>
-            <div class="segtabs" role="radiogroup" aria-label="Persona o empresa" style="display:inline-flex">
-              <button type="button" class="segtab" aria-selected="true" data-perfil="Persona">Para mí</button>
-              <button type="button" class="segtab" aria-selected="false" data-perfil="Pyme / Empresa">Para mi empresa</button>
+            <span class="form-label" id="qfPerfilLbl">¿Es para ti o para tu empresa?</span>
+            <div class="segtabs" role="group" aria-labelledby="qfPerfilLbl" style="display:inline-flex">
+              <button type="button" class="segtab" aria-pressed="true" data-perfil="Persona">Para mí</button>
+              <button type="button" class="segtab" aria-pressed="false" data-perfil="Pyme / Empresa">Para mi empresa</button>
             </div>
             <input type="hidden" name="perfil" id="qfPerfil" value="Persona">
           </div>
@@ -53,7 +53,7 @@
               placeholder="Ej: auto modelo 2022 uso particular, o arriendo de un departamento en Ñuñoa."></textarea>
           </div>
           <div class="qf__nav">
-            <button type="button" class="btn btn--ghost qf__back" data-qf-prev><?= bb_icon('arrow') ?></button>
+            <button type="button" class="btn btn--ghost qf__back" data-qf-prev aria-label="Volver al paso anterior"><?= bb_icon('arrow') ?></button>
             <button type="button" class="btn btn--primary" data-qf-next>Continuar</button>
           </div>
         </section>
@@ -65,34 +65,37 @@
           <p>Adriana revisará tu caso personalmente. Sin compromiso.</p>
           <div class="field" data-validate="text">
             <label for="qfNombre">Nombre</label>
-            <input type="text" id="qfNombre" name="nombre" autocomplete="name" required>
-            <span class="err">Cuéntanos tu nombre.</span>
+            <input type="text" id="qfNombre" name="nombre" autocomplete="name" required aria-describedby="err-nombre">
+            <span class="err" id="err-nombre">Cuéntanos tu nombre.</span>
           </div>
           <div class="field" data-validate="tel">
             <label for="qfTel">Teléfono (WhatsApp)</label>
-            <input type="tel" id="qfTel" name="telefono" autocomplete="tel" inputmode="tel" placeholder="+56 9 ...">
-            <span class="err">Ingresa un número de celular válido (+56 9 ...).</span>
+            <input type="tel" id="qfTel" name="telefono" autocomplete="tel" inputmode="tel" placeholder="+56 9 ..." aria-describedby="err-tel">
+            <span class="err" id="err-tel">Ingresa un número de celular válido (+56 9 ...).</span>
           </div>
           <div class="field" data-validate="email">
             <label for="qfEmail">Correo</label>
-            <input type="email" id="qfEmail" name="email" autocomplete="email" placeholder="tucorreo@ejemplo.cl">
-            <span class="err">Ingresa un correo válido (o déjanos tu teléfono).</span>
+            <input type="email" id="qfEmail" name="email" autocomplete="email" placeholder="tucorreo@ejemplo.cl" aria-describedby="err-email">
+            <span class="err" id="err-email">Ingresa un correo válido (o déjanos tu teléfono).</span>
           </div>
-          <label class="checkrow">
+          <label class="checkrow" data-consent-row>
             <input type="checkbox" name="consent" id="qfConsent" required>
             <span>Autorizo a Bamboo Seguros a contactarme para enviarme mi cotización.</span>
           </label>
           <!-- honeypot anti-bot -->
           <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
           <div class="qf__nav">
-            <button type="button" class="btn btn--ghost qf__back" data-qf-prev><?= bb_icon('arrow') ?></button>
+            <button type="button" class="btn btn--ghost qf__back" data-qf-prev aria-label="Volver al paso anterior"><?= bb_icon('arrow') ?></button>
             <button type="submit" class="btn btn--primary" data-qf-submit>Quiero mi cotización gratis</button>
+          </div>
+          <div class="qf__error" data-qf-error role="alert">
+            No pudimos enviar tu solicitud. Inténtalo de nuevo o escríbenos por WhatsApp al <?= e($SITE['phone_display']) ?>.
           </div>
           <p class="qf__micro"><?= bb_icon('shield-check') ?> No compartimos tus datos. Solo los usamos para tu cotización.</p>
         </section>
 
         <!-- ÉXITO -->
-        <div class="qf__success" data-qf-success>
+        <div class="qf__success" data-qf-success role="status" tabindex="-1">
           <div class="tick"><?= bb_icon('check-circle') ?></div>
           <h4>¡Listo<span data-qf-name></span>! Recibimos tu solicitud</h4>
           <p>Adriana revisará tu caso y te contactará a la brevedad. ¿Quieres adelantar la conversación?</p>

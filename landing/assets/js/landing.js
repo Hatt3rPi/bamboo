@@ -1,16 +1,20 @@
 /* ============================================================
    BAMBOO SEGUROS · LANDING · landing.js
    Vanilla JS. Sin dependencias. Defer.
+   Config en data-* del <body> (sin scripts inline → CSP estricta).
    ============================================================ */
 (function () {
   'use strict';
   var $ = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
 
+  var CFG = {
+    wa: 'https://wa.me/' + (document.body.dataset.wa || '56995091193'),
+    ga: document.body.dataset.ga === '1'
+  };
+
   function track(name, params) {
-    if (window.BAMBOO && window.BAMBOO.ga && typeof window.gtag === 'function') {
-      window.gtag('event', name, params || {});
-    }
+    if (CFG.ga && typeof window.gtag === 'function') window.gtag('event', name, params || {});
   }
 
   /* ---------- Header sticky ---------- */
@@ -21,10 +25,53 @@
     window.addEventListener('scroll', onScroll, { passive: true });
   }
 
+  /* ============================================================
+     Gestión de diálogos: focus trap + fondo inert (modal y drawer)
+     ============================================================ */
+  var activeDialog = null;
+  function focusables(container) {
+    return $$('a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])', container)
+      .filter(function (el) { return el.offsetParent !== null || el === document.activeElement; });
+  }
+  function bgInert(on) {
+    ['#siteHeader', '#main', '.footer', '.wa-float', '.mbar'].forEach(function (sel) {
+      var el = $(sel);
+      if (!el) return;
+      if (on) { el.setAttribute('inert', ''); el.setAttribute('aria-hidden', 'true'); }
+      else { el.removeAttribute('inert'); el.removeAttribute('aria-hidden'); }
+    });
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab' || !activeDialog) return;
+    var f = focusables(activeDialog);
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+
   /* ---------- Drawer móvil ---------- */
   var drawer = $('#drawer');
-  function openDrawer() { if (drawer) { drawer.classList.add('is-open'); drawer.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; } }
-  function closeDrawer() { if (drawer) { drawer.classList.remove('is-open'); drawer.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; } }
+  var drawerLast = null;
+  function openDrawer() {
+    if (!drawer) return;
+    drawerLast = document.activeElement;
+    drawer.classList.add('is-open'); drawer.setAttribute('aria-hidden', 'false');
+    var t = $('[data-drawer-open]'); if (t) t.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+    bgInert(true); activeDialog = $('.mobile-drawer__panel', drawer);
+    var f = $('.mobile-drawer__panel a, .mobile-drawer__panel button', drawer);
+    if (f) setTimeout(function () { try { f.focus(); } catch (_) {} }, 60);
+  }
+  function closeDrawer() {
+    if (!drawer || !drawer.classList.contains('is-open')) return;
+    drawer.classList.remove('is-open'); drawer.setAttribute('aria-hidden', 'true');
+    var t = $('[data-drawer-open]'); if (t) t.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = ''; bgInert(false); activeDialog = null;
+    if (drawerLast) { try { drawerLast.focus(); } catch (_) {} }
+  }
+  // Importante: registrar los cierres ANTES de los abridores de modal,
+  // para que un botón con data-cotizar + data-drawer-close cierre el drawer y LUEGO abra el modal.
   $$('[data-drawer-open]').forEach(function (b) { b.addEventListener('click', openDrawer); });
   $$('[data-drawer-close]').forEach(function (b) { b.addEventListener('click', closeDrawer); });
 
@@ -38,31 +85,37 @@
   } else { reveals.forEach(function (el) { el.classList.add('in'); }); }
 
   /* ---------- Marquee aseguradoras (clonar para loop continuo) ---------- */
-  $$('.marquee__track').forEach(function (tr) {
-    tr.innerHTML += tr.innerHTML;
-  });
+  $$('.marquee__track').forEach(function (tr) { tr.innerHTML += tr.innerHTML; });
 
-  /* ---------- Tabs Personas / Pymes ---------- */
+  /* ---------- Tabs Personas / Pymes (roving tabindex + flechas) ---------- */
   $$('[data-segtabs]').forEach(function (group) {
     var tabs = $$('.segtab', group);
-    tabs.forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        tabs.forEach(function (t) { t.setAttribute('aria-selected', 'false'); });
-        tab.setAttribute('aria-selected', 'true');
-        var target = tab.getAttribute('data-target');
-        $$('[data-segpanel]').forEach(function (p) {
-          p.hidden = (p.getAttribute('data-segpanel') !== target);
-        });
+    function activate(tab) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+      });
+      var target = tab.getAttribute('data-target');
+      $$('[data-segpanel]').forEach(function (p) { p.hidden = p.getAttribute('data-segpanel') !== target; });
+    }
+    tabs.forEach(function (tab, i) {
+      tab.addEventListener('click', function () { activate(tab); });
+      tab.addEventListener('keydown', function (e) {
+        var go = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go = tabs[(i + 1) % tabs.length];
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go = tabs[(i - 1 + tabs.length) % tabs.length];
+        else if (e.key === 'Home') go = tabs[0];
+        else if (e.key === 'End') go = tabs[tabs.length - 1];
+        if (go) { e.preventDefault(); activate(go); go.focus(); }
       });
     });
   });
 
-  /* ---------- FAQ: cerrar otros al abrir uno (acordeón) ---------- */
+  /* ---------- FAQ: acordeón (cerrar otros al abrir) ---------- */
   $$('.faq__item').forEach(function (item) {
     item.addEventListener('toggle', function () {
-      if (item.open) {
-        $$('.faq__item').forEach(function (o) { if (o !== item) o.open = false; });
-      }
+      if (item.open) $$('.faq__item').forEach(function (o) { if (o !== item) o.open = false; });
     });
   });
 
@@ -73,157 +126,180 @@
   var form = $('#cotizarForm');
   var lastFocus = null;
 
-  function openModal() {
-    if (!modal) return;
-    lastFocus = document.activeElement;
-    modal.classList.add('is-open');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    track('cotizar_open');
-    var first = $('.qf__type', modal);
-    if (first) setTimeout(function () { first.focus(); }, 60);
-  }
-  function closeModal() {
-    if (!modal) return;
-    modal.classList.remove('is-open');
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-    if (lastFocus) lastFocus.focus();
-  }
-
-  $$('[data-cotizar]').forEach(function (b) {
-    b.addEventListener('click', function (e) {
-      e.preventDefault();
-      openModal();
-      var slug = b.getAttribute('data-slug');
-      if (slug) {
-        var t = $('.qf__type[data-slug="' + slug + '"]', modal);
-        if (t) { selectType(t); goStep(2); }
-      }
-    });
-  });
-  $$('[data-modal-close]').forEach(function (b) { b.addEventListener('click', closeModal); });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') { closeModal(); closeDrawer(); }
-  });
-
-  if (!form) return;
-
-  var steps = $$('.qf__step', form);
-  var progress = $$('[data-qf-progress] span');
-  var current = 1;
   var placeholders = {
     auto: 'Ej: Toyota Yaris 2022, uso particular, full cobertura.',
     vida: 'Ej: tengo 35 años, quiero proteger a mi familia.',
     viaje: 'Ej: viaje a Europa 15 días en julio, 2 personas.',
-    'incendio-sismo': 'Ej: casa en Ñuñoa, 90 m², con sismo.',
+    'accidentes-personales': 'Ej: cobertura para mi hijo en edad escolar / deportes.',
+    'incendio-sismo': 'Ej: casa en Ñuñoa, 90 m², con cobertura de sismo.',
+    'responsabilidad-civil': 'Ej: local comercial que atiende público / taller.',
     arriendo: 'Ej: arriendo un departamento, quiero garantía de pago.',
     garantia: 'Ej: garantía de fiel cumplimiento para licitación pública.',
-    transporte: 'Ej: importo mercadería desde China, vía marítima.'
+    transporte: 'Ej: importo mercadería desde China, vía marítima.',
+    apv: 'Ej: quiero mejorar mi pensión y rebajar impuestos.',
+    ingenieria: 'Ej: obra de construcción de 6 meses, todo riesgo.',
+    'rc-administradores': 'Ej: directorio de una empresa mediana (D&O).'
   };
 
-  function goStep(n) {
-    current = n;
-    steps.forEach(function (s) { s.classList.toggle('on', +s.getAttribute('data-step') === n); });
-    progress.forEach(function (p, i) { p.classList.toggle('on', i < n); });
-    var active = $('.qf__step.on', form);
-    if (active) { var h = $('h4', active); if (h) h.setAttribute('tabindex', '-1'), h.focus(); }
-  }
+  if (modal && form) {
+    var steps = $$('.qf__step', form);
+    var progress = $$('[data-qf-progress] span');
+    var current = 1;
 
-  function selectType(btn) {
-    $$('.qf__type', form).forEach(function (t) { t.classList.remove('sel'); t.setAttribute('aria-checked', 'false'); });
-    btn.classList.add('sel'); btn.setAttribute('aria-checked', 'true');
-    $('#qfTipo').value = btn.getAttribute('data-value');
-    form.dataset.slug = btn.getAttribute('data-slug');
-    var nextBtn = $('.qf__step[data-step="1"] [data-qf-next]', form);
-    if (nextBtn) nextBtn.disabled = false;
-    var det = $('[data-qf-detalle]', form);
-    if (det) det.placeholder = placeholders[btn.getAttribute('data-slug')] || det.placeholder;
-  }
-
-  $$('.qf__type', form).forEach(function (btn) {
-    btn.addEventListener('click', function () { selectType(btn); });
-  });
-
-  /* Perfil persona/pyme */
-  $$('[data-perfil]', form).forEach(function (b) {
-    b.addEventListener('click', function () {
-      $$('[data-perfil]', form).forEach(function (x) { x.setAttribute('aria-selected', 'false'); });
-      b.setAttribute('aria-selected', 'true');
-      $('#qfPerfil').value = b.getAttribute('data-perfil');
-    });
-  });
-
-  /* Navegación pasos */
-  $$('[data-qf-next]', form).forEach(function (b) {
-    b.addEventListener('click', function () {
-      if (current === 1 && !$('#qfTipo').value) return;
-      goStep(Math.min(3, current + 1));
-    });
-  });
-  $$('[data-qf-prev]', form).forEach(function (b) {
-    b.addEventListener('click', function () { goStep(Math.max(1, current - 1)); });
-  });
-
-  /* Validación paso 3 */
-  function setInvalid(field, bad) { field.classList.toggle('invalid', bad); }
-  function validateStep3() {
-    var ok = true;
-    var fName = $('[data-validate="text"]', form), name = $('#qfNombre');
-    if (!name.value.trim()) { setInvalid(fName, true); ok = false; } else setInvalid(fName, false);
-
-    var tel = $('#qfTel').value.replace(/[^\d+]/g, '');
-    var email = $('#qfEmail').value.trim();
-    var telOk = /^(\+?56)?9\d{8}$/.test(tel);
-    var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    var fTel = $('[data-validate="tel"]', form), fEmail = $('[data-validate="email"]', form);
-    // al menos uno de los dos; si se escribió y es inválido, marcar
-    if (!telOk && !emailOk) {
-      setInvalid(fTel, !!tel || (!tel && !email));
-      setInvalid(fEmail, !!email || (!tel && !email));
-      ok = false;
-    } else {
-      setInvalid(fTel, !!tel && !telOk);
-      setInvalid(fEmail, !!email && !emailOk);
-      if ((tel && !telOk) || (email && !emailOk)) ok = false;
+    function goStep(n) {
+      current = n;
+      steps.forEach(function (s) { s.classList.toggle('on', +s.getAttribute('data-step') === n); });
+      progress.forEach(function (p, i) { p.classList.toggle('on', i < n); });
+      var active = $('.qf__step.on', form);
+      if (active) { var h = $('h4', active); if (h) { h.setAttribute('tabindex', '-1'); try { h.focus(); } catch (_) {} } }
     }
-    if (!$('#qfConsent').checked) ok = false;
-    return ok;
-  }
 
-  function buildWaLink(name, tipo) {
-    var msg = 'Hola Adriana, soy ' + (name || '') + '. Coticé un ' + (tipo || 'seguro') + ' en bambooseguros.cl y quiero avanzar.';
-    return window.BAMBOO.wa + '?text=' + encodeURIComponent(msg);
-  }
+    function selectType(btn) {
+      $$('.qf__type', form).forEach(function (t) { t.classList.remove('sel'); t.setAttribute('aria-pressed', 'false'); });
+      btn.classList.add('sel'); btn.setAttribute('aria-pressed', 'true');
+      $('#qfTipo').value = btn.getAttribute('data-value');
+      form.dataset.slug = btn.getAttribute('data-slug');
+      var n = $('.qf__step[data-step="1"] [data-qf-next]', form); if (n) n.disabled = false;
+      var det = $('[data-qf-detalle]', form);
+      if (det) det.placeholder = placeholders[btn.getAttribute('data-slug')] || det.placeholder;
+    }
 
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    if (!validateStep3()) return;
+    function resetForm() {
+      try {
+        form.reset();
+        $('[data-qf-success]', form).classList.remove('on');
+        $('[data-qf-error]', form).classList.remove('on');
+        $('[data-qf-progress]', modal).style.display = '';
+        $$('.qf__type', form).forEach(function (t) { t.classList.remove('sel'); t.setAttribute('aria-pressed', 'false'); });
+        $('#qfTipo').value = '';
+        delete form.dataset.slug;
+        var n1 = $('.qf__step[data-step="1"] [data-qf-next]', form); if (n1) n1.disabled = true;
+        $$('.field.invalid', form).forEach(function (f) { f.classList.remove('invalid'); });
+        var crow = $('[data-consent-row]', form); if (crow) crow.classList.remove('invalid');
+        $$('[data-perfil]', form).forEach(function (x) { x.setAttribute('aria-pressed', x.getAttribute('data-perfil') === 'Persona' ? 'true' : 'false'); });
+        $('#qfPerfil').value = 'Persona';
+        var sb = $('[data-qf-submit]', form); if (sb) { sb.disabled = false; sb.textContent = sb.dataset.label || 'Quiero mi cotización gratis'; }
+        goStep(1);
+      } catch (_) {}
+    }
 
-    var submitBtn = $('[data-qf-submit]', form);
-    var name = $('#qfNombre').value.trim();
-    var tipo = $('#qfTipo').value;
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Enviando…';
+    function openModal(slug) {
+      lastFocus = document.activeElement;
+      resetForm();
+      modal.classList.add('is-open'); modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      bgInert(true); activeDialog = $('.modal__dialog', modal);
+      track('cotizar_open', { seguro: slug || '' });
+      if (slug) { var t = $('.qf__type[data-slug="' + slug + '"]', form); if (t) { selectType(t); goStep(2); return; } }
+      var first = $('.qf__type', modal); if (first) setTimeout(function () { try { first.focus(); } catch (_) {} }, 60);
+    }
+    function closeModal() {
+      if (!modal.classList.contains('is-open')) return;
+      modal.classList.remove('is-open'); modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = ''; bgInert(false); activeDialog = null;
+      if (lastFocus) { try { lastFocus.focus(); } catch (_) {} }
+    }
 
-    var data = new FormData(form);
-    var done = function () {
-      // Mostrar éxito (pase lo que pase con el correo: WhatsApp es la red de seguridad)
-      $('.qf__progress', modal).style.display = 'none';
-      steps.forEach(function (s) { s.classList.remove('on'); });
-      var nameSpan = $('[data-qf-name]', form); if (nameSpan) nameSpan.textContent = name ? ', ' + name : '';
-      var wa = $('[data-qf-wa]', form); if (wa) wa.href = buildWaLink(name, tipo);
-      $('[data-qf-success]', form).classList.add('on');
+    $$('[data-cotizar]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.preventDefault(); openModal(b.getAttribute('data-slug')); });
+    });
+    $$('[data-modal-close]').forEach(function (b) { b.addEventListener('click', closeModal); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeModal(); closeDrawer(); } });
+
+    $$('.qf__type', form).forEach(function (btn) { btn.addEventListener('click', function () { selectType(btn); }); });
+
+    $$('[data-perfil]', form).forEach(function (b) {
+      b.addEventListener('click', function () {
+        $$('[data-perfil]', form).forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+        b.setAttribute('aria-pressed', 'true');
+        $('#qfPerfil').value = b.getAttribute('data-perfil');
+      });
+    });
+
+    $$('[data-qf-next]', form).forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (current === 1 && !$('#qfTipo').value) return;
+        goStep(Math.min(3, current + 1));
+      });
+    });
+    $$('[data-qf-prev]', form).forEach(function (b) { b.addEventListener('click', function () { goStep(Math.max(1, current - 1)); }); });
+
+    function setInvalid(field, bad, input) {
+      field.classList.toggle('invalid', bad);
+      if (input) input.setAttribute('aria-invalid', bad ? 'true' : 'false');
+    }
+    function validateStep3() {
+      var ok = true, firstBad = null;
+      var fName = $('[data-validate="text"]', form), name = $('#qfNombre');
+      if (!name.value.trim()) { setInvalid(fName, true, name); ok = false; firstBad = firstBad || name; }
+      else setInvalid(fName, false, name);
+
+      var telInput = $('#qfTel'), emailInput = $('#qfEmail');
+      var tel = telInput.value.replace(/[^\d+]/g, '');
+      var email = emailInput.value.trim();
+      var telOk = /^(\+?56)?9\d{8}$/.test(tel);
+      var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      var fTel = $('[data-validate="tel"]', form), fEmail = $('[data-validate="email"]', form);
+      if (telOk || emailOk) {
+        // Hay al menos un canal de contacto válido: no bloquear por un typo en el otro.
+        setInvalid(fTel, false, telInput); setInvalid(fEmail, false, emailInput);
+      } else {
+        setInvalid(fTel, true, telInput); setInvalid(fEmail, true, emailInput);
+        ok = false; firstBad = firstBad || telInput;
+      }
+      var crow = $('[data-consent-row]', form), consent = $('#qfConsent');
+      if (!consent.checked) { crow.classList.add('invalid'); ok = false; firstBad = firstBad || consent; }
+      else crow.classList.remove('invalid');
+
+      if (!ok && firstBad) { try { firstBad.focus(); } catch (_) {} }
+      return ok;
+    }
+
+    function buildWaLink(name, tipo) {
+      var base = (CFG && CFG.wa) || 'https://wa.me/56995091193';
+      var msg = 'Hola Adriana, soy ' + (name || '') + '. Coticé un ' + (tipo || 'seguro') + ' en bambooseguros.cl y quiero avanzar.';
+      return base + '?text=' + encodeURIComponent(msg);
+    }
+    function showSuccess(name, tipo) {
+      try {
+        $('[data-qf-progress]', modal).style.display = 'none';
+        steps.forEach(function (s) { s.classList.remove('on'); });
+        var ns = $('[data-qf-name]', form); if (ns) ns.textContent = name ? ', ' + name : '';
+        var wa = $('[data-qf-wa]', form); if (wa) wa.href = buildWaLink(name, tipo);
+        var box = $('[data-qf-success]', form); box.classList.add('on');
+        try { box.focus(); } catch (_) {}
+      } catch (_) {}
       track('generate_lead', { method: 'form', seguro: tipo });
-    };
+    }
+    function showError(submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = submitBtn.dataset.label || 'Quiero mi cotización gratis';
+      var err = $('[data-qf-error]', form); if (err) { err.classList.add('on'); try { err.scrollIntoView({ block: 'nearest' }); } catch (_) {} }
+    }
 
-    fetch('/backend/enviar_cotizacion.php', { method: 'POST', body: data })
-      .then(function (r) { return r.json().catch(function () { return {}; }); })
-      .then(done)
-      .catch(done);
-  });
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var err = $('[data-qf-error]', form); if (err) err.classList.remove('on');
+      if (!validateStep3()) return;
 
-  /* ---------- Tracking de clics WhatsApp ---------- */
+      var submitBtn = $('[data-qf-submit]', form);
+      var name = $('#qfNombre').value.trim();
+      var tipo = $('#qfTipo').value;
+      if (!submitBtn.dataset.label) submitBtn.dataset.label = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando…';
+
+      fetch('/backend/enviar_cotizacion.php', { method: 'POST', body: new FormData(form) })
+        .then(function (r) {
+          // 2xx = OK (el correo es best-effort; el lead queda registrado). 4xx/5xx = fallo real.
+          if (r.status >= 200 && r.status < 300) showSuccess(name, tipo);
+          else showError(submitBtn);
+        })
+        .catch(function () { showError(submitBtn); });  // sin red: error honesto + WhatsApp en el mensaje
+    });
+  }
+
+  /* ---------- Tracking de clics WhatsApp / teléfono ---------- */
   $$('a[href*="wa.me"], [data-wa-float]').forEach(function (a) {
     a.addEventListener('click', function () { track('generate_lead', { method: 'whatsapp' }); });
   });

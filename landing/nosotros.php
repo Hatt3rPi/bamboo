@@ -4,6 +4,7 @@ require_once __DIR__ . '/data/config.php';
 $person = [
   '@context' => 'https://schema.org',
   '@type' => 'Person',
+  '@id' => $SITE['url'] . '/#adriana',
   'name' => $SITE['founder'],
   'jobTitle' => 'Corredora de Seguros',
   'worksFor' => ['@id' => $SITE['url'] . '/#organization'],
@@ -24,7 +25,12 @@ $page = [
   'canonical' => '/nosotros',
   'active' => 'nosotros',
   'schema' => [
-    ['@context' => 'https://schema.org', '@type' => 'AboutPage', 'name' => 'Quiénes Somos — Bamboo Seguros', 'url' => $SITE['url'] . '/nosotros'],
+    [
+      '@context' => 'https://schema.org', '@type' => 'AboutPage',
+      'name' => 'Quiénes Somos — Bamboo Seguros', 'url' => $SITE['url'] . '/nosotros',
+      'mainEntity' => ['@id' => $SITE['url'] . '/#adriana'],
+      'about' => ['@id' => $SITE['url'] . '/#organization'],
+    ],
     $person,
   ],
 ];

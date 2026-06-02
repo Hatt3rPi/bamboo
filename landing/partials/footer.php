@@ -70,9 +70,6 @@
 
 <?php require __DIR__ . '/cotizar-modal.php'; ?>
 
-<script>
-  window.BAMBOO = { wa: "https://wa.me/<?= e($SITE['phone_e164']) ?>", ga: <?= $SITE['ga4_id'] !== '' ? 'true' : 'false' ?> };
-</script>
 <script src="/assets/js/landing.js" defer></script>
 </body>
 </html>

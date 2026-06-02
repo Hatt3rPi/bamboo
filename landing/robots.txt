@@ -1,6 +1,7 @@
 # Bamboo Seguros — robots.txt
 User-agent: *
 Allow: /
+Disallow: /backend/
 
 # Crawlers de IA (visibilidad en AI Overviews, ChatGPT, Perplexity, Copilot)
 User-agent: GPTBot
@@ -19,7 +20,5 @@ User-agent: Google-Extended
 Allow: /
 User-agent: Bingbot
 Allow: /
-
-Disallow: /backend/
 
 Sitemap: https://www.bambooseguros.cl/sitemap.xml

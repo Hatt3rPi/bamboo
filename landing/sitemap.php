@@ -6,7 +6,14 @@ require_once __DIR__ . '/data/seguros.php';
 header('Content-Type: application/xml; charset=utf-8');
 
 $base = rtrim($SITE['url'], '/');
-$today = date('Y-m-d');
+// lastmod estable: última modificación real del contenido (no "hoy" en cada fetch).
+$mtimes = array_map(fn($f) => @filemtime($f) ?: 0, [
+    __DIR__ . '/index.php',
+    __DIR__ . '/data/seguros.php',
+    __DIR__ . '/seguros/_template.php',
+    __DIR__ . '/assets/css/landing.css',
+]);
+$today = date('Y-m-d', max($mtimes) ?: time());
 
 $urls = [
     ['/', '1.0'],

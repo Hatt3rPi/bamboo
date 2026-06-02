@@ -40,14 +40,15 @@ $SITE = [
     'cmf_reg'       => '',                      // TODO N° de inscripción CMF (vacío = se muestra sin número)
     'cmf_url'       => 'https://www.cmfchile.cl/portal/principal/613/w3-channel.html',
 
-    // ---- Redes ----
-    // TODO: reemplazar por las URLs reales
-    'instagram'     => '',                      // ej. https://www.instagram.com/bambooseguros
-    'facebook'      => 'https://www.facebook.com/profile.php?id=328123681176499',
-    'linkedin'      => '',
+    // ---- Redes (solo LinkedIn por decisión del cliente) ----
+    'instagram'     => '',
+    'facebook'      => '',
+    'linkedin'      => 'https://www.linkedin.com/in/adriana-sandoval-819256149/',
 
     // ---- Analítica ----
-    'ga4_id'        => '',                      // TODO ej. 'G-XXXXXXXXXX' (vacío = no carga gtag)
+    // Sin analítica por decisión del cliente. Para activar GA4 a futuro:
+    // crear propiedad GA4 y poner aquí el ID 'G-XXXXXXXXXX' (carga gtag y mide cotizaciones).
+    'ga4_id'        => '',
 
     // ---- Defaults SEO ----
     'default_title' => 'Bamboo Seguros | Corredora de Seguros — Cotiza Gratis y Sin Compromiso',
@@ -66,11 +67,6 @@ function wa_link(string $msg = ''): string {
         $msg = 'Hola Adriana, vengo de bambooseguros.cl y quiero cotizar un seguro.';
     }
     return $base . '?text=' . rawurlencode($msg);
-}
-
-/** Link de redirección propia para atribución (UTM → GA4). Cae a wa_link directo si no se usa. */
-function wa_track(string $src, string $msg = ''): string {
-    return '/wa.php?src=' . urlencode($src) . ($msg !== '' ? '&m=' . urlencode($msg) : '');
 }
 
 /** Escape corto. */

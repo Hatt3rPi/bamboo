@@ -55,7 +55,6 @@ $org = [
     'slogan' => $SITE['tagline'],
     'telephone' => '+' . $SITE['phone_e164'],
     'email' => $SITE['email'],
-    'priceRange' => 'Asesoría sin costo para el cliente',
     'areaServed' => ['@type' => 'Country', 'name' => 'Chile'],
     'knowsAbout' => array_values(array_map(fn($s) => $s['nombre'], $SEGUROS)),
     'founder' => $founder,
@@ -92,7 +91,7 @@ $website = [
     'publisher' => ['@id' => $SITE['url'] . '/#organization'],
 ];
 
-$jsonFlags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT;
+$jsonFlags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_HEX_TAG | JSON_HEX_AMP;
 $schemaBlocks = array_merge([$org, $website], $page['schema'] ?? []);
 ?>
 <!DOCTYPE html>
@@ -104,6 +103,7 @@ $schemaBlocks = array_merge([$org, $website], $page['schema'] ?? []);
   <meta name="description" content="<?= e($desc) ?>">
   <link rel="canonical" href="<?= e($canonical) ?>">
   <link rel="alternate" hreflang="es-cl" href="<?= e($canonical) ?>">
+  <link rel="alternate" hreflang="x-default" href="<?= e($canonical) ?>">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <meta name="theme-color" content="#536656">
   <meta name="author" content="<?= e($SITE['founder']) ?>">
@@ -146,7 +146,7 @@ $schemaBlocks = array_merge([$org, $website], $page['schema'] ?? []);
   </script>
 <?php endif; ?>
 </head>
-<body>
-<a href="#main" class="sr-only" style="position:absolute;left:-9999px">Saltar al contenido</a>
+<body data-wa="<?= e($SITE['phone_e164']) ?>" data-ga="<?= $SITE['ga4_id'] !== '' ? '1' : '' ?>">
+<a href="#main" class="skip-link">Saltar al contenido</a>
 <?php require __DIR__ . '/header.php'; ?>
 <main id="main">

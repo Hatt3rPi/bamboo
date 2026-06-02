@@ -14,7 +14,8 @@ function fail(string $msg, int $code = 400): void {
     echo json_encode(['ok' => false, 'error' => $msg], JSON_UNESCAPED_UNICODE);
     exit;
 }
-function clean(string $v, int $max = 500): string {
+function clean($v, int $max = 500): string {
+    if (!is_string($v)) return '';            // input tipo array[] -> string vacío (evita TypeError/500)
     $v = trim($v);
     $v = str_replace(["\r", "\n", "\t"], ' ', $v); // anti header-injection en campos cortos
     return function_exists('mb_substr') ? mb_substr($v, 0, $max) : substr($v, 0, $max);
@@ -24,6 +25,20 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') fail('Método no permitido', 405);
 
 // Honeypot: si viene relleno, es bot. Respondemos ok para no darle pistas.
 if (!empty($_POST['website'])) { echo json_encode(['ok' => true]); exit; }
+
+// Rate-limiting por IP (anti mail-bombing): máx. 6 envíos cada 10 min.
+// El estado vive en el temp del sistema (fuera del docroot, sin PII, solo timestamps).
+$ip = (string)($_SERVER['REMOTE_ADDR'] ?? '0');
+$rlFile = sys_get_temp_dir() . '/bamboo_rl_' . md5($ip) . '.json';
+$now = time(); $window = 600; $maxHits = 6;
+$hits = [];
+if (is_file($rlFile)) {
+    $prev = json_decode((string)@file_get_contents($rlFile), true);
+    if (is_array($prev)) $hits = array_filter($prev, fn($t) => is_int($t) && $t > $now - $window);
+}
+if (count($hits) >= $maxHits) fail('Demasiados intentos. Espera unos minutos o escríbenos por WhatsApp.', 429);
+$hits[] = $now;
+@file_put_contents($rlFile, json_encode(array_values($hits)), LOCK_EX);
 
 $tipo    = clean($_POST['tipo_seguro'] ?? '', 120);
 $perfil  = clean($_POST['perfil'] ?? 'Persona', 40);
@@ -63,8 +78,13 @@ if ($emailOk) $headers .= "Reply-To: {$nombre} <{$email}>\r\n";
 $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
 $headers .= "X-Mailer: BambooLanding\r\n";
 
-// Respaldo a log (por si mail() falla). Protegido por .htaccess (*.log denegado).
-@file_put_contents(__DIR__ . '/leads.log', $cuerpo . "\n\n", FILE_APPEND | LOCK_EX);
+// Respaldo a log (por si mail() falla). Protegido por backend/.htaccess (*.log denegado).
+// Tope de tamaño para evitar llenado de disco; rota a .1 al superar 5 MB.
+$logFile = __DIR__ . '/leads.log';
+if (is_file($logFile) && filesize($logFile) > 5 * 1024 * 1024) {
+    @rename($logFile, $logFile . '.1');
+}
+@file_put_contents($logFile, $cuerpo . "\n\n", FILE_APPEND | LOCK_EX);
 
 $sent = @mail($SITE['email'], '=?UTF-8?B?' . base64_encode($asunto) . '?=', $cuerpo, $headers);
 

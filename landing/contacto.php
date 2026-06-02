@@ -41,11 +41,11 @@ require __DIR__ . '/partials/head.php';
         <h3>Correo</h3><p>Cuéntanos tu caso con detalle y te respondemos.</p>
         <span class="svc__go" style="word-break:break-all"><?= e($SITE['email']) ?></span>
       </a>
-      <button type="button" class="vcard reveal" data-d="4" data-cotizar style="text-align:left;border:1.5px solid var(--bamboo-300);background:var(--bamboo-50)">
+      <a href="#" role="button" class="vcard reveal" data-d="4" data-cotizar style="border:1.5px solid var(--bamboo-300);background:var(--bamboo-50)">
         <div class="vcard__ic" style="background:var(--bamboo-600);color:#fff"><?= bb_icon('chat') ?></div>
         <h3>Formulario de cotización</h3><p>Completa 3 pasos simples y armamos tu propuesta.</p>
         <span class="svc__go">Cotizar gratis <?= bb_icon('arrow') ?></span>
-      </button>
+      </a>
     </div>
 
     <div class="reveal" style="margin-top:40px;text-align:center;color:var(--fg-muted)">

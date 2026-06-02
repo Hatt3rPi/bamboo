@@ -1,0 +1,7 @@
+# Defensa en profundidad: bloquear acceso web directo a datos/logs en /backend/.
+# El endpoint enviar_cotizacion.php sigue accesible (lo llama el formulario por fetch).
+# No depende del .htaccess raíz: si este directorio se sirve, igual protege el PII.
+Options -Indexes
+<FilesMatch "(^leads\.|\.(log|json|txt|md|ini|csv)$)">
+  Require all denied
+</FilesMatch>

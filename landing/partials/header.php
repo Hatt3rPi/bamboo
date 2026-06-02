@@ -18,9 +18,9 @@ $navlinks = [
       <ul class="nav__links">
         <li class="nav__has-menu">
           <a href="/#servicios"<?= $active === 'servicios' ? ' aria-current="page"' : '' ?>>Seguros</a>
-          <div class="nav__panel" role="menu">
+          <div class="nav__panel">
             <?php foreach ($SEGUROS as $svc): ?>
-              <a href="/seguros/<?= e($svc['slug']) ?>" role="menuitem">
+              <a href="/seguros/<?= e($svc['slug']) ?>">
                 <?= bb_icon($svc['icon']) ?><span><?= e($svc['menu']) ?></span>
               </a>
             <?php endforeach; ?>
