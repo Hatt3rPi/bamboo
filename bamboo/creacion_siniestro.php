@@ -179,7 +179,7 @@ require_once 'layout.php';
     <h5 class="form-row">&nbsp;Póliza asociada</h5><br>
     <div class="form-row">
       <div class="col-md-4 mb-3">
-        <label for="numero_poliza">N° Póliza <span style="color:darkred">*</span></label>
+        <label for="numero_poliza">N° Póliza <span class="text-danger">*</span></label>
         <input type="text" class="form-control" id="numero_poliza" name="numero_poliza"
           value="<?php echo $numero_poliza; ?>" readonly>
       </div>
@@ -196,7 +196,7 @@ require_once 'layout.php';
     <!-- ==================== SECCIÓN 1b: ÍTEMS AFECTADOS ==================== -->
     <div id="seccion_items" style="<?php echo ($id_poliza ? '' : 'display:none'); ?>">
       <hr>
-      <h5 class="form-row">&nbsp;Ítems afectados <span style="color:darkred">*</span></h5><br>
+      <h5 class="form-row">&nbsp;Ítems afectados <span class="text-danger">*</span></h5><br>
       <div class="form-row">
         <div class="col-md-12 mb-3">
           <div id="lista_items_checkboxes" class="border rounded p-2" style="min-height:50px">
@@ -221,7 +221,7 @@ require_once 'layout.php';
       <input type="hidden" id="numero_siniestro" name="numero_siniestro" value="<?php echo htmlspecialchars($numero_siniestro, ENT_QUOTES); ?>">
       <?php endif; ?>
       <div class="<?php echo $col_datos_siniestro; ?> mb-3">
-        <label for="tipo_siniestro">Tipo de Siniestro <span style="color:darkred">*</span></label>
+        <label for="tipo_siniestro">Tipo de Siniestro <span class="text-danger">*</span></label>
         <select class="form-control" id="tipo_siniestro" name="tipo_siniestro">
           <option value="">-- Seleccione --</option>
           <?php
@@ -238,7 +238,7 @@ require_once 'layout.php';
         </select>
       </div>
       <div class="<?php echo $col_datos_siniestro; ?> mb-3">
-        <label for="fecha_ocurrencia">Fecha de Ocurrencia <span style="color:darkred">*</span></label>
+        <label for="fecha_ocurrencia">Fecha de Ocurrencia <span class="text-danger">*</span></label>
         <input type="date" class="form-control" id="fecha_ocurrencia" name="fecha_ocurrencia"
           value="<?php echo $fecha_ocurrencia; ?>">
       </div>
@@ -699,7 +699,7 @@ function cargarItemsPoliza(id_poliza, items_csv_pre) {
             actualizarBotonRegistrar();
         },
         error: function() {
-            $('#lista_items_checkboxes').html('<em style="color:darkred">Error cargando ítems.</em>');
+            $('#lista_items_checkboxes').html('<em class="text-danger">Error cargando ítems.</em>');
         }
     });
 }
@@ -2150,7 +2150,7 @@ function enviarCorreoLiquidador() {
           <div class="tab-pane fade show active" id="tab-bien-desc" role="tabpanel">
             <div class="form-row">
               <div class="col-md-4 form-group">
-                <label>Categoría <span style="color:darkred">*</span></label>
+                <label>Categoría <span class="text-danger">*</span></label>
                 <select class="form-control" id="bien_categoria" onchange="toggleCamposVehiculoBien()">
                   <option value="vehiculo">Vehículo</option>
                   <option value="inmueble">Inmueble</option>
@@ -2159,7 +2159,7 @@ function enviarCorreoLiquidador() {
                 </select>
               </div>
               <div class="col-md-8 form-group">
-                <label>Descripción <span style="color:darkred">*</span></label>
+                <label>Descripción <span class="text-danger">*</span></label>
                 <textarea class="form-control" id="bien_descripcion" rows="2" placeholder="Ej: Dpto 304, Pasillo 2° piso, Auto del Sr. Pérez…"></textarea>
               </div>
             </div>
@@ -2272,7 +2272,7 @@ function enviarCorreoLiquidador() {
       <div class="modal-body">
         <input type="hidden" id="pend_id">
         <div class="form-group">
-          <label>¿Quién la lleva? <span style="color:darkred">*</span></label>
+          <label>¿Quién la lleva? <span class="text-danger">*</span></label>
           <select class="form-control" id="pend_responsable">
             <option value="Cliente">Cliente</option>
             <option value="Liquidador">Liquidador</option>
@@ -2281,7 +2281,7 @@ function enviarCorreoLiquidador() {
           </select>
         </div>
         <div class="form-group">
-          <label>Descripción del pendiente <span style="color:darkred">*</span></label>
+          <label>Descripción del pendiente <span class="text-danger">*</span></label>
           <textarea class="form-control" id="pend_descripcion" rows="2"
             placeholder="Ej: Recepción municipal del edificio, Finiquito firmado, Fecha de pago…"></textarea>
         </div>
