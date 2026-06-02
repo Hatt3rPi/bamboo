@@ -325,6 +325,15 @@ switch ($_POST["accion"]) {
   
               $nro_poliza= estandariza_info($_POST["nro_poliza"]);
               $accion_secundaria= estandariza_info($_POST["accion_secundaria"]);
+              // FIX BUG 'WEB': el front siempre envía numero_propuesta='WEB' (placeholder
+              // NO único). Eso hacía que el UPDATE/INSERT de items por numero_propuesta
+              // arrastrara los items de TODAS las pólizas web previas a la nueva póliza.
+              // Se genera un identificador único por póliza web. Los items de una póliza
+              // se relacionan por numero_poliza (no por numero_propuesta), así que esto
+              // es transparente para las consultas de la póliza.
+              if ($nro_propuesta === 'WEB' || $nro_propuesta === '') {
+                  $nro_propuesta = 'WEB-' . bin2hex(random_bytes(6));
+              }
               $poliza_renovada= estandariza_info($_POST["poliza_renovada"]);
               $fecha_emision_poliza= estandariza_info($_POST["fecha_emision_poliza"]);
               $fecha_envio_propuesta='';
