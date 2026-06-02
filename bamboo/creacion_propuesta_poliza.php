@@ -1220,30 +1220,44 @@ function origen_busqueda(origen_boton, indice_item) {
     origen = origen_boton;
     item=indice_item
 }
+// Toma el nombre del cliente desde la fila seleccionada del modal (más robusto
+// que depender del AJAX busqueda_nombre, que no siempre devuelve el nombre).
+function bb_nombre_desde_modal(rut) {
+    var nombre = '';
+    try {
+        tabla_clientes.rows().every(function () {
+            var d = this.data();
+            if (d && String(d.rut) === String(rut)) { nombre = d.nombre || ''; }
+        });
+    } catch (e) {}
+    return nombre;
+}
 function seleccion_rut(rut) {
 
     switch (origen.substring(0,14)) {
         case 'busca_rut_prop': {
             document.getElementById("rutprop").value = rut;
             document.getElementById("rutprop").onchange();
+            var nom = bb_nombre_desde_modal(rut);
+            if (nom) document.getElementById("nombre_prop").value = nom;
             document.getElementById("validador10").style.visibility = "hidden";
              var contador =  document.getElementById("contador").value;
                  for (var i = 1; i <= contador; i++){
-                     
                     document.getElementById("rutaseg[" + i + "]").value = document.getElementById("rutprop").value;
-                        
-                     
+                    if (nom) document.getElementById("nombre_seg[" + i + "]").value = nom;
                  }
-            
-            
+
+
             //document.getElementById("rutaseg").onchange()
             break;
         }
         case 'busca_rut_aseg': {
             //console.log("rutaseg[" + item + "]")
             document.getElementById("rutaseg[" + item + "]").value = rut;
-           
+
             document.getElementById("rutaseg[" + item + "]").onchange();
+            var nomA = bb_nombre_desde_modal(rut);
+            if (nomA) document.getElementById("nombre_seg[" + item + "]").value = nomA;
             break;
         }
         default: {
