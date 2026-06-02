@@ -472,15 +472,19 @@ db_close($link);
 </head>
 <body>
 <script >
+var dbError = <?php echo json_encode(db_last_error()); ?>;
+var mensaje = <?php echo json_encode($mensaje); ?>;
+var busqueda = <?php echo json_encode($busqueda); ?>;
+var listado  = <?php echo json_encode($listado); ?>;
 
-var mensaje= '<?php echo $mensaje; ?>';
-if (mensaje) { alert(mensaje); }
-var busqueda= '<?php echo $busqueda; ?>';
-var listado= '<?php echo $listado; ?>';
-  $.redirect(listado, {
- 'busqueda': busqueda
-}, 'post');
-
+if (dbError) {
+  // Un query falló: NO se redirige como si hubiera funcionado. Se muestra el
+  // detalle real (PostgreSQL) para diagnóstico y para que el usuario reporte.
+  alert('⚠️ No se pudo completar el guardado. Es posible que los datos no se hayan registrado o quedaran incompletos.\n\nDetalle técnico:\n' + dbError);
+} else {
+  if (mensaje) { alert(mensaje); }
+  $.redirect(listado, { 'busqueda': busqueda }, 'post');
+}
 </script>
 </body>
 </html>

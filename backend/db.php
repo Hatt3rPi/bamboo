@@ -54,12 +54,24 @@ function db_query($link, $sql) {
         $sql = sql_translate($sql);
         $result = pg_query($link, $sql);
         if ($result === false) {
-            error_log("PG query error: " . pg_last_error($link) . " | SQL: " . $sql);
+            $err = pg_last_error($link);
+            $GLOBALS['bb_last_db_error'] = $err;
+            error_log("PG query error: " . $err . " | SQL: " . $sql);
         }
         return $result;
     } else {
-        return mysqli_query($link, $sql);
+        $result = mysqli_query($link, $sql);
+        if ($result === false) {
+            $GLOBALS['bb_last_db_error'] = mysqli_error($link);
+        }
+        return $result;
     }
+}
+
+/* Último error de BD capturado en este request (vacío si no hubo).
+   Permite detectar fallos de guardado aunque display_errors esté Off. */
+function db_last_error() {
+    return isset($GLOBALS['bb_last_db_error']) ? $GLOBALS['bb_last_db_error'] : '';
 }
 
 function db_fetch_object($result) {
