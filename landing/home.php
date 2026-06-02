@@ -77,7 +77,7 @@ require __DIR__ . '/partials/head.php';
   <div class="marquee" aria-hidden="true">
     <div class="marquee__track">
       <?php foreach ($insurers as $key): $e = $ext[$key] ?? 'png'; ?>
-        <img src="/assets/img/companies/<?= e($key) ?>.<?= e($e) ?>" alt="<?= e($insurer_names[$key] ?? ucfirst($key)) ?>" loading="lazy" height="38">
+        <img src="/assets/img/companies/<?= e($key) ?>.<?= e($e) ?>" alt="<?= e($insurer_names[$key] ?? ucfirst($key)) ?>" loading="lazy">
       <?php endforeach; ?>
     </div>
   </div>
