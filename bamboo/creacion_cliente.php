@@ -2,8 +2,14 @@
 if ( !isset( $_SESSION ) ) {
   session_start();
 }
+// Legacy asume display_errors=Off (como prod). En QA está On y en modo
+// 'nuevo cliente' (GET) variables como $contactos_array quedan sin definir;
+// sus Warnings se inyectan DENTRO del <script> y rompen el JS (valida_rut_
+// duplicado quedaba sin definir). Silenciar replica el entorno de prod.
+error_reporting(E_ERROR | E_PARSE);
+@ini_set('display_errors', '0');
 
-      
+
     require_once "/home/gestio10/public_html/backend/config.php";
     db_set_charset($link, 'utf8');
     db_select_db($link, DB_NAME);
