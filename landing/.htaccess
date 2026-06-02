@@ -55,11 +55,11 @@ RewriteRule ^(data|partials)/ - [F]
 </FilesMatch>
 
 # ---- Cabeceras de seguridad ----
-# Si la landing convive con el portal interno en el mismo dominio, NO aplicar la
-# CSP estricta a las rutas del portal (usa jQuery/Bootstrap/DataTables/inline).
-SetEnvIf Request_URI "^/(bamboo|bambooQA|backend|vendor)(/|$)" PORTAL_AREA
-# HSTS solo en el dominio de producción (NO en *.customware.cl staging, para no
-# forzar HTTPS en otros subdominios compartidos del hosting).
+# OJO co-alojado: NO poner Content-Security-Policy aquí. En LiteSpeed el gating
+# por env (env=!PORTAL_AREA) NO es fiable y la CSP terminaba aplicándose al portal,
+# bloqueando jQuery/Bootstrap/DataTables. La CSP se emite SOLO desde el PHP de la
+# landing (partials/head.php) para no tocar nunca al portal.
+# HSTS solo en el dominio de producción (gating por Host sí es fiable; verificado).
 SetEnvIf Host "(^|\.)bambooseguros\.cl$" PROD_HOST
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
@@ -67,9 +67,6 @@ SetEnvIf Host "(^|\.)bambooseguros\.cl$" PROD_HOST
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=PROD_HOST
-  # CSP solo para la landing (no PORTAL_AREA). Sin scripts inline (config en data-*).
-  # Si se activa GA4: añadir https://www.googletagmanager.com a script-src + hash del init.
-  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; form-action 'self'" env=!PORTAL_AREA
 </IfModule>
 
 # ---- Compresión ----

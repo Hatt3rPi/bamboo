@@ -18,6 +18,20 @@ $canonical = rtrim($SITE['url'], '/') . $path;
 $ogimg     = rtrim($SITE['url'], '/') . ($page['og_image'] ?? $SITE['og_image']);
 $active    = $page['active'] ?? '';
 
+/* ---------- CSP (solo landing) ----------
+   Se emite por PHP, NO por .htaccess: en LiteSpeed co-alojado el gating por env
+   no es fiable y la CSP terminaba bloqueando el portal (jQuery/Bootstrap/DataTables).
+   Así solo las páginas de la landing reciben CSP. */
+if (!headers_sent()) {
+    $csp = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; "
+         . "img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+         . "font-src 'self' https://fonts.gstatic.com; "
+         . "script-src 'self'" . ($SITE['ga4_id'] !== '' ? " 'unsafe-inline' https://www.googletagmanager.com" : "") . "; "
+         . "connect-src 'self'" . ($SITE['ga4_id'] !== '' ? " https://www.google-analytics.com https://www.googletagmanager.com" : "") . "; "
+         . "form-action 'self'";
+    header('Content-Security-Policy: ' . $csp);
+}
+
 /* ---------- Schema sitewide: InsuranceAgency ---------- */
 $services = [];
 foreach ($SEGUROS as $svc) {   // NO usar $s: la plantilla de ramo lo necesita intacto
