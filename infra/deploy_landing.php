@@ -21,11 +21,17 @@ function run($cmd) { return shell_exec($cmd . " 2>&1"); }
 $log = "";
 $log .= run("cd $src && git fetch origin redesign && git checkout redesign && git pull origin redesign");
 
-// Backup (idempotente) de los archivos raíz del portal que la landing va a tomar.
-// Permite revertir y, sobre todo, recuperar directivas LiteSpeed/timeout del .htaccess del portal.
-foreach (['index.php', '.htaccess'] as $f) {
-    if (is_file("$dst/$f") && !is_file("$dst/$f.portal-bak")) {
-        @copy("$dst/$f", "$dst/$f.portal-bak");
+// Backup (idempotente) del index.php gateway del portal (por si hay que revertir).
+if (is_file("$dst/index.php") && !is_file("$dst/index.php.portal-bak")) {
+    @copy("$dst/index.php", "$dst/index.php.portal-bak");
+}
+// .htaccess: SOLO respaldar si existe uno que NO sea de la landing (preservar el del
+// portal si lo hubiera). Evita el bug de respaldar nuestro propio .htaccess.
+// La landing .htaccess es portal-safe (no toca /bamboo,/backend,/bambooQA,/vendor).
+if (is_file("$dst/.htaccess") && !is_file("$dst/.htaccess.portal-bak")) {
+    $cur = (string) @file_get_contents("$dst/.htaccess");
+    if (strpos($cur, 'BAMBOO SEGUROS · LANDING') === false) {
+        @copy("$dst/.htaccess", "$dst/.htaccess.portal-bak");
     }
 }
 
