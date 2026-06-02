@@ -147,29 +147,26 @@ require_once 'layout.php';
 </div>
   <form action="/bamboo/backend/propuesta_endoso/crea_propuesta_endoso.php" class="needs-validation" method="POST" id="formulario"  novalidate>
   
-<div class="accordion" id="accordionExample">
-      <div class="card">
-        <div class="card-header" id="headingOne" style="background-color:whitesmoke">
-          <h5 class="mb-0">
-            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne"
-                              aria-expanded="true" aria-controls="collapseOne" style="color:#536656">Información General del Endoso</button>
-          </h5>
+<div id="accordionExample">
+      <div class="card mb-4">
+        <div class="card-header" id="headingOne">
+          <h5 class="mb-0">Información general del endoso</h5>
         </div>
-        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne">
+        <div id="collapseOne" aria-labelledby="headingOne">
           <div class="card-body" id="card-body-one">
             
         <div class="form-row">
-            <div class="col-3" id="caja_numero_endoso" style="display:none">
+            <div class="col-md-3" id="caja_numero_endoso" style="display:none">
                     <label for="monto"><b>Número de Endoso</b></label>
-                    <label style="color: darkred">&nbsp; *</label>
+                    <span class="text-danger">*</span>
                     <div class="md-form">
                     <input type="text" class="form-control" id="nro_endoso" name="nro_endoso">
                     </div>
                 
             </div>
-            <div class="col-3">
+            <div class="col-md-3">
                 <label for = "motivo_endoso"><b>Motivo del Endoso</b></label>
-                <label style="color: darkred">*</label>
+                <span class="text-danger">*</span>
                 <br>
                 <select class="form-control" id="motivo_endoso" name="motivo_endoso" onchange=cambio_motivo() required>
                     <option value="">Selecciona Motivo</option>
@@ -183,18 +180,18 @@ require_once 'layout.php';
                 <div class="invalid-feedback">No puedes dejar este campo en blanco</div>
             </div>
             
-            <div class="col-3">
+            <div class="col-md-3">
               <label for="fecha_emision">Fecha Emisión Endoso</label>
-              <label style="color: darkred">&nbsp; *</label>
+              <span class="text-danger">*</span>
               <div class="md-form">
                 <input placeholder="Selected date" type="date" id="fecha_emision" name="fecha_emision"
-                                              class="form-control"  max= "9999-12-31" style="width:72%;">
+                                              class="form-control"  max= "9999-12-31">
               </div>
             </div>
             
-          <div class="col-4" id="col_fecha_ingreso" style="display:none">
+          <div class="col-md-4" id="col_fecha_ingreso" style="display:none">
                 <label for="fecha_prorroga"><b>Fecha Prorroga:&nbsp;</b></label>
-                <label style="color: darkred">*</label>
+                <span class="text-danger">*</span>
                 <div class="md-form">
 
                    <input placeholder="Selected date" type="date" name="fecha_prorroga" id="fecha_prorroga" onchange="prorroga()" value=""
@@ -205,9 +202,9 @@ require_once 'layout.php';
         </div>
          <br>
         <div class ="form-row">
-            <div class="col-5">
+            <div class="col-md-5">
                 <label for="ramo"><b>Ramo</b></label>
-                <label style="color: darkred">&nbsp; *</label>
+                <span class="text-danger">*</span>
                 <div class="md-form">
                     <select class="form-control" name="ramo" id="ramo" onChange="cambia_deducible();" required> 
                                         
@@ -255,9 +252,9 @@ require_once 'layout.php';
                 </div>
                 
             </div>
-            <div class="col-4">
+            <div class="col-md-4">
                 <label for="nro_poliza"><b>Compañía</b></label>
-                <label style="color: darkred">&nbsp; *</label>
+                <span class="text-danger">*</span>
                 <select class="form-control" name="selcompania" id="compania" required>
                   <option value="">Selecciona una compañía</option>
                   <option value="Axa Assistance">Axa Assistance</option>
@@ -287,9 +284,9 @@ require_once 'layout.php';
               
             </div>
             
-            <div class="col-2">
+            <div class="col-md-2">
                 <label for="nro_poliza"><b>Número de Póliza</b></label>
-                <label style="color: darkred">&nbsp; *</label>
+                <span class="text-danger">*</span>
                 <div class="md-form">
                    <input type="text" class="form-control" id="nro_poliza"
                                           name="nro_poliza" readonly>
@@ -298,12 +295,12 @@ require_once 'layout.php';
             </div>
         </div>
         <div class="form-row">
-            <div class="col-5">
+            <div class="col-md-5">
                 <label for="corredor"><b>Corredor</b></label>
                     <input type="text" class="form-control" id="corredor"
                                           name="corredor" value="Adriana Sandoval Páez">
             </div>
-            <div class="col-4">
+            <div class="col-md-4">
             <label for="rut_corredor"><b>RUT Corredor</b></label>
              <input type="text" class="form-control" id="rut_corredor"
                                           name="rut_corredor" value="10.228.002-4">
@@ -314,30 +311,30 @@ require_once 'layout.php';
           <br>
            <br>
           <div class="form-row">
-            <div class="col-3">
+            <div class="col-md-3">
               <label for="fechaprimer"><b>Fecha Ingreso</b></label>
-              <label style="color: darkred">&nbsp; *</label>
+              <span class="text-danger">*</span>
               <div class="md-form">
-                <input type="date" class="form-control" id="fecha_ingreso" name="fecha_ingreso" max= "9999-12-31" style="width:72%;" >
+                <input type="date" class="form-control" id="fecha_ingreso" name="fecha_ingreso" max= "9999-12-31" >
               </div>
             </div>
-            <div class="col-3">
+            <div class="col-md-3">
               <label for="fecha_vigencia"><b>Fecha Vigencia Inicial</b></label>
-              <label style="color: darkred">&nbsp; *</label>
+              <span class="text-danger">*</span>
               <div class="md-form">
-                <input type="date" class="form-control" id="fecha_vigencia_inicial" name="fecha_vigencia_inicial" onchange="calculadias()"  max= "9999-12-31" style="width:72%;">
+                <input type="date" class="form-control" id="fecha_vigencia_inicial" name="fecha_vigencia_inicial" onchange="calculadias()"  max= "9999-12-31">
               </div>
             </div>
-            <div class="col-3">
+            <div class="col-md-3">
               <label for="fecha_vigencia"><b>Fecha Vigencia Final</b></label>
-              <label style="color: darkred">&nbsp; *</label>
+              <span class="text-danger">*</span>
               <div class="md-form">
-                <input type="date" class="form-control" id="fecha_vigencia_final" name="fecha_vigencia_final" max= "9999-12-31" onchange="calculadias()" style="width:72%;">
+                <input type="date" class="form-control" id="fecha_vigencia_final" name="fecha_vigencia_final" max= "9999-12-31" onchange="calculadias()">
               </div>
             </div>
-            <div class="col-3">
+            <div class="col-md-3">
               <label for="dias"><b>Días</b></label>
-              <label style="color: darkred">&nbsp; *</label>
+              <span class="text-danger">*</span>
               <div class="md-form">
                 <input type="number" class="form-control" id="dias" name="dias" max= "365">
               </div>
@@ -348,15 +345,15 @@ require_once 'layout.php';
           <div class = "form-row">
             <div class="col-md-3 mb-3">
                 <label for="RUT"><b>RUT Proponente</b></label>
-                <label style="color: darkred">&nbsp; *</label>
+                <span class="text-danger">*</span>
                 <input type="text" class="form-control" id="rutprop" name="rutprop"
                               placeholder="1111111-1" required>
                 <div class="invalid-feedback">Dígito verificador no válido. Verifica rut </div>
              </div>
              
-            <div class="col-5">
+            <div class="col-md-5">
                 <label for="Nombre"><b>Nombre Proponente</b></label>
-                <label style="color: darkred">&nbsp; *</label>
+                <span class="text-danger">*</span>
                 <input type="text" id="nombre_prop" class="form-control" name="nombre" required>
                               
                 <div   style="color:red; font-size: 12px ; visibility: hidden" id="validador10">No puedes dejar este campo
@@ -371,7 +368,7 @@ require_once 'layout.php';
             
             <div class="col">
                 <label for="descripción_endoso"><b>Descripción del Endoso</b></label>
-                <label style="color: darkred">&nbsp; *</label>
+                <span class="text-danger">*</span>
                 <textarea class="form-control" rows="2" style="height:100px" id='descripcion_endoso' name='descripcion_endoso' style="text-indent:0px" ; required></textarea>
                 
              <br>
@@ -381,16 +378,16 @@ require_once 'layout.php';
           
           <div class = "form-row">
             
-            <div class="col-6">
+            <div class="col-md-6">
                 <label for="descripción_endoso"><b>Dice</b></label>
-                <label style="color: darkred">&nbsp; *</label>
+                <span class="text-danger">*</span>
                 <textarea class="form-control" rows="2" style="height:100px" id='dice' name='dice' style="text-indent:0px" ; required></textarea>
                 
              <br>
             </div>
-            <div class="col-6">
+            <div class="col-md-6">
                 <label for="descripción_endoso"><b>Debe Decir</b></label>
-                <label style="color: darkred">&nbsp; *</label>
+                <span class="text-danger">*</span>
                 <textarea class="form-control" rows="2" style="height:100px" id='debe_decir' name='debe_decir' style="text-indent:0px" ; required></textarea>
                 
              <br>
@@ -401,27 +398,23 @@ require_once 'layout.php';
           </div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-header" id="headingTwo" style="background-color:whitesmoke">
-          <h5 class="mb-0">
-            <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                              data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"
-                              style="color:#536656">Primas y Montos</button>
-          </h5>
+      <div class="card mb-4">
+        <div class="card-header" id="headingTwo">
+          <h5 class="mb-0">Primas y montos</h5>
         </div>
-        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo">
+        <div id="collapseTwo" aria-labelledby="headingTwo">
           <div class="card-body" id="card-body-two">
             <div class="form-row">
-                <div class="col-2">
+                <div class="col-md-2">
                     <label for="monto"><b>Monto</b></label>
-                    <label style="color: darkred">&nbsp; *</label>
+                    <span class="text-danger">*</span>
                 <div class="md-form">
                     <input type="number" class="form-control" id="monto" name="monto" onchange="calculatasas()">
                 </div>
                 <div style="color:red; visibility: hidden" id="validador6">Debes seleccionar Fecha de Vencimiento</div>
                 </div>
 
-            <div class="col-2">
+            <div class="col-md-2">
                 <label for="moneda_poliza"><b>Moneda Póliza</b></label>
                 <select class="form-control" id="moneda_poliza" name="moneda_poliza">
                     <option value="UF" <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $moneda_poliza == "UF") echo "selected" ?> >UF</option>
@@ -429,13 +422,13 @@ require_once 'layout.php';
                     <option value="CLP" <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $moneda_poliza == "CLP") echo "selected" ?> >CLP</option>
                 </select>
             </div>
-            <div class="col-2">
+            <div class="col-md-2">
             <label for="tasa_afecta"><b>Tasa Afecta %</b></label>
                 <div class="md-form">
                     <input type="number" step="0.01" placeholder="0,00"  class="form-control" id="tasa_afecta">
                 </div>
             </div>
-            <div class="col-2">
+            <div class="col-md-2">
             <label for="tasa_exenta"><b>Tasa Exenta %</b></label>
                 <div class="md-form">
                     <input type="number" step="0.01" placeholder="0,00"  class="form-control" id="tasa_exenta">
@@ -443,15 +436,15 @@ require_once 'layout.php';
             </div>
           </div>
           <div class="form-row">
-            <div class="col-2">
+            <div class="col-md-2">
             <label for="moneda_poliza"><b>Prima Afecta</b></label>
                 <div class="md-form">
                     <input type="number" step="0.01" class="form-control" id="prima_neta_afecta" name="prima_neta_afecta" onchange="calculatasas(),calculaIVA(),calculaprimatotal()">
                 </div>
             </div>
-                <div class="col-2">
+                <div class="col-md-2">
                     <label for="monto"><b>Prima Exenta</b></label>
-                    <label style="color: darkred">&nbsp; *</label>
+                    <span class="text-danger">*</span>
                 <div class="md-form">
                     <input type="number" step="0.01" class="form-control" id="prima_neta_exenta" name="prima_neta_exenta" onchange="calculatasas(),calculaprimatotal(); dosdecimales(this.id)">
                 </div>
@@ -459,21 +452,21 @@ require_once 'layout.php';
 
 
             
-            <div class="col-2">
+            <div class="col-md-2">
             <label for="moneda_poliza"><b>Prima Neta Total</b></label>
                 <div class="md-form">
                     <input type="number" step="0.01" class="form-control" id="prima_neta" name="prima_neta">
                     
              </div>
             </div>
-            <div class="col-2">
+            <div class="col-md-2">
                 <label for="monto"><b>IVA</b></label>
-                    <label style="color: darkred">&nbsp; *</label>
+                    <span class="text-danger">*</span>
                 <div class="md-form">
                     <input type="number" step="0.01" placeholder="0,00" class="form-control" id="iva" name="iva" onchange="calculaprimatotal();">
                 </div>
             </div>
-            <div class="col-2">
+            <div class="col-md-2">
             <label for="prima_bruta"><b>Prima Bruta</b></label>
                 <div class="md-form">
                     <input type="number" step="0.01" class="form-control" id="prima_total" name="prima_total">
@@ -489,15 +482,11 @@ require_once 'layout.php';
   
   
         </div>
-        <div class="card" id="card_confirma" style="display:flex">
-            <div class="card-header" id="headingthree" style="background-color:whitesmoke">
-             <h5 class="mb-0">
-                <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                              data-target="#collapsethree" aria-expanded="false" aria-controls="collapsethree"
-                              style="color:#536656"> Comentarios </button>
-             </h5>
+        <div class="card mb-4" id="card_confirma">
+            <div class="card-header" id="headingthree">
+             <h5 class="mb-0">Comentarios</h5>
             </div>
-        <div id="collapsethree" class="collapse" aria-labelledby="headingthree">
+        <div id="collapsethree" aria-labelledby="headingthree">
          <div class="card-body" id="card-body-three">
 
             <div class="form-row">
