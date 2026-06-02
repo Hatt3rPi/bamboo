@@ -19,10 +19,17 @@
         <section class="qf__step on" data-step="1">
           <div class="qf__steplabel">Paso 1 de 3</div>
           <h4>¿Qué quieres asegurar?</h4>
-          <p>Elige una opción y te ayudamos a encontrar la mejor entre más de 15 compañías.</p>
+          <p>Cuéntanos para quién es y elige el seguro.</p>
+          <div class="qf__perfilsel">
+            <div class="segtabs" role="group" aria-label="¿Para quién es el seguro?" data-qf-perfil>
+              <button type="button" class="segtab" aria-pressed="true"  data-perfil="Persona" data-seg="persona">Para mí</button>
+              <button type="button" class="segtab" aria-pressed="false" data-perfil="Pyme / Empresa" data-seg="pyme">Para mi empresa</button>
+            </div>
+            <input type="hidden" name="perfil" id="qfPerfil" value="Persona">
+          </div>
           <div class="qf__types" role="group" aria-label="Tipo de seguro">
             <?php foreach ($SEGUROS as $svc): ?>
-              <button type="button" class="qf__type" aria-pressed="false"
+              <button type="button" class="qf__type" aria-pressed="false" data-seg="<?= e($svc['segmento']) ?>"
                       data-value="<?= e($svc['nombre']) ?>" data-slug="<?= e($svc['slug']) ?>">
                 <?= bb_icon($svc['icon']) ?><b><?= e($svc['menu']) ?></b>
               </button>
@@ -39,14 +46,6 @@
           <div class="qf__steplabel">Paso 2 de 3</div>
           <h4>Cuéntanos un poco más</h4>
           <p>Mientras más nos cuentes, mejor será tu cotización. (Opcional)</p>
-          <div class="field">
-            <span class="form-label" id="qfPerfilLbl">¿Es para ti o para tu empresa?</span>
-            <div class="segtabs" role="group" aria-labelledby="qfPerfilLbl" style="display:inline-flex">
-              <button type="button" class="segtab" aria-pressed="true" data-perfil="Persona">Para mí</button>
-              <button type="button" class="segtab" aria-pressed="false" data-perfil="Pyme / Empresa">Para mi empresa</button>
-            </div>
-            <input type="hidden" name="perfil" id="qfPerfil" value="Persona">
-          </div>
           <div class="field">
             <label for="qfDetalle">Detalle</label>
             <textarea id="qfDetalle" name="detalle" data-qf-detalle
@@ -86,7 +85,7 @@
           <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
           <div class="qf__nav">
             <button type="button" class="btn btn--ghost qf__back" data-qf-prev aria-label="Volver al paso anterior"><?= bb_icon('arrow') ?></button>
-            <button type="submit" class="btn btn--primary" data-qf-submit>Quiero mi cotización gratis</button>
+            <button type="submit" class="btn btn--primary" data-qf-submit>Quiero mi cotización</button>
           </div>
           <div class="qf__error" data-qf-error role="alert">
             No pudimos enviar tu solicitud. Inténtalo de nuevo o escríbenos por WhatsApp al <?= e($SITE['phone_display']) ?>.

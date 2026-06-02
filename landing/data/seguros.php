@@ -84,7 +84,7 @@ $SEGUROS = [
     'meta_title' => 'Seguro Catastrófico de Salud Individual | Cotiza — Bamboo Seguros',
     'meta_desc' => 'Protege tu patrimonio ante enfermedades o tratamientos de alto costo. El seguro catastrófico cubre los gastos médicos mayores. Asesoría gratis. Cotiza con Bamboo.',
     'h1' => 'Seguro Catastrófico de Salud Individual',
-    'lead' => 'El seguro catastrófico te protege frente a enfermedades graves o tratamientos de alto costo que tu plan de salud no alcanza a cubrir. Es la red de seguridad que evita que un evento médico mayor afecte tu patrimonio.',
+    'lead' => 'El seguro catastrófico te protege frente a enfermedades graves o tratamientos de alto costo —como los oncológicos— que tu plan de salud no alcanza a cubrir. Es la red de seguridad que evita que un evento médico mayor afecte tu patrimonio.',
     'coberturas' => [
       'Gastos médicos de alto costo',
       'Enfermedades graves y tratamientos prolongados',
@@ -312,7 +312,7 @@ $SEGUROS = [
     'meta_title' => 'Seguro Catastrófico Colectivo para Empresas | Bamboo Seguros',
     'meta_desc' => 'Cobertura catastrófica de salud para los colaboradores de tu empresa ante enfermedades y tratamientos de alto costo. Asesoría sin costo. Cotiza con Bamboo Seguros.',
     'h1' => 'Seguro Catastrófico Colectivo para Empresas',
-    'lead' => 'El seguro catastrófico colectivo protege a tus colaboradores frente a enfermedades graves y tratamientos de alto costo, como beneficio grupal de la empresa. Te ayudamos a estructurar la cobertura adecuada.',
+    'lead' => 'El seguro catastrófico colectivo protege a tus colaboradores frente a enfermedades graves y tratamientos de alto costo —como los oncológicos—, como beneficio grupal de la empresa. Te ayudamos a estructurar la cobertura adecuada.',
     'coberturas' => [
       'Gastos médicos mayores para colaboradores',
       'Enfermedades graves y de alto costo',

@@ -79,10 +79,12 @@ function e(?string $s): string {
     return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 }
 
-/** Texto de la credencial CMF (con o sin número). */
+/** Texto de la credencial CMF — requisito legal: persona natural + nombre + código.
+ *  (Bamboo es nombre de fantasía; quien opera es Adriana Sandoval como persona natural.) */
 function cmf_label(): string {
     global $SITE;
+    $base = e($SITE['founder']) . ' · corredora de seguros, persona natural inscrita en la CMF';
     return $SITE['cmf_reg'] !== ''
-        ? 'Corredora inscrita en la CMF · Reg. N° ' . e($SITE['cmf_reg'])
-        : 'Corredora de seguros inscrita en la CMF';
+        ? $base . ' · Código CMF N° ' . e($SITE['cmf_reg'])
+        : $base;
 }

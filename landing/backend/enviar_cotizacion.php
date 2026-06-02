@@ -54,37 +54,53 @@ $telOk   = (bool) preg_match('/^(\+?56)?9\d{8}$/', preg_replace('/[^\d+]/', '', 
 $emailOk = filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
 if (!$telOk && !$emailOk)           fail('Necesitamos un teléfono o correo válido');
 
-// ---------- Construir correo ----------
+// ---------- Construir correo (HTML legible, sin IP) ----------
 $asunto = "Nueva cotización web — {$tipo} — {$nombre}";
-$lineas = [
-    "Nueva solicitud de cotización desde bambooseguros.cl",
-    str_repeat('-', 48),
-    "Tipo de seguro : {$tipo}",
-    "Perfil         : {$perfil}",
-    "Nombre         : {$nombre}",
-    "Teléfono       : " . ($tel !== '' ? $tel : '—'),
-    "Correo         : " . ($email !== '' ? $email : '—'),
-    "Detalle        : " . ($detalle !== '' ? $detalle : '—'),
-    str_repeat('-', 48),
-    "Fecha          : " . date('Y-m-d H:i:s'),
-    "IP             : " . ($_SERVER['REMOTE_ADDR'] ?? '—'),
+$rows = [
+    'Tipo de seguro' => $tipo,
+    'Para'           => $perfil,
+    'Nombre'         => $nombre,
+    'Teléfono'       => $tel !== ''     ? $tel     : '—',
+    'Correo'         => $email !== ''   ? $email   : '—',
+    'Detalle'        => $detalle !== '' ? $detalle : '—',
+    'Fecha'          => date('d-m-Y H:i'),
 ];
-$cuerpo = implode("\n", $lineas);
+
+// Texto plano (para el log de respaldo).
+$plain = "Nueva cotización desde bambooseguros.cl\n";
+foreach ($rows as $k => $v) $plain .= str_pad($k, 16) . ": {$v}\n";
+
+// HTML (para el correo, fácil de escanear).
+$rowsHtml = '';
+foreach ($rows as $k => $v) {
+    $rowsHtml .= '<tr>'
+        . '<td style="padding:7px 16px;color:#5a5851;font:bold 13px Arial,sans-serif;white-space:nowrap;vertical-align:top;border-bottom:1px solid #eee">' . htmlspecialchars($k, ENT_QUOTES) . '</td>'
+        . '<td style="padding:7px 16px;color:#26302a;font:14px Arial,sans-serif;border-bottom:1px solid #eee">' . nl2br(htmlspecialchars($v, ENT_QUOTES)) . '</td>'
+        . '</tr>';
+}
+$acciones = [];
+if ($telOk)   $acciones[] = '<a href="https://wa.me/' . preg_replace('/[^\d]/', '', $tel) . '" style="color:#0b7a43;font-weight:bold;text-decoration:none">Escribir por WhatsApp</a>';
+if ($emailOk) $acciones[] = '<a href="mailto:' . htmlspecialchars($email, ENT_QUOTES) . '" style="color:#0b7a43;font-weight:bold;text-decoration:none">Responder correo</a>';
+$accionesHtml = $acciones ? '<div style="padding:14px 16px;background:#f6f4f0;font:14px Arial,sans-serif">Contactar: ' . implode(' &nbsp;·&nbsp; ', $acciones) . '</div>' : '';
+$cuerpo = '<div style="max-width:560px;margin:auto;border:1px solid #e6e2d8;border-radius:12px;overflow:hidden">'
+    . '<div style="background:#536656;color:#fff;padding:16px 18px;font:bold 16px Arial,sans-serif">Nueva cotización web · Bamboo Seguros</div>'
+    . '<table style="width:100%;border-collapse:collapse;background:#fff">' . $rowsHtml . '</table>'
+    . $accionesHtml . '</div>';
 
 $fromDomain = parse_url($SITE['url'], PHP_URL_HOST) ?: 'bambooseguros.cl';
 $fromDomain = preg_replace('/^www\./', '', $fromDomain);
 $headers  = "From: Bamboo Web <no-reply@{$fromDomain}>\r\n";
 if ($emailOk) $headers .= "Reply-To: {$nombre} <{$email}>\r\n";
-$headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+$headers .= "MIME-Version: 1.0\r\n";
+$headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 $headers .= "X-Mailer: BambooLanding\r\n";
 
-// Respaldo a log (por si mail() falla). Protegido por backend/.htaccess (*.log denegado).
-// Tope de tamaño para evitar llenado de disco; rota a .1 al superar 5 MB.
+// Respaldo a log (texto plano; protegido por backend/.htaccess; rota a .1 sobre 5 MB).
 $logFile = __DIR__ . '/leads.log';
 if (is_file($logFile) && filesize($logFile) > 5 * 1024 * 1024) {
     @rename($logFile, $logFile . '.1');
 }
-@file_put_contents($logFile, $cuerpo . "\n\n", FILE_APPEND | LOCK_EX);
+@file_put_contents($logFile, $plain . "\n", FILE_APPEND | LOCK_EX);
 
 $sent = @mail($SITE['email'], '=?UTF-8?B?' . base64_encode($asunto) . '?=', $cuerpo, $headers);
 

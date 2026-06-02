@@ -217,7 +217,7 @@ require __DIR__ . '/partials/head.php';
       <?php
       $tst = [
         ['t' => 'Me explicaron todo con paciencia y consiguieron un mejor precio que el que tenía. Por fin entiendo mi póliza.', 'n' => 'Carolina M.', 'r' => 'Seguro de auto', 'a' => 'C'],
-        ['t' => 'Para mi pyme necesitaba una póliza de garantía rápida para una licitación. Bamboo me resolvió en un día.', 'n' => 'Rodrigo P.', 'r' => 'Garantía · Pyme', 'a' => 'R'],
+        ['t' => 'Necesitaba pólizas de garantía para una licitación —un trámite que pide harto— y me guiaron en cada paso hasta dejarlo impecable.', 'n' => 'Rodrigo P.', 'r' => 'Garantía · Pyme', 'a' => 'R'],
         ['t' => 'Tuve un siniestro y Adriana me acompañó en todo el proceso. Sentí que tenía a alguien de mi lado.', 'n' => 'Francisca L.', 'r' => 'Seguro de hogar', 'a' => 'F'],
       ];
       foreach ($tst as $i => $t): ?>

@@ -164,6 +164,26 @@
       if (det) det.placeholder = placeholders[btn.getAttribute('data-slug')] || det.placeholder;
     }
 
+    // Filtra los tipos según el perfil (persona muestra persona+ambos; pyme muestra pyme+ambos).
+    function filterTypes(seg) {
+      $$('.qf__type', form).forEach(function (t) {
+        var s = t.getAttribute('data-seg');
+        var show = (s === seg || s === 'ambos');
+        t.style.display = show ? '' : 'none';
+        if (!show && t.classList.contains('sel')) {
+          t.classList.remove('sel'); t.setAttribute('aria-pressed', 'false');
+          $('#qfTipo').value = '';
+          var n = $('.qf__step[data-step="1"] [data-qf-next]', form); if (n) n.disabled = true;
+        }
+      });
+    }
+    function setPerfil(btn) {
+      $$('[data-perfil]', form).forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+      btn.setAttribute('aria-pressed', 'true');
+      $('#qfPerfil').value = btn.getAttribute('data-perfil');
+      filterTypes(btn.getAttribute('data-seg'));
+    }
+
     function resetForm() {
       try {
         form.reset();
@@ -176,9 +196,9 @@
         var n1 = $('.qf__step[data-step="1"] [data-qf-next]', form); if (n1) n1.disabled = true;
         $$('.field.invalid', form).forEach(function (f) { f.classList.remove('invalid'); });
         var crow = $('[data-consent-row]', form); if (crow) crow.classList.remove('invalid');
-        $$('[data-perfil]', form).forEach(function (x) { x.setAttribute('aria-pressed', x.getAttribute('data-perfil') === 'Persona' ? 'true' : 'false'); });
-        $('#qfPerfil').value = 'Persona';
-        var sb = $('[data-qf-submit]', form); if (sb) { sb.disabled = false; sb.textContent = sb.dataset.label || 'Quiero mi cotización gratis'; }
+        var pPersona = $('[data-perfil][data-seg="persona"]', form);
+        if (pPersona) setPerfil(pPersona); else { $('#qfPerfil').value = 'Persona'; filterTypes('persona'); }
+        var sb = $('[data-qf-submit]', form); if (sb) { sb.disabled = false; sb.textContent = sb.dataset.label || 'Quiero mi cotización'; }
         goStep(1);
       } catch (_) {}
     }
@@ -190,7 +210,14 @@
       document.body.style.overflow = 'hidden';
       bgInert(true); activeDialog = $('.modal__dialog', modal);
       track('cotizar_open', { seguro: slug || '' });
-      if (slug) { var t = $('.qf__type[data-slug="' + slug + '"]', form); if (t) { selectType(t); goStep(2); return; } }
+      if (slug) {
+        var t = $('.qf__type[data-slug="' + slug + '"]', form);
+        if (t) {
+          var pb = $('[data-perfil][data-seg="' + (t.getAttribute('data-seg') === 'pyme' ? 'pyme' : 'persona') + '"]', form);
+          if (pb) setPerfil(pb);
+          selectType(t); goStep(2); return;
+        }
+      }
       var first = $('.qf__type', modal); if (first) setTimeout(function () { try { first.focus(); } catch (_) {} }, 60);
     }
     function closeModal() {
@@ -209,11 +236,7 @@
     $$('.qf__type', form).forEach(function (btn) { btn.addEventListener('click', function () { selectType(btn); }); });
 
     $$('[data-perfil]', form).forEach(function (b) {
-      b.addEventListener('click', function () {
-        $$('[data-perfil]', form).forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
-        b.setAttribute('aria-pressed', 'true');
-        $('#qfPerfil').value = b.getAttribute('data-perfil');
-      });
+      b.addEventListener('click', function () { setPerfil(b); });
     });
 
     $$('[data-qf-next]', form).forEach(function (b) {
@@ -273,7 +296,7 @@
     }
     function showError(submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = submitBtn.dataset.label || 'Quiero mi cotización gratis';
+      submitBtn.textContent = submitBtn.dataset.label || 'Quiero mi cotización';
       var err = $('[data-qf-error]', form); if (err) { err.classList.add('on'); try { err.scrollIntoView({ block: 'nearest' }); } catch (_) {} }
     }
 

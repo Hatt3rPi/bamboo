@@ -414,6 +414,8 @@ p{text-wrap:pretty}
 .qf__step h4{font-size:var(--step-2);margin-bottom:6px}
 .qf__step>p{color:var(--fg-muted);margin-bottom:18px;font-size:var(--step-0)}
 /* Selector tipo (paso 1) */
+.qf__perfilsel{margin-bottom:16px;text-align:center}
+.qf__perfilsel .segtabs{display:inline-flex}
 .qf__types{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .qf__type{display:flex;align-items:center;gap:11px;padding:13px 14px;border:1.5px solid var(--line);border-radius:var(--r-md);background:#fff;text-align:left;transition:border-color .2s,background .2s,box-shadow .2s}
 .qf__type:hover{border-color:var(--bamboo-300);background:var(--bamboo-50)}
