@@ -2708,8 +2708,17 @@ function vencimientogarantia(){
         vencimientogarantia();
         cambia_deducible();
         cambio_moneda();
-    
+
     }
+    // Rehidratación del borrador (aviso de nueva versión): reconstruye la
+    // cantidad de ítems que el usuario tenía antes de actualizar. version-check.js
+    // restaura los valores de cada campo después de llamar esto.
+    window.bbDraftRehydrate = function (draft) {
+        var n = parseInt(draft && draft.contador, 10);
+        if (n > 0 && typeof click_agrega_item === 'function') {
+            for (var k = 0; k < n; k++) { click_agrega_item(); }
+        }
+    };
     $(document).bind('keydown',function(e){
       if ( e.which == 27 ) {
                                                   

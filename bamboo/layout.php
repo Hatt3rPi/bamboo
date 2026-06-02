@@ -16,6 +16,7 @@
    ============================================================ */
 
 if (!isset($_SESSION)) { session_start(); }
+require_once __DIR__ . '/_app_version.php';
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     setcookie('URI', $_SERVER['REQUEST_URI'], time() + 180, "/");
     setcookie('DOMINIO', $_SERVER['HTTP_HOST'], time() + 180, "/");
@@ -44,6 +45,7 @@ function bb_nav_class($id, $active) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= htmlspecialchars($page_title) ?></title>
+<script>window.BB_VERSION = <?= json_encode(bb_app_version()) ?>;</script>
 
 <!-- Fuentes Bamboo -->
 <link rel="preconnect" href="https://fonts.googleapis.com">

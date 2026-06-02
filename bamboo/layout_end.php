@@ -15,6 +15,7 @@
 <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
 <script src="/assets/js/jquery.redirect.js"></script>
 <script src="/assets/js/bamboo/legacy.js"></script>
+<script src="/assets/js/bamboo/version-check.js"></script>
 
 <!-- Sidebar collapse persistence -->
 <script>
