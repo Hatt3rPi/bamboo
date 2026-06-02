@@ -55,6 +55,46 @@ $SEGUROS = [
     ],
   ],
 
+  'salud-individual' => [
+    'slug' => 'salud-individual',
+    'nombre' => 'Seguro de Salud Individual',
+    'menu' => 'Salud individual',
+    'segmento' => 'persona',
+    'icon' => 'health',
+    'meta_title' => 'Seguro de Salud Individual | Cobertura Médica Complementaria — Bamboo',
+    'meta_desc' => 'Seguro de salud complementario: reembolso de gastos médicos, hospitalización y dental sobre tu Isapre o Fonasa. Asesoría sin costo. Cotiza con Bamboo Seguros.',
+    'h1' => 'Seguro de Salud Individual',
+    'lead' => 'El seguro de salud individual complementa tu Isapre o Fonasa reembolsando gastos médicos, hospitalarios y dentales que tu plan no cubre del todo. Comparamos coberturas entre las mejores compañías para que elijas la que se ajusta a ti.',
+    'coberturas' => [
+      'Reembolso de gastos médicos ambulatorios',
+      'Hospitalización y cirugías',
+      'Cobertura dental y exámenes',
+      'Complemento a Isapre o Fonasa',
+    ],
+    'para_quien' => 'Personas que quieren reforzar su cobertura de salud.',
+    'faqs' => [],
+  ],
+
+  'catastrofico-individual' => [
+    'slug' => 'catastrofico-individual',
+    'nombre' => 'Seguro Catastrófico Individual',
+    'menu' => 'Catastrófico individual',
+    'segmento' => 'persona',
+    'icon' => 'umbrella',
+    'meta_title' => 'Seguro Catastrófico de Salud Individual | Cotiza — Bamboo Seguros',
+    'meta_desc' => 'Protege tu patrimonio ante enfermedades o tratamientos de alto costo. El seguro catastrófico cubre los gastos médicos mayores. Asesoría gratis. Cotiza con Bamboo.',
+    'h1' => 'Seguro Catastrófico de Salud Individual',
+    'lead' => 'El seguro catastrófico te protege frente a enfermedades graves o tratamientos de alto costo que tu plan de salud no alcanza a cubrir. Es la red de seguridad que evita que un evento médico mayor afecte tu patrimonio.',
+    'coberturas' => [
+      'Gastos médicos de alto costo',
+      'Enfermedades graves y tratamientos prolongados',
+      'Cobertura sobre el deducible de Isapre/Fonasa',
+      'Topes de cobertura elevados',
+    ],
+    'para_quien' => 'Personas y familias que quieren protegerse ante gastos médicos mayores.',
+    'faqs' => [],
+  ],
+
   'viaje' => [
     'slug' => 'viaje',
     'nombre' => 'Seguro de Viaje',
@@ -181,26 +221,6 @@ $SEGUROS = [
     'faqs' => [],
   ],
 
-  'arriendo' => [
-    'slug' => 'arriendo',
-    'nombre' => 'Seguro de Arriendo',
-    'menu' => 'Arriendo',
-    'segmento' => 'ambos',
-    'icon' => 'key',
-    'meta_title' => 'Seguro de Arriendo | Garantía para Propietarios — Bamboo Seguros',
-    'meta_desc' => 'Asegura el pago del arriendo y protege tu propiedad. Garantía para propietarios y respaldo para arrendatarios. Asesoría gratis. Cotiza con Bamboo Seguros.',
-    'h1' => 'Seguro de Arriendo',
-    'lead' => 'El seguro de arriendo garantiza al propietario el pago de la renta y protege la propiedad ante incumplimientos o daños. Da seguridad tanto al dueño como al arrendatario. Te ayudamos a elegir la cobertura adecuada.',
-    'coberturas' => [
-      'Garantía de pago de arriendo',
-      'Daños a la propiedad arrendada',
-      'Gastos de cobranza y desocupación',
-      'Cobertura de gastos comunes y servicios',
-    ],
-    'para_quien' => 'Propietarios que arriendan y corredoras de propiedades.',
-    'faqs' => [],
-  ],
-
   'apv' => [
     'slug' => 'apv',
     'nombre' => 'APV — Ahorro Previsional Voluntario',
@@ -245,8 +265,8 @@ $SEGUROS = [
 
   'rc-administradores' => [
     'slug' => 'rc-administradores',
-    'nombre' => 'RC de Administradores y Directores (D&O)',
-    'menu' => 'RC administradores',
+    'nombre' => 'Responsabilidad Civil de Administradores y Directores (D&O)',
+    'menu' => 'Responsabilidad civil administradores',
     'segmento' => 'pyme',
     'icon' => 'briefcase',
     'meta_title' => 'Seguro de Administradores y Directores (D&O) — Bamboo Seguros',
@@ -260,6 +280,46 @@ $SEGUROS = [
       'Protección del patrimonio personal del directivo',
     ],
     'para_quien' => 'Directores, gerentes y administradores de empresas.',
+    'faqs' => [],
+  ],
+
+  'salud-empresas' => [
+    'slug' => 'salud-empresas',
+    'nombre' => 'Seguro de Salud Colectivo (Empresas)',
+    'menu' => 'Salud empresas',
+    'segmento' => 'pyme',
+    'icon' => 'health',
+    'meta_title' => 'Seguro de Salud Colectivo para Empresas | Bamboo Seguros',
+    'meta_desc' => 'Seguro de salud colectivo para tu empresa: cobertura médica, dental y hospitalaria para tus colaboradores. Asesoría independiente y sin costo. Cotiza con Bamboo.',
+    'h1' => 'Seguro de Salud Colectivo para Empresas',
+    'lead' => 'El seguro de salud colectivo es un beneficio para tus colaboradores: cobertura médica, dental y hospitalaria a precios convenientes por ser grupal. Te ayudamos a diseñar el plan que mejor se ajusta a tu empresa.',
+    'coberturas' => [
+      'Cobertura médica y hospitalaria grupal',
+      'Cobertura dental',
+      'Beneficio para colaboradores',
+      'Planes a la medida de la empresa',
+    ],
+    'para_quien' => 'Empresas y pymes que quieren ofrecer salud a su equipo.',
+    'faqs' => [],
+  ],
+
+  'catastrofico-empresas' => [
+    'slug' => 'catastrofico-empresas',
+    'nombre' => 'Seguro Catastrófico Colectivo (Empresas)',
+    'menu' => 'Catastrófico empresas',
+    'segmento' => 'pyme',
+    'icon' => 'umbrella',
+    'meta_title' => 'Seguro Catastrófico Colectivo para Empresas | Bamboo Seguros',
+    'meta_desc' => 'Cobertura catastrófica de salud para los colaboradores de tu empresa ante enfermedades y tratamientos de alto costo. Asesoría sin costo. Cotiza con Bamboo Seguros.',
+    'h1' => 'Seguro Catastrófico Colectivo para Empresas',
+    'lead' => 'El seguro catastrófico colectivo protege a tus colaboradores frente a enfermedades graves y tratamientos de alto costo, como beneficio grupal de la empresa. Te ayudamos a estructurar la cobertura adecuada.',
+    'coberturas' => [
+      'Gastos médicos mayores para colaboradores',
+      'Enfermedades graves y de alto costo',
+      'Beneficio grupal para la empresa',
+      'Topes de cobertura elevados',
+    ],
+    'para_quien' => 'Empresas y pymes que protegen la salud de su equipo.',
     'faqs' => [],
   ],
 

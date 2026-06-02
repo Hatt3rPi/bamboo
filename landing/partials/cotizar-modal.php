@@ -98,7 +98,7 @@
         <div class="qf__success" data-qf-success role="status" tabindex="-1">
           <div class="tick"><?= bb_icon('check-circle') ?></div>
           <h4>¡Listo<span data-qf-name></span>! Recibimos tu solicitud</h4>
-          <p>Adriana revisará tu caso y te contactará a la brevedad. ¿Quieres adelantar la conversación?</p>
+          <p>Adriana revisará tu caso y te contactará a la brevedad. ¿Quieres adelantar la conversación con un ejecutivo?</p>
           <a href="#" class="btn btn--whatsapp btn--block btn--lg" data-qf-wa target="_blank" rel="noopener">
             <?= bb_icon('whatsapp') ?> Continuar por WhatsApp
           </a>

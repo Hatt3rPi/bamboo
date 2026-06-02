@@ -22,9 +22,9 @@ $page = [
   'schema' => [],
 ];
 
-$insurers = ['sura','bci','mapfre','chubb','hdi','consorcio','reale','renta','southbridge','continental','chilena','confuturo','orsan','unnio'];
-$insurer_names = ['sura'=>'Sura','bci'=>'BCI Seguros','mapfre'=>'Mapfre','chubb'=>'Chubb','hdi'=>'HDI','consorcio'=>'Consorcio','reale'=>'Reale','renta'=>'Renta Nacional','southbridge'=>'Southbridge','continental'=>'Continental','chilena'=>'Chilena Consolidada','confuturo'=>'Confuturo','orsan'=>'Orsan','unnio'=>'Unnio'];
-$ext = ['continental'=>'jpg'];
+$insurers = ['sura','bci','mapfre','chubb','hdi','consorcio','reale','renta','southbridge','chilena','confuturo','unnio','colmena','augustar','coris'];
+$insurer_names = ['sura'=>'Sura','bci'=>'BCI Seguros','mapfre'=>'Mapfre','chubb'=>'Chubb','hdi'=>'HDI','consorcio'=>'Consorcio','reale'=>'Reale','renta'=>'Renta Nacional','southbridge'=>'Southbridge','chilena'=>'Chilena Consolidada','confuturo'=>'Confuturo','unnio'=>'Unnio','colmena'=>'Colmena','augustar'=>'Augustar','coris'=>'Coris'];
+$ext = [];
 
 require __DIR__ . '/partials/head.php';
 ?>
