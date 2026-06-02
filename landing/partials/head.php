@@ -18,6 +18,11 @@ $canonical = rtrim($SITE['url'], '/') . $path;
 $ogimg     = rtrim($SITE['url'], '/') . ($page['og_image'] ?? $SITE['og_image']);
 $active    = $page['active'] ?? '';
 
+// Versionado de assets (cache-busting): el .htaccess cachea CSS/JS 1 año, así que
+// versionamos por filemtime para que cada deploy sirva la versión nueva sin cache stale.
+$css_v = @filemtime(__DIR__ . '/../assets/css/landing.css') ?: '1';
+$js_v  = @filemtime(__DIR__ . '/../assets/js/landing.js') ?: '1';
+
 /* ---------- CSP (solo landing) ----------
    Se emite por PHP, NO por .htaccess: en LiteSpeed co-alojado el gating por env
    no es fiable y la CSP terminaba bloqueando el portal (jQuery/Bootstrap/DataTables).
@@ -145,7 +150,7 @@ $schemaBlocks = array_merge([$org, $website], $page['schema'] ?? []);
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=Varela+Round&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/assets/css/landing.css">
+  <link rel="stylesheet" href="/assets/css/landing.css?v=<?= e((string)$css_v) ?>">
 
 <?php foreach ($schemaBlocks as $block): ?>
   <script type="application/ld+json"><?= json_encode($block, $jsonFlags) ?></script>

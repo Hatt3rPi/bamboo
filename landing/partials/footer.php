@@ -71,6 +71,6 @@
 
 <?php require __DIR__ . '/cotizar-modal.php'; ?>
 
-<script src="/assets/js/landing.js" defer></script>
+<script src="/assets/js/landing.js?v=<?= e((string)($js_v ?? '1')) ?>" defer></script>
 </body>
 </html>
