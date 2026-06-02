@@ -93,7 +93,7 @@ require_once 'layout.php';
                             compromisos activos</button>
                     </h5>
                 </div>
-                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                <div id="collapseOne" class="collapse" aria-labelledby="headingOne">
                     <div class="card-body">
                         <table class="display" id="listado_tareas" style="width:100%">
                             <tr>
@@ -120,7 +120,7 @@ require_once 'layout.php';
                             data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">Pólizas con pronto vencimiento</button>
                     </h5>
                 </div>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo">
                     <div class="card-body">
                         <div class="form-inline">
                             <label> Revisar vencimientos de los próximos</label>

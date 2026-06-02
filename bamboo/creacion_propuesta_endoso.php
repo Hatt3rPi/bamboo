@@ -155,7 +155,7 @@ require_once 'layout.php';
                               aria-expanded="true" aria-controls="collapseOne" style="color:#536656">Información General del Endoso</button>
           </h5>
         </div>
-        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne">
           <div class="card-body" id="card-body-one">
             
         <div class="form-row">
@@ -409,7 +409,7 @@ require_once 'layout.php';
                               style="color:#536656">Primas y Montos</button>
           </h5>
         </div>
-        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo">
           <div class="card-body" id="card-body-two">
             <div class="form-row">
                 <div class="col-2">
@@ -497,7 +497,7 @@ require_once 'layout.php';
                               style="color:#536656"> Comentarios </button>
              </h5>
             </div>
-        <div id="collapsethree" class="collapse" aria-labelledby="headingthree" data-parent="#accordionExample">
+        <div id="collapsethree" class="collapse" aria-labelledby="headingthree">
          <div class="card-body" id="card-body-three">
 
             <div class="form-row">
