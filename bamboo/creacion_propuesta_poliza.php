@@ -582,7 +582,7 @@ require_once 'layout.php';
             </div>
             <div class="col-md-3 mb-3">
               <label for="cuotas">N° de Cuotas <span class="text-danger">*</span></label>
-                <select class="form-control" name="cuotas" id="cuotas" required>
+                <select class="form-control" name="cuotas" id="cuotas" onChange="ajustaCuotas(true);" required>
                   <option value="">Nro Cuotas</option>
                   <option value="Sin cuotas" <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $cuotas == "Sin cuotas") echo "selected" ?>>Sin Cuotas</option>
                   <option value="2 Cuotas" <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $cuotas == "2 Cuotas") echo "selected" ?>>2 Cuotas</option>
@@ -647,7 +647,7 @@ require_once 'layout.php';
             </div>
             <div class="col-md-3 mb-3">
               <label for="fechaprimer">Fecha 1ª Cuota</label>
-              <input type="date" class="form-control" id="fechaprimer" name="fechaprimer" onchange="validadorfecha(this.id); valida_primerpago()" max= "9999-12-31" required>
+              <input type="date" class="form-control" id="fechaprimer" name="fechaprimer" onchange="validadorfecha(this.id); valida_primerpago()" max= "9999-12-31">
             </div>
           </div>
 
@@ -2521,12 +2521,37 @@ function vencimientogarantia(){
     if (document.getElementById("modo_pago").value == "Contado") {
         document.getElementById("cuotas").disabled = true;
         document.getElementById("cuotas").value = "Sin cuotas";
-        
+
     } else {
         document.getElementById("cuotas").disabled = false;
         document.getElementById("cuotas").value = "";
     }
+    ajustaCuotas(true);
 }
+
+// 'Sin cuotas' / Contado: no hay valor de cuota ni fecha de 1ª cuota → se
+// deshabilitan y dejan de ser obligatorios. Con 2+ cuotas se habilitan y la
+// fecha pasa a obligatoria. limpiar=true vacía los campos (al cambiar manual);
+// limpiar=false solo ajusta estado (en carga inicial / edición, preserva datos).
+function ajustaCuotas(limpiar) {
+    var modo   = document.getElementById("modo_pago").value;
+    var cuotas = document.getElementById("cuotas").value;
+    var sinCuotas = (modo === "Contado" || cuotas === "" || cuotas === "Sin cuotas");
+    var vc = document.getElementById("valorcuota");
+    var mc = document.getElementById("moneda_cuota");
+    var fp = document.getElementById("fechaprimer");
+    if (!vc || !mc || !fp) { return; }
+    if (sinCuotas) {
+        vc.disabled = true; mc.disabled = true;
+        fp.disabled = true; fp.required = false;
+        if (limpiar) { vc.value = ''; fp.value = ''; }
+    } else {
+        vc.disabled = false; mc.disabled = false;
+        fp.disabled = false; fp.required = true;
+    }
+}
+// Estado inicial (sin limpiar, para no borrar datos al editar).
+window.addEventListener('load', function () { try { ajustaCuotas(false); } catch (e) {} });
     var iCnt = 0;
    
     // Crear un elemento div añadiendo estilos CSS
