@@ -704,13 +704,9 @@ require_once 'layout.php';
     </div>
       <div  id="informacion_poliza" class="card mb-4" style="display:none" disabled>
       <div class="card-header" id="headingfour">
-        <h5 class="mb-0">
-          <button class="btn btn-link text-bamboo collapsed" type="button" data-toggle="collapse"
-                              data-target="#collapsefour" aria-expanded="false" id=pestana_poliza aria-controls="collapsefour"
-                              onclick="window.scrollTo(0,0);">Información de Póliza </button>
-        </h5>
+        <h5 class="mb-0">Información de póliza</h5>
       </div>
-        <div id="collapsefour" class="collapse" aria-labelledby="headingfour">
+        <div id="collapsefour" aria-labelledby="headingfour">
         <div class="card-body" id="card-body-four">
         
           <label for = "datos_poliza"><b>Datos Póliza</b></label>
@@ -730,7 +726,7 @@ require_once 'layout.php';
                                           class="form-control"  max= "9999-12-31" style="width:72%;">
           </div>
         </div>
-      </div>´
+      </div>
 
           
           <br>
@@ -841,6 +837,17 @@ $("#boton_submit").click(function(e){
     document.getElementById('formulario').classList.add('was-validated');
     if(blnFormValidity==false){
         e.preventDefault();
+        // Feedback claro de qué falta: llevar al primer campo inválido visible
+        // y enfocarlo. Si el inválido está oculto (sección no visible), avisar
+        // explícitamente (el navegador no puede enfocar un campo invisible).
+        var invalidos = $('#formulario').find(':invalid');
+        var visible = invalidos.filter(':visible').first();
+        if (visible.length) {
+            visible[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            try { visible[0].focus({ preventScroll: true }); } catch (err) {}
+        } else if (invalidos.length) {
+            alert('Faltan datos obligatorios por completar. Revisá la sección de la póliza.');
+        }
         return false;
     }
     document.getElementById('auxiliar3').value = blnFormValidity;
