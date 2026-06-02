@@ -155,20 +155,26 @@ function bb_pg_nullify_empty($link, $sql) {
 function db_query($link, $sql) {
     $engine = defined('DB_ENGINE') ? DB_ENGINE : 'mysql';
 
+    // El log de auditoría (trazabilidad) es secundario: si falla, NO debe
+    // reportarse como "fallo de guardado" (daría falsos negativos al usuario
+    // aunque el INSERT/UPDATE de negocio sí haya quedado). Se loguea igual.
+    $is_audit = (bool) preg_match('/^\s*select\s+trazabilidad\s*\(/i', $sql);
+
     if ($engine === 'pgsql') {
         $sql = sql_translate($sql);
         $sql = bb_pg_nullify_empty($link, $sql);
         $result = pg_query($link, $sql);
         if ($result === false) {
             $err = pg_last_error($link);
-            $GLOBALS['bb_last_db_error'] = $err;
+            if (!$is_audit) { $GLOBALS['bb_last_db_error'] = $err; }
             error_log("PG query error: " . $err . " | SQL: " . $sql);
         }
         return $result;
     } else {
         $result = mysqli_query($link, $sql);
         if ($result === false) {
-            $GLOBALS['bb_last_db_error'] = mysqli_error($link);
+            if (!$is_audit) { $GLOBALS['bb_last_db_error'] = mysqli_error($link); }
+            error_log("MySQL query error: " . mysqli_error($link) . " | SQL: " . $sql);
         }
         return $result;
     }
