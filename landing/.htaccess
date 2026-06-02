@@ -1,0 +1,75 @@
+# ============================================================
+# BAMBOO SEGUROS · LANDING · .htaccess (Apache / LiteSpeed)
+# ============================================================
+Options -Indexes +FollowSymLinks
+DirectoryIndex index.php
+RewriteEngine On
+
+# ---- Canonical: forzar HTTPS + www ----
+RewriteCond %{HTTPS} off [OR]
+RewriteCond %{HTTP_HOST} !^www\. [NC]
+RewriteRule ^ https://www.bambooseguros.cl%{REQUEST_URI} [R=301,L]
+
+# ---- Sitemap dinámico servido como /sitemap.xml ----
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+# ---- 301 desde las URLs antiguas (continuidad SEO) ----
+RewriteRule ^index\.php$ / [R=301,L]
+RewriteRule ^somos\.php$ /nosotros [R=301,L]
+RewriteRule ^seguros\.php$ /#servicios [R=301,L]
+RewriteRule ^seguros-vehiculo\.php$ /seguros/auto [R=301,L]
+RewriteRule ^seguros-vida\.php$ /seguros/vida [R=301,L]
+RewriteRule ^seguros-viaje\.php$ /seguros/viaje [R=301,L]
+RewriteRule ^seguros-personales\.php$ /seguros/accidentes-personales [R=301,L]
+RewriteRule ^seguros-incendio\.php$ /seguros/incendio-sismo [R=301,L]
+RewriteRule ^seguros-responsabilidad-civil\.php$ /seguros/responsabilidad-civil [R=301,L]
+RewriteRule ^seguros-garantia\.php$ /seguros/garantia [R=301,L]
+RewriteRule ^seguros-transporte\.php$ /seguros/transporte [R=301,L]
+RewriteRule ^seguros-credito\.php$ /seguros/arriendo [R=301,L]
+RewriteRule ^seguros-apv\.php$ /seguros/apv [R=301,L]
+RewriteRule ^seguros-ingenieria\.php$ /seguros/ingenieria [R=301,L]
+RewriteRule ^seguros-administrador\.php$ /seguros/rc-administradores [R=301,L]
+
+# ---- URLs limpias: redirigir *.php externo a sin extensión (excepto /backend/) ----
+RewriteCond %{REQUEST_URI} !^/backend/
+RewriteCond %{THE_REQUEST} \s/+([^.\s?]+)\.php[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L]
+
+# ---- Resolver internamente la versión .php ----
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{DOCUMENT_ROOT}/$1.php -f
+RewriteRule ^(.+?)/?$ $1.php [L]
+
+# ---- Bloquear includes y logs ----
+RewriteRule ^(data|partials)/ - [F]
+<FilesMatch "(^_|\.(log|md)$)">
+  Require all denied
+</FilesMatch>
+
+# ---- Cabeceras de seguridad ----
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+</IfModule>
+
+# ---- Compresión ----
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json image/svg+xml application/xml
+</IfModule>
+
+# ---- Caché de estáticos ----
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Bamboo Seguros">
+  <rect width="64" height="64" rx="16" fill="#536656"/>
+  <g fill="none" stroke="#f6f4f0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 46 C26 30, 38 22, 48 18"/>
+    <path d="M33 30 C38 24, 46 21, 51 21 C50 27, 46 32, 39 33 Z" fill="#f6f4f0" stroke="none"/>
+    <path d="M27 38 C31 33, 38 31, 43 31 C42 36, 37 40, 31 40 Z" fill="#a5ccab" stroke="none" opacity="0.9"/>
+  </g>
+</svg>

@@ -1,0 +1,13 @@
+{
+  "name": "Bamboo Seguros",
+  "short_name": "Bamboo",
+  "description": "Corredora de seguros independiente en Chile. Cotiza gratis y sin compromiso.",
+  "lang": "es-CL",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbfaf8",
+  "theme_color": "#536656",
+  "icons": [
+    { "src": "/assets/img/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
