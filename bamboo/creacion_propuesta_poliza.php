@@ -2553,8 +2553,8 @@ function vencimientogarantia(){
             '<div class="col-md-4 form-group">'+
               '<label>RUT Asegurado <span class="text-danger">*</span></label>'+
               '<div class="input-group">'+
-                '<div class="input-group-prepend"><button class="btn btn-secondary" type="button" id="busca_rut_aseg['+i+']" data-toggle="modal" onclick="origen_busqueda(this.id,'+i+')" data-target="#modal_cliente"><i class="fas fa-search"></i></button></div>'+
                 '<input type="text" class="form-control" id="rutaseg['+i+']" name="rutaseg[]" placeholder="1111111-1" onchange="valida_rut_duplicado_aseg('+i+')" oninput="checkRut(this);" required>'+
+                '<div class="input-group-append"><button class="btn btn-secondary" type="button" id="busca_rut_aseg['+i+']" data-toggle="modal" onclick="origen_busqueda(this.id,'+i+')" data-target="#modal_cliente"><i class="fas fa-search mr-1"></i>Buscar</button></div>'+
               '</div>'+
             '</div>'+
             '<div class="col-md-8 form-group">'+
