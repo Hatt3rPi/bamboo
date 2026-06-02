@@ -569,10 +569,8 @@ require_once 'layout.php';
           <hr class="my-4">
           <h6 class="text-bamboo mb-3">Información de pago</h6>
           <div class="form-row">
-            <div class="col-md-4 mb-3">
+            <div class="col-md-3 mb-3">
               <label for="modo_pago">Forma de Pago <span class="text-danger">*</span></label>
-              <div class="form-row">
-                <div class="col-5">
                 <select class="form-control" name="modo_pago" id="modo_pago"
                                           onChange="modopago();" required>
                   <option value="">-</option>
@@ -581,8 +579,9 @@ require_once 'layout.php';
                   <option value="Plan de pago"<?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $modo_pago == "Plan de pago") echo "selected" ?>>Plan de pago</option>
                   <option value="Contado" <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $modo_pago == "Contado") echo "selected" ?>>Contado</option>
                 </select>
-                </div>
-                <div class="col-7">
+            </div>
+            <div class="col-md-3 mb-3">
+              <label for="cuotas">N° de Cuotas <span class="text-danger">*</span></label>
                 <select class="form-control" name="cuotas" id="cuotas" required>
                   <option value="">Nro Cuotas</option>
                   <option value="Sin cuotas" <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $cuotas == "Sin cuotas") echo "selected" ?>>Sin Cuotas</option>
@@ -631,14 +630,11 @@ require_once 'layout.php';
                   <option value="24 Cuotas"
                                               <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $cuotas == "24 Cuotas") echo "selected" ?>>24 Cuotas</option>
                 </select>
-                </div>
-              </div>
             </div>
-            <div class="col-md-4 mb-3">
+            <div class="col-md-3 mb-3">
               <label for="valorcuota">Valor Cuota</label>
-              <div class="form-row">
-                <div class="col-5">
-                <select class="form-control" name="moneda_cuota" id="moneda_cuota">
+              <div class="input-group">
+                <select class="custom-select" style="max-width:90px" name="moneda_cuota" id="moneda_cuota">
                   <option value="UF"
                                               <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $moneda_cuota == "UF") echo "selected" ?>>UF</option>
                   <option value="USD"
@@ -646,14 +642,11 @@ require_once 'layout.php';
                   <option value="CLP"
                                               <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $moneda_cuota == "CLP") echo "selected" ?>>CLP</option>
                 </select>
-                </div>
-                <div class="col-7">
                 <input type="number" onchange= "dosdecimales(this.id);" step="0.01" placeholder="0,00" class="form-control" name="valorcuota" id="valorcuota">
-                </div>
               </div>
             </div>
-            <div class="col-md-4 mb-3">
-              <label for="fechaprimer">Fecha Primera Cuota</label>
+            <div class="col-md-3 mb-3">
+              <label for="fechaprimer">Fecha 1ª Cuota</label>
               <input type="date" class="form-control" id="fechaprimer" name="fechaprimer" onchange="validadorfecha(this.id); valida_primerpago()" max= "9999-12-31" required>
             </div>
           </div>
@@ -661,7 +654,7 @@ require_once 'layout.php';
           <hr class="my-4">
           <h6 class="text-bamboo mb-3">Vendedor y corredor</h6>
             <div class="form-row">
-              <div class="col-md-4 mb-3">
+              <div class="col-md-6 mb-3">
                  <label for="nombre_vendedor">Nombre del Vendedor</label>
                  <input type="text" class="form-control" id="nombre_vendedor" name="nombre_vendedor" placeholder="Nombre Vendedor">
               </div>
