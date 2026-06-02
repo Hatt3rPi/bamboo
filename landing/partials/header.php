@@ -33,8 +33,8 @@ $navlinks = [
       </ul>
 
       <div class="nav__cta">
-        <a href="tel:+<?= e($SITE['phone_e164']) ?>" class="nav__phone">
-          <?= bb_icon('phone') ?><?= e($SITE['phone_display']) ?>
+        <a href="<?= e($SITE['portal_login_url']) ?>" class="nav__login" title="Acceso a la web interna">
+          <?= bb_icon('login') ?><span>Ingresar</span>
         </a>
         <button type="button" class="btn btn--primary" data-cotizar>Cotizar gratis</button>
         <button type="button" class="nav__toggle" data-drawer-open aria-label="Abrir menú" aria-expanded="false">
@@ -64,5 +64,6 @@ $navlinks = [
     <a href="<?= e(wa_link()) ?>" class="btn btn--whatsapp" style="margin-top:12px" target="_blank" rel="noopener">
       <?= bb_icon('whatsapp') ?> Escribir por WhatsApp
     </a>
+    <a href="<?= e($SITE['portal_login_url']) ?>" class="drawer-login"><?= bb_icon('login') ?> Ingresar a la web interna</a>
   </div>
 </div>

@@ -24,6 +24,7 @@
           <li><a href="/nosotros">Nosotros</a></li>
           <li><a href="/faq">Preguntas frecuentes</a></li>
           <li><a href="/contacto">Contacto</a></li>
+          <li><a href="<?= e($SITE['portal_login_url']) ?>">Acceso interno</a></li>
         </ul>
       </div>
 

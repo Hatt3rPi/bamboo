@@ -42,6 +42,8 @@ function bb_icon(string $name, string $cls = ''): string {
         'facebook'   => '<path d="M14 8.5h2V5.5h-2.3C11.7 5.5 11 6.8 11 8.3V10H9v3h2v6h3v-6h2.2l.3-3H14V8.8c0-.2.1-.3.4-.3Z"/>',
         'linkedin'   => '<rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M8 10v6M8 7.5v.5M12 16v-3.2c0-1 .8-1.8 1.8-1.8s1.7.8 1.7 1.8V16M12 11v5"/>',
         'pin'        => '<path d="M12 21c4-4.5 6-8 6-11a6 6 0 1 0-12 0c0 3 2 6.5 6 11Z"/><circle cx="12" cy="10" r="2.3"/>',
+        'login'      => '<path d="M10 4H6.5A1.5 1.5 0 0 0 5 5.5v13A1.5 1.5 0 0 0 6.5 20H10"/><path d="M14 12H21M18 9l3 3-3 3"/>',
+        'user'       => '<circle cx="12" cy="8" r="3.4"/><path d="M5.5 19a6.5 6.5 0 0 1 13 0"/>',
     ];
     $d = $paths[$name] ?? '';
     $c = $cls ? ' ' . htmlspecialchars($cls, ENT_QUOTES) : '';

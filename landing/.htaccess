@@ -53,15 +53,18 @@ RewriteRule ^(data|partials)/ - [F]
 </FilesMatch>
 
 # ---- Cabeceras de seguridad ----
+# Si la landing convive con el portal interno en el mismo dominio, NO aplicar la
+# CSP estricta a las rutas del portal (usa jQuery/Bootstrap/DataTables/inline).
+SetEnvIf Request_URI "^/(bamboo|bambooQA|backend|vendor)(/|$)" PORTAL_AREA
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "SAMEORIGIN"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
-  # CSP: sin scripts inline (la config viaja en data-* del body). Si se activa GA4,
-  # añadir https://www.googletagmanager.com a script-src y 'unsafe-inline' o un hash al init.
-  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; form-action 'self'"
+  # CSP solo para la landing (no PORTAL_AREA). Sin scripts inline (config en data-*).
+  # Si se activa GA4: añadir https://www.googletagmanager.com a script-src + hash del init.
+  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; form-action 'self'" env=!PORTAL_AREA
 </IfModule>
 
 # ---- Compresión ----
