@@ -657,3 +657,5 @@ label, .form-label {
   background: var(--bamboo-50);
   border-color: var(--bamboo-600);
 }
+
+/* deploy test — verificación del aviso de nueva versión */
