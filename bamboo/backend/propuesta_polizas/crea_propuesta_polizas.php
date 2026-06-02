@@ -1,8 +1,13 @@
 <?php
-    if(!isset($_SESSION)) 
-    { 
-        session_start(); 
-    } 
+    if(!isset($_SESSION))
+    {
+        session_start();
+    }
+// Endpoint de proceso: redirige al listado al terminar. En QA (display_errors
+// On) los Warnings de variables/keys no definidas se imprimían como una
+// "pantalla PHP" antes del redirect. Silenciar replica el entorno de prod.
+error_reporting(E_ERROR | E_PARSE);
+@ini_set('display_errors', '0');
 require_once "/home/gestio10/public_html/backend/config.php";
 
     $listado='/bamboo/listado_propuesta_polizas.php';
@@ -469,7 +474,7 @@ db_close($link);
 <script >
 
 var mensaje= '<?php echo $mensaje; ?>';
-alert(mensaje);
+if (mensaje) { alert(mensaje); }
 var busqueda= '<?php echo $busqueda; ?>';
 var listado= '<?php echo $listado; ?>';
   $.redirect(listado, {
