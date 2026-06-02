@@ -378,7 +378,7 @@ require_once 'layout.php';
                               aria-expanded="true" aria-controls="collapseOne" style="color:#536656" onclick="window.scrollTo(0,0)">Datos Propuesta de Póliza</button>
           </h5>
         </div>
-        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne">
           <div class="card-body" id="card-body-one">
             <label for = "id_propuesta"><b>Datos Propuesta</b></label>
             <br>
@@ -709,7 +709,7 @@ require_once 'layout.php';
                               style="color:#536656" onclick="window.scrollTo(0,0)">Datos Ítem</button>
           </h5>
         </div>
-        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo">
           <div class="card-body" id="card-body-two">
   
 
@@ -765,7 +765,7 @@ require_once 'layout.php';
                               onclick="window.scrollTo(0,0)">Comentarios </button>
         </h5>
       </div>
-      <div id="collapsethree" class="collapse" aria-labelledby="headingthree" data-parent="#accordionExample">
+      <div id="collapsethree" class="collapse" aria-labelledby="headingthree">
         <div class="card-body" id="card-body-three">
           <label for="comentario_interno"><b>Comentarios Internos</b></label>
           <br>
@@ -787,7 +787,7 @@ require_once 'layout.php';
                               style="color:#536656" onclick="window.scrollTo(0,0);">Información de Póliza </button>
         </h5>
       </div>
-        <div id="collapsefour" class="collapse" aria-labelledby="headingfour" data-parent="#accordionExample">
+        <div id="collapsefour" class="collapse" aria-labelledby="headingfour">
         <div class="card-body" id="card-body-four">
         
           <label for = "datos_poliza"><b>Datos Póliza</b></label>
