@@ -2,10 +2,11 @@
   </div>
 </div>
 
-<!-- jQuery + Bootstrap JS (mantenidos) -->
+<!-- jQuery 3.5 + Bootstrap 4.6.2 (4.4.1 era incompatible con jQuery 3.5 —
+     rompía collapse con 'Cannot convert object to primitive value') -->
 <script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
 
 <!-- DataTables -->
 <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
