@@ -27,7 +27,11 @@ $log .= run("cp -R $src/assets/. $dst/assets/");
 $log .= run("cp $src/backend/db.php $dst/backend/");
 $log .= run("cp -R $src/backend/login $dst/backend/");
 $log .= run("cp -R $src/vendor/. $dst/vendor/");
-$log .= run("cp $src/index.php $dst/");
+// NO copiar index.php a la raíz: en el sitio unificado la raíz es la LANDING
+// (deploy_landing.php pone su index.php). El portal se entra por /bamboo y el
+// botón "Ingresar" -> /backend/login/login.php. Copiar el gateway del portal
+// aquí pisaría la landing y mandaría la home al login.
+// $log .= run("cp $src/index.php $dst/");   // <- desactivado a propósito
 
 $count = 0;
 $errores = 0;

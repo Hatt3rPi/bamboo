@@ -45,7 +45,9 @@ echo "Pasos a verificar manualmente:\n";
 echo " 1) Si el .htaccess del portal tenía directivas LiteSpeed/timeout, fusionarlas en el nuevo.\n";
 echo " 2) El login del portal (backend/login/login.php) debe redirigir tras login a /bamboo/ (no a /),\n";
 echo "    ya que / ahora es la landing.\n";
-echo " 3) Si re-corrés deploy_redesign.php, vuelve a correr este script (restaura el index.php de la landing).\n";
+echo " 3) deploy_redesign.php YA NO debe copiar index.php a la raíz (línea desactivada).\n";
+echo "    Asegurate de que la copia del server de deploy_redesign.php tenga esa línea comentada,\n";
+echo "    o este index.php de la landing se vuelve a pisar y la home cae al login.\n";
 if (stripos($log, 'error') !== false || stripos($log, 'fatal') !== false || stripos($log, 'no such') !== false) {
     echo "\n--- Log (revisar) ---\n$log";
 }
