@@ -482,6 +482,9 @@ require_once 'layout.php';
 <script>
 
 function post() {
+    // Feedback visual de Bootstrap (marca campos válidos en verde / inválidos
+    // en rojo) — consistente con el resto de los formularios.
+    document.getElementById('formulario').classList.add('was-validated');
     var tarea_recurrente = 0;
     var tarea_con_fin = 0;
     var dia = 0;
