@@ -263,32 +263,52 @@ require_once 'layout.php';
           
   <!-- Datos Cliente -->
   
-    <br>
-    <br>
-    <p><strong>Datos Proponente<br>
-      </strong></p>
+    <h6 class="text-bamboo mt-2 mb-3">Datos del proponente</h6>
     <div class="form-row">
-      <div class="col-md-3 mb-3">
-        <label for="RUT">RUT</label>
-        <label style="color: darkred">&nbsp; *</label>
-        <input type="text" class="form-control" id="rutprop" name="rutprop"
+      <div class="col-md-4 mb-3">
+        <label for="rutprop">RUT <span class="text-danger">*</span></label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="rutprop" name="rutprop"
                               placeholder="1111111-1" oninput="checkRut(this);copiadatos()"
                               onchange="valida_rut_duplicado_prop();copiadatos();"
                                readonly required>
-        <div class="invalid-feedback">Dígito verificador no válido. Verifica rut </div>
+          <div class="input-group-append">
+            <button type="button" class="btn btn-secondary" id="busca_rut_prop" data-toggle="modal"
+                          onclick="origen_busqueda(this.id,0)" data-target="#modal_cliente">
+              <i class="fas fa-search mr-1"></i>Buscar
+            </button>
+          </div>
+        </div>
+        <div class="invalid-feedback">Dígito verificador no válido. Verifica rut</div>
       </div>
-      <button type="button" class="btn btn-bamboo" id="busca_rut_prop" data-toggle="modal"
-                          onclick="origen_busqueda(this.id,0)" data-target="#modal_cliente"
-                          style="margin-top:30px;margin-left:5px;height:40px">Buscar RUT</button>
-      <div class="modal fade" id="modal_cliente" tabindex="-1" role="dialog"
-                          aria-labelledby="modal_text_cliente" aria-hidden="true">
-          
+      <div class="col-md-8 mb-3">
+        <label for="nombre_prop">Nombre <span class="text-danger">*</span></label>
+        <input type="text" id="nombre_prop" class="form-control" name="nombre"
+                              oninput="checkRut(this);copiadatos()"
+                              onchange="valida_rut_duplicado_prop();copiadatos();quitavalidador()"  disabled required>
+        <div style="color:var(--danger-700); font-size:12px; visibility:hidden" id="validador10">No puedes dejar este campo en blanco</div>
+      </div>
+      <div class="col-md-4 mb-3" style="display:none">
+        <label for="ApellidoP">Apellido Paterno</label>
+        <input type="text" id="apellidop_prop" class="form-control" onchange="copiadatos()"
+                              name="apellidop" disabled>
+        <div class="invalid-feedback">No puedes dejar este campo en blanco</div>
+      </div>
+      <div class="col-md-4 mb-3" style="display:none">
+        <label for="ApellidoM">Apellido Materno</label>
+        <input type="text" id="apellidom_prop" class="form-control" name="apellidom"
+                              onchange="copiadatos()" disabled>
+        <div class="invalid-feedback">No puedes dejar este campo en blanco</div>
+      </div>
+    </div>
+
+      <!-- Modal Buscar RUT (fuera del grid) -->
+      <div class="modal fade" id="modal_cliente" tabindex="-1" role="dialog" aria-labelledby="modal_text_cliente" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title" id="modal_text_cliente">Buscar RUT</h5>
-              <button type="button" class="close" data-dismiss="modal"
-                                          aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
               <div class="container-fluid">
@@ -313,39 +333,11 @@ require_once 'layout.php';
           </div>
         </div>
       </div>
-      <div class="col-1 ">
-        <label for="prop">&nbsp;</label>
-        <br>
-      </div>
-      <div class="col">
-        <label for="Nombre">Nombre</label>
-        <label style="color: darkred">&nbsp; *</label>
-        <input type="text" id="nombre_prop" class="form-control" name="nombre"
-                              oninput="checkRut(this);copiadatos()"
-                              onchange="valida_rut_duplicado_prop();copiadatos();quitavalidador()"  disabled required>
-                              
-        <div   style="color:red; font-size: 12px ; visibility: hidden" id="validador10">No puedes dejar este campo
-          en blanco</div>
-             <br>
-      </div>
-      <div class="col-md-4 mb-3" style="display:none">
-        <label for="ApellidoP">Apellido Paterno</label>
-        <input type="text" id="apellidop_prop" class="form-control" onchange="copiadatos()"
-                              name="apellidop" disabled>
-        <div class="invalid-feedback">No puedes dejar este campo en blanco</div>
-      </div>
-      <div class="col-md-4 mb-3" style="display:none">
-        <label for="ApellidoM">Apellido Materno</label>
-        <input type="text" id="apellidom_prop" class="form-control" name="apellidom"
-                              onchange="copiadatos()" disabled>
-        <div class="invalid-feedback">No puedes dejar este campo en blanco</div>
-      </div>
-    </div>
-  
+
               <div  id="info_endoso" class="card" style="display:none" disabled>
-            <div class="card-header" id="headingsix" style="background-color:#A5CCAB">
-                <h6 class="mb-0" style="color:#536656" onclick="window.scrollTo(0,0)"> Endosos
-               
+            <div class="card-header" id="headingsix">
+                <h6 class="mb-0 text-bamboo" onclick="window.scrollTo(0,0)"> Endosos
+
                 </h6>
             </div>
         <div class="card-body" id="card-body-six">
@@ -370,46 +362,33 @@ require_once 'layout.php';
       
       <br>
 
-    <div class="accordion" id="accordionExample">
-      <div class="card">
-        <div class="card-header" id="headingOne" style="background-color:whitesmoke">
-          <h5 class="mb-0">
-            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne"
-                              aria-expanded="true" aria-controls="collapseOne" style="color:#536656" onclick="window.scrollTo(0,0)">Datos Propuesta de Póliza</button>
-          </h5>
+    <div id="accordionExample">
+      <div class="card mb-4">
+        <div class="card-header" id="headingOne">
+          <h5 class="mb-0">Datos de la propuesta y póliza</h5>
         </div>
-        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne">
+        <div id="collapseOne" aria-labelledby="headingOne">
           <div class="card-body" id="card-body-one">
-            <label for = "id_propuesta"><b>Datos Propuesta</b></label>
-            <br>
+            <h6 class="text-bamboo mb-3">Datos propuesta</h6>
           <div class="form-row">
-              <div class="col-4" id="contenedor_nro_propuesta" style= "display:none">
-                <label for="seguimiento">N° de Propuesta:&nbsp;</label>
-                <label style="color: darkred">*</label>
+              <div class="col-md-4" id="contenedor_nro_propuesta" style="display:none">
+                <label for="nro_propuesta">N° de Propuesta <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="nro_propuesta" name="nro_propuesta" disabled>
                 <div class="invalid-feedback">No puedes dejar este campo en blanco</div>
               </div>
-          
-          <div class="col-4">
-                <label for="seguimiento">Fecha Ingreso Propuesta:&nbsp;</label>
-                <label style="color: darkred">*</label>
-                <div class="md-form">
-                   <input placeholder="Selected date" type="date" name="fechaprop" id="fechaprop" value="<?php echo date("Y-m-d");?>"
-                      class="form-control"  oninput="valida_vencimiento()" max= "9999-12-31" required>
-                   <input placeholder="Selected date" type="text" name="fechaprop2" id="fechaprop2" value="No Aplica"
-                                    class="form-control" max= "9999-12-31" style="display:none;" readonly>
-                      <div class="invalid-feedback">No puedes dejar este campo en blanco</div>
-                </div>
+              <div class="col-md-4">
+                <label for="fechaprop">Fecha Ingreso Propuesta <span class="text-danger">*</span></label>
+                <input placeholder="Selected date" type="date" name="fechaprop" id="fechaprop" value="<?php echo date("Y-m-d");?>"
+                      class="form-control" oninput="valida_vencimiento()" max="9999-12-31" required>
+                <input type="text" name="fechaprop2" id="fechaprop2" value="No Aplica" class="form-control d-none" readonly>
+                <div class="invalid-feedback">No puedes dejar este campo en blanco</div>
+              </div>
           </div>
-          </div>
-          <br>
-          <br>
-          <label for = "datos_poliza"><b>Datos Póliza</b></label>
-            <br>
-          <div class ="form-row">
-              <div class="col-3">
-                <label for="Nombre">Vigencia Inicial</label>
-                <label style="color: darkred">&nbsp; *</label>
+          <hr class="my-4">
+          <h6 class="text-bamboo mb-3">Datos póliza</h6>
+          <div class="form-row">
+              <div class="col-md-3">
+                <label for="fechainicio">Vigencia Inicial <span class="text-danger">*</span></label>
                 <div class="md-form">
                   <input placeholder="Selected date" type="date" id="fechainicio" name="fechainicio"
                                           class="form-control" onchange="validadorfecha(this.id)" max= "9999-12-31" required>
@@ -418,9 +397,8 @@ require_once 'layout.php';
                 <div style="color:red; visibility: hidden" id="validador5">Debes seleccionar Fecha de
                   Inicio</div>
               </div>
-              <div class="col-3">
-                <label for="Nombre">Vigencia Final</label>
-                <label style="color: darkred">&nbsp; *</label>
+              <div class="col-md-3">
+                <label for="fechavenc">Vigencia Final <span class="text-danger">*</span></label>
                 <div class="md-form">
                   <input placeholder="Selected date" type="date" name="fechavenc" id="fechavenc"
                                           class="form-control"  oninput="valida_vencimiento()" max= "9999-12-31" required>
@@ -429,9 +407,8 @@ require_once 'layout.php';
                 <div style="color:red; visibility: hidden" id="validador6">Debes seleccionar Fecha de
                   Vencimiento</div>
               </div>
-              <div class="col-inline">
+              <div class="col-md-3">
             <label for="moneda_poliza">Moneda Póliza</label>
-            
               <select class="form-control" id="moneda_poliza" name="moneda_poliza" onChange="cambio_moneda(); pobladeducible()">
                 <option value="UF" <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $moneda_poliza == "UF") echo "selected" ?>>UF</option>
                 <option value="USD" <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $moneda_poliza == "USD") echo "selected" ?>>USD</option>
@@ -443,11 +420,9 @@ require_once 'layout.php';
               
           </div>
           
-          <div class ="form-row">
-              <div class="col">
-            
-            <label for="compania">Compañía</label>
-            <label style="color: darkred">&nbsp; *</label>
+          <div class="form-row">
+              <div class="col-md-6">
+            <label for="selcompania">Compañía <span class="text-danger">*</span></label>
             <select class="form-control" name="selcompania" id="selcompania" required>
                   <option value="">Selecciona una compañía</option>
                   <option value="Axa Assistance"
@@ -502,10 +477,9 @@ require_once 'layout.php';
               
               
           </div>
-          <div class="col-6">
-                <label for="sel1">Ramo:&nbsp;</label>
-                <label style="color: darkred">*</label>
-                <select class="form-control" name="ramo" id="ramo" onChange="vencimientogarantia();cambia_deducible();" required> 
+          <div class="col-md-6">
+                <label for="ramo">Ramo <span class="text-danger">*</span></label>
+                <select class="form-control" name="ramo" id="ramo" onChange="vencimientogarantia();cambia_deducible();" required>
                                         
                   <option value="">Selecciona un ramo</option>
                   <option value="AP - Accidentes Personales"
@@ -592,24 +566,24 @@ require_once 'layout.php';
               
         </div>
   
-                <br>
-                <br>
-                  <label for="infopago"><b>Información de Pago</b></label>
-          <br>
+          <hr class="my-4">
+          <h6 class="text-bamboo mb-3">Información de pago</h6>
           <div class="form-row">
             <div class="col-md-4 mb-3">
-              <label for="formapago">Forma de Pago</label>
-              <label style="color: darkred">&nbsp; *</label>
-              <div class="form" style="display: flex; align-items: center;">
+              <label for="modo_pago">Forma de Pago <span class="text-danger">*</span></label>
+              <div class="form-row">
+                <div class="col-5">
                 <select class="form-control" name="modo_pago" id="modo_pago"
-                                          onChange="modopago();" style="width:30%;" required>
+                                          onChange="modopago();" required>
                   <option value="">-</option>
                   <option value="PAT" <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $modo_pago == "PAT") echo "selected" ?>>PAT</option>
                   <option value="PAC" <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $modo_pago == "PAC") echo "selected" ?>>PAC</option>
                   <option value="Plan de pago"<?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $modo_pago == "Plan de pago") echo "selected" ?>>Plan de pago</option>
                   <option value="Contado" <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $modo_pago == "Contado") echo "selected" ?>>Contado</option>
                 </select>
-                <select class="form-control" name="cuotas" id="cuotas" style="width:42%;" required>
+                </div>
+                <div class="col-7">
+                <select class="form-control" name="cuotas" id="cuotas" required>
                   <option value="">Nro Cuotas</option>
                   <option value="Sin cuotas" <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $cuotas == "Sin cuotas") echo "selected" ?>>Sin Cuotas</option>
                   <option value="2 Cuotas" <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $cuotas == "2 Cuotas") echo "selected" ?>>2 Cuotas</option>
@@ -657,12 +631,14 @@ require_once 'layout.php';
                   <option value="24 Cuotas"
                                               <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $cuotas == "24 Cuotas") echo "selected" ?>>24 Cuotas</option>
                 </select>
+                </div>
               </div>
             </div>
             <div class="col-md-4 mb-3">
               <label for="valorcuota">Valor Cuota</label>
-              <div class="form-inline">
-                <select class="form-control" name="moneda_cuota" id="moneda_cuota" style="width:30%;">
+              <div class="form-row">
+                <div class="col-5">
+                <select class="form-control" name="moneda_cuota" id="moneda_cuota">
                   <option value="UF"
                                               <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $moneda_cuota == "UF") echo "selected" ?>>UF</option>
                   <option value="USD"
@@ -670,46 +646,34 @@ require_once 'layout.php';
                   <option value="CLP"
                                               <?php if ($_SERVER[ "REQUEST_METHOD" ] == "POST" && $moneda_cuota == "CLP") echo "selected" ?>>CLP</option>
                 </select>
-                <input type="number" onchange= "dosdecimales(this.id);" step="0.01" placeholder="0,00" class="form-control" name="valorcuota" id="valorcuota"
-                                           style="width:42%;">
+                </div>
+                <div class="col-7">
+                <input type="number" onchange= "dosdecimales(this.id);" step="0.01" placeholder="0,00" class="form-control" name="valorcuota" id="valorcuota">
+                </div>
               </div>
             </div>
             <div class="col-md-4 mb-3">
               <label for="fechaprimer">Fecha Primera Cuota</label>
-              <div class="md-form">
-                <input type="date" class="form-control" id="fechaprimer" name="fechaprimer" onchange="validadorfecha(this.id); valida_primerpago()" max= "9999-12-31" style="width:72%;" required >
-              </div>
+              <input type="date" class="form-control" id="fechaprimer" name="fechaprimer" onchange="validadorfecha(this.id); valida_primerpago()" max= "9999-12-31" required>
             </div>
           </div>
-          
-          <br>
-          <br>
-                    
-             <label for="pago"><b>Vendedor y Corredor</b></label>
-              <br>
+
+          <hr class="my-4">
+          <h6 class="text-bamboo mb-3">Vendedor y corredor</h6>
             <div class="form-row">
               <div class="col-md-4 mb-3">
-                 <label>Nombre del Vendedor</label>
-                <div class="form-row">
-                  <div class="col" style="width:72%;" >
-                    <input type="text" class="form-control" id="nombre_vendedor" name="nombre_vendedor" placeholder="Nombre Vendedor" style="width:72%;" >
-                  </div>
-                </div>
+                 <label for="nombre_vendedor">Nombre del Vendedor</label>
+                 <input type="text" class="form-control" id="nombre_vendedor" name="nombre_vendedor" placeholder="Nombre Vendedor">
               </div>
-
             </div>
-          </div>
+        </div><!-- /card-body-one -->
+      </div><!-- /collapseOne -->
+      </div><!-- /card propuesta -->
+      <div class="card mb-4">
+        <div class="card-header" id="headingTwo">
+          <h5 class="mb-0">Ítems asegurados</h5>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-header" id="headingTwo" style="background-color:whitesmoke">
-          <h5 class="mb-0">
-            <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                              data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"
-                              style="color:#536656" onclick="window.scrollTo(0,0)">Datos Ítem</button>
-          </h5>
-        </div>
-        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo">
+        <div id="collapseTwo" aria-labelledby="headingTwo">
           <div class="card-body" id="card-body-two">
 
           <div id="main">
@@ -728,34 +692,29 @@ require_once 'layout.php';
     
 
     </div>
-    <div class="card">
+    <div class="card mb-4">
       <div class="card-header" id="headingthree">
-        <h5 class="mb-0">
-          <button class="btn btn-link text-bamboo collapsed" type="button" data-toggle="collapse"
-                              data-target="#collapsethree" aria-expanded="false" aria-controls="collapsethree"
-                              onclick="window.scrollTo(0,0)">Comentarios </button>
-        </h5>
+        <h5 class="mb-0">Comentarios</h5>
       </div>
-      <div id="collapsethree" class="collapse" aria-labelledby="headingthree">
+      <div id="collapsethree" aria-labelledby="headingthree">
         <div class="card-body" id="card-body-three">
-          <label for="comentario_interno"><b>Comentarios Internos</b></label>
-          <br>
-          <textarea class="form-control" rows="2" style="height:100px" id='comentarios_int' name='comentario' style="text-indent:0px" ;></textarea>
-          <br>
-           <label for="comentario_externo"><b>Comentarios Externos</b></label>
-          <br>
-          <textarea class="form-control" rows="2" style="height:100px" id='comentarios_ext' name='comentario'
-                              style="text-indent:0px" ;></textarea>
-        
+          <div class="form-group">
+            <label for="comentarios_int">Comentarios internos</label>
+            <textarea class="form-control" rows="3" id="comentarios_int" name="comentario"></textarea>
+          </div>
+          <div class="form-group mb-0">
+            <label for="comentarios_ext">Comentarios externos</label>
+            <textarea class="form-control" rows="3" id="comentarios_ext" name="comentario"></textarea>
+          </div>
         </div>
       </div>
     </div>
-      <div  id="informacion_poliza" class="card" style="display:none" disabled>
-      <div class="card-header" id="headingfour" style="background-color:whitesmoke">
+      <div  id="informacion_poliza" class="card mb-4" style="display:none" disabled>
+      <div class="card-header" id="headingfour">
         <h5 class="mb-0">
-          <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+          <button class="btn btn-link text-bamboo collapsed" type="button" data-toggle="collapse"
                               data-target="#collapsefour" aria-expanded="false" id=pestana_poliza aria-controls="collapsefour"
-                              style="color:#536656" onclick="window.scrollTo(0,0);">Información de Póliza </button>
+                              onclick="window.scrollTo(0,0);">Información de Póliza </button>
         </h5>
       </div>
         <div id="collapsefour" class="collapse" aria-labelledby="headingfour">
@@ -766,13 +725,13 @@ require_once 'layout.php';
           <div class ="form-row">
               <div class="col-md-4 mb-3">
                 <label for="poliza">Número de Poliza</label>
-                <label style="color: darkred">&nbsp; *</label>
+                <span class="text-danger">*</span>
                 <input type="text" class="form-control" id="nro_poliza" name="nro_poliza"
                                        style="width:72%;">
                 </div>
           <div class="col-md-4 mb-3">
           <label for="fecha_emision_poliza">Fecha Emisión Póliza</label>
-          <label style="color: darkred">&nbsp; *</label>
+          <span class="text-danger">*</span>
           <div class="md-form">
             <input placeholder="Selected date" type="date" id="fecha_emision_poliza" name="fecha_emision_poliza"
                                           class="form-control"  max= "9999-12-31" style="width:72%;">
