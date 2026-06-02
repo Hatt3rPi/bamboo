@@ -711,47 +711,18 @@ require_once 'layout.php';
         </div>
         <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo">
           <div class="card-body" id="card-body-two">
-  
 
-
-          <label for = "id_item"><b>Información de Ítem</b></label><br>
-          <div class="form-row">
-    
-          <div class="container" id="main" >
-            
-            
-            <div class="container" style="overflow-x:auto;width:100%;height: auto;  white-space: nowrap;">
-              <table class="table"  id="mytable"  style="width:450%;white-space: nowrap;">
-                <tr>
-             	  <th style="width:20px">N° Ítem</th>
-                  <th>RUT Asegurado</th>
-                  <th>Nombre Asegurado</th>
-                  <th>Materia Asegurada <label style="color: darkred">*</label></th>
-                  <th>Patente o Ubicación</th>
-                  <th>Cobertura</th>
-                  <th>Deducible</th>
-                  <th>Monto Asegurado <label style="color: darkred">*</label></th>
-                  <th>Tasa Afecta</th>
-                  <th>Tasa Exenta</th>
-                  <th>Prima Afecta</th>
-                  <th>Prima Exenta</th>
-                  <th>Prima Neta Total</th>
-                  <th>Prima Bruta</th>
-                  <th id="titulo_venc_gtia">Vencimiento Garantía</th>
-                  
-                </tr>
-              </table>
-              <br>
+          <div id="main">
+            <div id="items_container" class="bb-items-list"></div>
+            <input type="button" id="btAdd" value="+ Agregar ítem" class="bb-add-item-btn mt-3" onclick="click_agrega_item()"/>
+            <div class="text-right mt-2">
+              <input type="button" id="btRemove" value="Eliminar último ítem" class="btn btn-link btn-sm text-subtle"/>
             </div>
-            <br>
-            <br>
-            <input type="button" id="btAdd" value="Añadir" class="btn btn-bamboo btn-sm" onclick="click_agrega_item()"/>
-            <input type="button" id="btRemove" value="Eliminar" class="btn btn-secondary btn-sm" />
           </div>
         </div>
 
 
-        
+
       </div>
     </div>
     
@@ -2600,6 +2571,136 @@ function vencimientogarantia(){
         margin: '20px',
         width: '340px',
     });
+    // Genera el markup de UNA tarjeta de ítem. Preserva EXACTOS los name[]/id[i]
+    // y los onchange de cálculo. autoCalc=true (asegurado=proponente) recalcula
+    // primas al cambiar tasas; false (asegurado distinto) no — comportamiento legacy.
+    function bb_item_card(i, autoCalc) {
+        var tasaAfectaCalc = autoCalc ? 'calculaprimaafecta()' : '';
+        var tasaExentaCalc = autoCalc ? 'calculaprimaexenta();calculaprimabruta()' : '';
+        return ''+
+        '<div class="bb-item-card" id="item'+i+'">'+
+          '<div class="bb-item-card-head">'+
+            '<span class="title">Ítem '+i+'</span>'+
+            '<input class="form-control d-none" type="text" value="'+i+'" id="numero_item['+i+']" name="numero_item[]" disabled>'+
+          '</div>'+
+          '<div class="form-row">'+
+            '<div class="col-md-4 form-group">'+
+              '<label>RUT Asegurado <span class="text-danger">*</span></label>'+
+              '<div class="input-group">'+
+                '<div class="input-group-prepend"><button class="btn btn-secondary" type="button" id="busca_rut_aseg['+i+']" data-toggle="modal" onclick="origen_busqueda(this.id,'+i+')" data-target="#modal_cliente"><i class="fas fa-search"></i></button></div>'+
+                '<input type="text" class="form-control" id="rutaseg['+i+']" name="rutaseg[]" placeholder="1111111-1" onchange="valida_rut_duplicado_aseg('+i+')" oninput="checkRut(this);" required>'+
+              '</div>'+
+            '</div>'+
+            '<div class="col-md-8 form-group">'+
+              '<label>Nombre Asegurado <span class="text-danger">*</span></label>'+
+              '<input type="text" id="nombre_seg['+i+']" class="form-control" name="nombreaseg[]" required>'+
+            '</div>'+
+          '</div>'+
+          '<div class="form-row">'+
+            '<div class="col-md-6 form-group">'+
+              '<label>Materia Asegurada <span class="text-danger">*</span></label>'+
+              '<textarea class="form-control" id="materia['+i+']" name="materia[]" rows="3" required></textarea>'+
+            '</div>'+
+            '<div class="col-md-6 form-group">'+
+              '<label>Patente o Ubicación</label>'+
+              '<textarea class="form-control" id="detalle_materia['+i+']" name="detalle_materia[]" rows="3"></textarea>'+
+            '</div>'+
+          '</div>'+
+          '<div class="form-row">'+
+            '<div class="col-md-6 form-group">'+
+              '<label>Cobertura</label>'+
+              '<textarea class="form-control" id="cobertura['+i+']" name="cobertura[]" rows="3"></textarea>'+
+            '</div>'+
+            '<div class="col-md-6 form-group">'+
+              '<label>Deducible</label>'+
+              '<div id="div_deducible['+i+']">'+
+                '<div id="deducible_para_RC['+i+']" style="display:none;">'+
+                  '<div class="form-row" id="deducible_rc['+i+']" style="align-items:center;">'+
+                    '<div class="row" style="align-items:center;">'+
+                      '<input class="form-control" name="deducible_porcentaje" id="deducible_porcentaje['+i+']" placeholder="%" style="width:44px" onChange="pobladeducible()">&nbsp;'+
+                      '<label style="font-size:75%;">% Pérdida con mínimo de</label>&nbsp;'+
+                      '<div class="input-group-prepend"><span class="input-group-text" id="moneda7['+i+']">UF</span></div>'+
+                      '<input type="text" class="form-control" name="deducible_valor" id="deducible_valor['+i+']" placeholder="Valor" onChange="pobladeducible()">'+
+                    '</div>'+
+                  '</div>'+
+                '</div>'+
+                '<div id="deducible_para_vehiculos['+i+']" style="display:none;">'+
+                  '<select class="form-control" id="deducible_vehiculo['+i+']" onChange="pobladeducible()">'+
+                    '<option selected disabled value="">Selecciona Deducible...</option>'+
+                    '<option value="Sin deducible">Sin deducible</option>'+
+                    '<option value="UF 3">UF 3</option>'+
+                    '<option value="UF 5">UF 5</option>'+
+                    '<option value="UF 10">UF 10</option>'+
+                    '<option value="UF 15">UF 15</option>'+
+                    '<option value="UF 18">UF 18</option>'+
+                    '<option value="UF 20">UF 20</option>'+
+                    '<option value="UF 25">UF 25</option>'+
+                    '<option value="UF 30">UF 30</option>'+
+                    '<option value="UF 40">UF 40</option>'+
+                    '<option value="UF 50">UF 50</option>'+
+                    '<option value="UF 75">UF 75</option>'+
+                  '</select>'+
+                '</div>'+
+                '<div id="deducible_para_otros['+i+']">'+
+                  '<div class="input-group">'+
+                    '<div class="input-group-prepend"><span class="input-group-text" id="moneda['+i+']">UF</span></div>'+
+                    '<input type="text" class="form-control" name="deducible_defecto" id="deducible_defecto['+i+']" onChange="pobladeducible()">'+
+                  '</div>'+
+                '</div>'+
+              '</div>'+
+            '</div>'+
+          '</div>'+
+          '<div class="bb-item-primas">'+
+            '<div class="primas-eyebrow">Montos, tasas y primas</div>'+
+            '<div class="form-row">'+
+              '<div class="col-md-4 form-group">'+
+                '<label>Monto Asegurado <span class="text-danger">*</span></label>'+
+                '<div class="input-group"><div class="input-group-prepend"><span class="input-group-text" id="moneda8['+i+']">UF</span></div>'+
+                '<input type="number" onchange="dosdecimales(this.id);" step="0.01" placeholder="0,00" class="form-control" name="monto_aseg[]" id="monto_aseg['+i+']" required></div>'+
+              '</div>'+
+              '<div class="col-md-4 form-group">'+
+                '<label>Tasa Afecta</label>'+
+                '<div class="input-group"><div class="input-group-prepend"><span class="input-group-text" id="pormilla['+i+']">%</span></div>'+
+                '<input type="number" onchange="dosdecimales(this.id);'+tasaAfectaCalc+'" step="0.01" placeholder="0,00" class="form-control" name="tasa_afecta[]" id="tasa_afecta['+i+']"></div>'+
+              '</div>'+
+              '<div class="col-md-4 form-group">'+
+                '<label>Tasa Exenta</label>'+
+                '<div class="input-group"><div class="input-group-prepend"><span class="input-group-text" id="pormilla2['+i+']">%</span></div>'+
+                '<input type="number" onchange="dosdecimales(this.id);'+tasaExentaCalc+'" step="0.01" placeholder="0,00" class="form-control" name="tasa_exenta[]" id="tasa_exenta['+i+']"></div>'+
+              '</div>'+
+            '</div>'+
+            '<div class="form-row">'+
+              '<div class="col-md-3 form-group">'+
+                '<label>Prima Afecta</label>'+
+                '<div class="input-group"><div class="input-group-prepend"><span class="input-group-text" id="moneda2['+i+']">UF</span></div>'+
+                '<input type="number" onchange="dosdecimales(this.id);calculaprimabruta();" step="0.01" placeholder="0,00" class="form-control" name="prima_afecta[]" id="prima_afecta['+i+']"></div>'+
+              '</div>'+
+              '<div class="col-md-3 form-group">'+
+                '<label>Prima Exenta</label>'+
+                '<div class="input-group"><div class="input-group-prepend"><span class="input-group-text" id="moneda3['+i+']">UF</span></div>'+
+                '<input type="number" onchange="dosdecimales(this.id);calculaprimabruta();" step="0.01" placeholder="0,00" class="form-control" name="prima_exenta[]" id="prima_exenta['+i+']"></div>'+
+              '</div>'+
+              '<div class="col-md-3 form-group">'+
+                '<label>Prima Neta Total</label>'+
+                '<div class="input-group"><div class="input-group-prepend"><span class="input-group-text" id="moneda5['+i+']">UF</span></div>'+
+                '<input type="number" onchange="dosdecimales(this.id);" step="0.01" placeholder="0,00" class="form-control" name="prima_neta[]" id="prima_neta['+i+']"></div>'+
+              '</div>'+
+              '<div class="col-md-3 form-group">'+
+                '<label>Prima Bruta</label>'+
+                '<div class="input-group"><div class="input-group-prepend"><span class="input-group-text" id="moneda4['+i+']">UF</span></div>'+
+                '<input type="number" onchange="dosdecimales(this.id);" step="0.01" placeholder="0,00" class="form-control" name="prima_bruta[]" id="prima_bruta['+i+']"></div>'+
+              '</div>'+
+            '</div>'+
+            '<div class="form-row">'+
+              '<div class="col-md-4 form-group">'+
+                '<label>Vencimiento Garantía</label>'+
+                '<input placeholder="Seleccionar fecha si aplica" type="date" name="venc_gtia[]" id="venc_gtia['+i+']" class="form-control">'+
+              '</div>'+
+            '</div>'+
+          '</div>'+
+        '</div>';
+    }
+
      function click_agrega_item(){
 
         if (iCnt <= 100) {
@@ -2615,76 +2716,8 @@ function vencimientogarantia(){
             }
             
             else if (document.getElementById("radio2_si").checked) {
-                var newElement = '<tr id =item' + iCnt+ ' style="width:80%;">'+
-                '<td><input class="form-control" type="text" value="' + iCnt + '" id="numero_item[' + iCnt + ']" name="numero_item[]" disabled required/></td>'+
-                '<td><div class="input-group-prepend"><button type="button" id="busca_rut_aseg[' + iCnt + ']" data-toggle="modal" onclick="origen_busqueda(this.id,' + iCnt + ')" data-target="#modal_cliente"><i class="fas fa-search"></i></button><input type="text" class="form-control" '+
-                    'id="rutaseg[' + iCnt + ']" name="rutaseg[]" onchange="valida_rut_duplicado_aseg(' + iCnt + ')" oninput="checkRut(this);"'+
-                    '  required/></div></td>' +
-                '<td><input type="text" id="nombre_seg[' + iCnt + ']" class="form-control" name="nombreaseg[]" required></td>'+
-                '<td><textarea type="text" class="form-control" id="materia[' + iCnt + ']" name="materia[]" rows="6" required></textarea></td>'+
-                '<td><textarea type="text" class="form-control" id="detalle_materia[' + iCnt + ']" name="detalle_materia[]" rows="6"></textarea></td>'+
-                '<td><textarea type="text" class="form-control" id="cobertura[' + iCnt + ']" name="cobertura[]" rows="6"></textarea></td>'+
-            // inicio deducible
-                '<td><div class="form-inline" id="div_deducible[' + iCnt + ']">'+
-                //inicio deducible para RC
-                    '<div id="deducible_para_RC[' + iCnt + ']" style="display:none;">'+
-                    
-                        '<div class="form-row" id="deducible_rc['+iCnt+']"  style="align-items: center;">'+
-                            '<div class="row" style="align-items: center;">'+
-                                '<input class="form-control" name="deducible_porcentaje" id="deducible_porcentaje['+iCnt+']" placeholder="%" style="width:44px" onChange="pobladeducible()">&nbsp'+
-                                '<label style="font-size:75%;display:block;">% Pérdida con mínimo de      </label>&nbsp'+
-                            
-                                '<div class="input-group-prepend"><span class="input-group-text" id="moneda7['+iCnt+']">UF</span></div>'+
-                                '<input type="text" class="form-control" name="deducible_valor" id="deducible_valor['+iCnt+']" placeholder="Valor" onChange="pobladeducible()">'+
-                            '</div>'+
-                        '</div>'+
-                    
-                    '</div>'+
-                //inicio deducible para vehiculos
-                    '<div id="deducible_para_vehiculos[' + iCnt + ']" style="display:none;"> '+
-                        '<select class="form-control" id="deducible_vehiculo[' +iCnt+ ']" onChange="pobladeducible()">'+
-                            ' <option selected disabled value="">Selecciona Deducible...</option>'+
-                            '<option value="Sin deducible">Sin deducible</option>'+
-                            '<option value="UF 3">UF 3</option>'+
-                            '<option value="UF 5">UF 5</option>'+
-                            '<option value="UF 10">UF 10</option>'+
-                            '<option value="UF 15">UF 15</option>'+
-                            '<option value="UF 18">UF 18</option>'+
-                            '<option value="UF 20">UF 20</option>'+
-                            '<option value="UF 25">UF 25</option>'+
-                            '<option value="UF 30">UF 30</option>'+
-                            '<option value="UF 40">UF 40</option>'+
-                            '<option value="UF 50">UF 50</option>'+
-                            '<option value="UF 75">UF 75</option>'+
-                        '</select>'+
-                    '</div>'+
-                //inicio deducible normal
-                    '<div id="deducible_para_otros[' + iCnt + ']">'+
-                        '<div class="input-group-prepend"><span class="input-group-text" id="moneda[' + iCnt + ']">UF</span></div> '+
-                        '<input type="text" class="form-control" name="deducible_defecto" id="deducible_defecto[' + iCnt + ']" onChange="pobladeducible()" required>'+
-        
-                    '</div>'+
-                '</div></td>'+
-            // fin deducible
-                '<td><div class="form-inline" onchange= "dosdecimales(this.id);" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="moneda8[' + iCnt + ']">UF</span></div>'+
-                    '<input type="number" onchange= "dosdecimales(this.id);"step="0.01" placeholder="0,00"  class="form-control" name="monto_aseg[]" id="monto_aseg[' + iCnt + ']"  required></div></td>' +  
-                '<td> <div class="form-inline" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="pormilla[' + iCnt + ']">%</span></div>'+
-                      '<input type="number" onchange= "dosdecimales(this.id);calculaprimaafecta()" step="0.01" placeholder="0,00" class="form-control" name="tasa_afecta[]" id="tasa_afecta[' + iCnt + ']" "></div></td>'+
-                '<td> <div class="form-inline" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="pormilla2[' + iCnt + ']">%</span></div>'+
-                      '<input type="number" onchange= "dosdecimales(this.id);calculaprimaexenta();calculaprimabruta()" step="0.01" placeholder="0,00" class="form-control" name="tasa_exenta[]" id="tasa_exenta[' + iCnt + ']"  style="width=75%"></div></td>'+ 
-                '<td> <div class="form-inline" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="moneda2[' + iCnt + ']">UF</span></div>'+
-                      '<input type="number" onchange= "dosdecimales(this.id); calculaprimabruta();" step="0.01" placeholder="0,00" class="form-control" name="prima_afecta[]" id="prima_afecta[' + iCnt + ']"></div></td>'+
-                '<td> <div class="form-inline" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="moneda3[' + iCnt + ']">UF</span></div>'+
-                      '<input type="number" onchange= "dosdecimales(this.id);calculaprimabruta();" step="0.01" placeholder="0,00" class="form-control" name="prima_exenta[]" id="prima_exenta[' + iCnt + ']" style="width=75%"></div></td>'+ 
-                '<td> <div class="form-inline" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="moneda5[' + iCnt + ']">UF</span></div>'+
-                '<input type="number" onchange= "dosdecimales(this.id);" step="0.01" placeholder="0,00" class="form-control" name="prima_neta[]" id="prima_neta[' + iCnt + ']"></div></td>'+
-                '<td> <div class="form-inline" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="moneda4[' + iCnt + ']">UF</span></div>'+
-                      '<input type="number" onchange= "dosdecimales(this.id);" step="0.01" placeholder="0,00" class="form-control" name="prima_bruta[]" id="prima_bruta[' + iCnt + ']"></div></td>'+
-                
-                  
-                 '<td> <input placeholder="Seleccionar fecha si aplica" type="date" name="venc_gtia[]" id="venc_gtia[' + iCnt + ']" class="form-control"></td>'+
-               '</tr>';
-            $("#mytable").append($(newElement));
+                var newElement = bb_item_card(iCnt, true);
+            $("#items_container").append($(newElement));
                 document.getElementById("rutaseg["+iCnt+"]").value = document.getElementById("rutprop").value;
                 document.getElementById("nombre_seg["+iCnt+"]").value = document.getElementById("nombre_prop").value;
                 document.getElementById("rutaseg["+iCnt+"]").disabled = true;
@@ -2696,82 +2729,10 @@ function vencimientogarantia(){
                 
             }
             
-            else 
+            else
             {
-            var newElement = '<tr id =item' + iCnt + ' style="width:80%;">'+
-                '<td><input class="form-control" type="text" value="' + iCnt + '" id="numero_item[' + iCnt + ']" name="numero_item[' + iCnt + ']" disabled required/></td>'+
-                '<td><div class="input-group-prepend"><button type="button" id="busca_rut_aseg[' + iCnt + ']" data-toggle="modal" onclick="origen_busqueda(this.id,' + iCnt + ')" data-target="#modal_cliente"><i class="fas fa-search"></i></button><input type="text" class="form-control" '+
-                    'id="rutaseg[' + iCnt + ']" name="rutaseg[]" placeholder="1111111-1" onchange="valida_rut_duplicado_aseg(' + iCnt + ')" oninput="checkRut(this);"'+
-                    '  required/></div></td>' +
-                '<td><input type="text" id="nombre_seg[' + iCnt + ']" class="form-control" name="nombreaseg[]"  required></td>'+
-                '<td><textarea type="text" class="form-control" id="materia[' + iCnt + ']" name="materia[]" rows="6" required></textarea></td>'+
-                '<td><textarea type="text" class="form-control" id="detalle_materia[' + iCnt + ']" name="detalle_materia[]" rows="6"></textarea></td>'+
-                '<td><textarea type="text" class="form-control" id="cobertura[' + iCnt + ']" name="cobertura[]"  rows="6"> </textarea></td>'+
-                
-            // inicio deducible
-                '<td><div class="form-inline" id="div_deducible[' + iCnt + ']">'+
-                //inicio deducible para RC
-                   '<div id="deducible_para_RC[' + iCnt + ']" style="display:none;">'+
-                    
-                        '<div class="form-row" id="deducible_rc['+iCnt+']"  style="align-items: center;">'+
-                            '<div class="row" style="align-items: center;">'+
-                                '<input class="form-control" name="deducible_porcentaje" id="deducible_porcentaje['+iCnt+']" placeholder="%" style="width:44px" onChange="pobladeducible()">&nbsp'+
-                                '<label style="font-size:75%;display:block;">% Pérdida con mínimo de      </label>&nbsp'+
-                            
-                                '<div class="input-group-prepend"><span class="input-group-text" id="moneda7['+iCnt+']">UF</span></div>'+
-                                '<input type="text" class="form-control" name="deducible_valor" id="deducible_valor['+iCnt+']" placeholder="Valor" onChange="pobladeducible()">'+
-                            '</div>'+
-                        '</div>'+
-                    
-                    '</div>'+
-                //inicio deducible para vehiculos
-                    '<div id="deducible_para_vehiculos[' + iCnt + ']" style="display:none;" > '+
-                        '<select class="form-control" id="deducible_vehiculo[' +iCnt+ ']" onChange="pobladeducible()" >'+
-                            '<option selected disabled value="">Selecciona Deducible...</option>'+
-                            '<option value="Sin deducible">Sin deducible</option>'+
-                            '<option value="UF 3">UF 3</option>'+
-                            '<option value="UF 5">UF 5</option>'+
-                            '<option value="UF 10">UF 10</option>'+
-                            '<option value="UF 15">UF 15</option>'+
-                            '<option value="UF 18">UF 18</option>'+
-                            '<option value="UF 20">UF 20</option>'+
-                            '<option value="UF 25">UF 25</option>'+
-                            '<option value="UF 30">UF 30</option>'+
-                            '<option value="UF 40">UF 40</option>'+
-                            '<option value="UF 50">UF 50</option>'+
-                            '<option value="UF 75">UF 75</option>'+
-                        '</select>'+
-                    '</div>'+
-                //inicio deducible normal
-                    '<div id="deducible_para_otros[' + iCnt + ']">'+
-                        '<div class="input-group-prepend"><span class="input-group-text" id="moneda[' + iCnt + ']">UF</span></div> '+
-                        '<input type="text" class="form-control" name="deducible_defecto" id="deducible_defecto[' + iCnt + ']" onChange="pobladeducible()">'+
-        
-                    '</div>'+
-                '</div></td>'+
-            // fin deducible
-                
-                
-                '<td><div class="form-inline" onchange= "dosdecimales(this.id);" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="moneda8[' + iCnt + ']">UF</span></div>'+
-                    '<input type="number" onchange= "dosdecimales(this.id);"step="0.01" placeholder="0,00"  class="form-control" name="monto_aseg[]" id="monto_aseg[' + iCnt + ']"  required></div></td>' +  
-                '<td> <div class="form-inline" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="pormilla[' + iCnt + ']">%</span></div>'+
-                      '<input type="number" onchange= "dosdecimales(this.id);" step="0.01" placeholder="0,00" class="form-control" name="tasa_afecta[]" id="tasa_afecta[' + iCnt + ']" "></div></td>'+
-                '<td> <div class="form-inline" onchange= "dosdecimales(this.id);" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="pormilla2[' + iCnt + ']">%</span></div>'+
-                      '<input type="number" onchange= "dosdecimales(this.id);" step="0.01" placeholder="0,00" class="form-control" name="tasa_exenta[]" id="tasa_exenta[' + iCnt + ']"  style="width=75%"></div></td>'+ 
-                '<td> <div class="form-inline" onchange= "dosdecimales(this.id);" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="moneda2[' + iCnt + ']">UF</span></div>'+
-                      '<input type="number"  onchange= "dosdecimales(this.id);calculaprimabruta();" step="0.01" placeholder="0,00" class="form-control" name="prima_afecta[]" id="prima_afecta[' + iCnt + ']" ></div></td>'+
-                '<td> <div class="form-inline" onchange= "dosdecimales(this.id);" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="moneda3[' + iCnt + ']">UF</span></div>'+
-                      '<input type="number"  onchange= "dosdecimales(this.id);calculaprimabruta();" step="0.01" placeholder="0,00" class="form-control" name="prima_exenta[]" id="prima_exenta[' + iCnt + ']"  style="width=75%"></div></td>'+ 
-                '<td> <div class="form-inline" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="moneda5[' + iCnt + ']">UF</span></div>'+
-                '<input type="number" onchange= "dosdecimales(this.id);" step="0.01" placeholder="0,00" class="form-control" name="prima_neta[]" id="prima_neta[' + iCnt + ']"></div></td>'+
-                '<td> <div class="form-inline" onchange= "dosdecimales(this.id);" style="width:auto"><div class="input-group-prepend"><span class="input-group-text" id="moneda4[' + iCnt + ']">UF</span></div>'+
-                      '<input type="number" onchange= "dosdecimales(this.id);" step="0.01" placeholder="0,00" class="form-control" name="prima_bruta[]" id="prima_bruta[' + iCnt + ']"></div></td>'+
-                
-                  
-                 '<td> <input placeholder="Seleccionar fecha si aplica" type="date" name="venc_gtia[]" id="venc_gtia[' + iCnt + ']" class="form-control"></td>'+
-               '</tr>';
-               
-            $("#mytable").append($(newElement));
+            var newElement = bb_item_card(iCnt, false);
+            $("#items_container").append($(newElement));
             $('#main').after(container, divSubmit);
              document.getElementById("contador").value = iCnt;
          }
@@ -2782,7 +2743,7 @@ function vencimientogarantia(){
         else { //se establece un limite para añadir elementos, 5 es el limite
             iCnt = iCnt + 1;
 
-            $("#mytable").append('<label id=label>Limite Alcanzado</label> ');
+            $("#items_container").append('<label id=label>Limite Alcanzado</label> ');
             $('#btAdd').attr('class', 'btn');
             $('#btAdd').attr('disabled', 'disabled');
              document.getElementById("contador").value = iCnt;
