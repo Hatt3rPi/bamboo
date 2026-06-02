@@ -234,7 +234,7 @@ p{text-wrap:pretty}
 .marquee__track{display:flex;align-items:center;gap:clamp(36px,6vw,72px);width:max-content;animation:scroll 38s linear infinite}
 .marquee:hover .marquee__track{animation-play-state:paused}
 @keyframes scroll{to{transform:translateX(-50%)}}
-.marquee img{height:52px;width:auto;object-fit:contain;filter:grayscale(1);opacity:.72;transition:filter .3s,opacity .3s}
+.marquee img{height:72px;width:auto;object-fit:contain;filter:grayscale(1);opacity:.8;transition:filter .3s,opacity .3s}
 .marquee img:hover{filter:grayscale(0);opacity:1}
 
 /* ============================================================ VALUE / POR QUÉ */
