@@ -304,7 +304,7 @@ require_once 'layout.php';
 
       <!-- Modal Buscar RUT (fuera del grid) -->
       <div class="modal fade" id="modal_cliente" tabindex="-1" role="dialog" aria-labelledby="modal_text_cliente" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title" id="modal_text_cliente">Buscar RUT</h5>
@@ -1155,11 +1155,12 @@ var tabla_clientes = $('#listado_clientes').DataTable({
             "orderable": false,
             "data": "rut",
             "render": function(data, type, full, meta) {
-                // Pasa rut Y nombre de ESTA fila (hay clientes con rut duplicado;
-                // buscar el nombre por rut tomaría el de otra fila).
-                return '<button type="button" onclick="seleccion_rut(' +
-                    JSON.stringify(String(full.rut)) + ',' + JSON.stringify(String(full.nombre || '')) +
-                    ')" class="btn btn-bamboo btn-sm">Seleccionar</button>';
+                // rut y nombre de ESTA fila van en data-attributes (un onclick con
+                // JSON.stringify rompía el atributo por las comillas dobles). El
+                // handler delegado .bb-sel-rut llama seleccion_rut con esos valores.
+                function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+                return '<button type="button" class="btn btn-bamboo btn-sm bb-sel-rut" ' +
+                    'data-rut="' + esc(full.rut) + '" data-nombre="' + esc(full.nombre) + '">Seleccionar</button>';
             }
         },
         {
@@ -1186,6 +1187,10 @@ var tabla_clientes = $('#listado_clientes').DataTable({
         {
             "targets": [5],
             "searchable": false
+        },
+        {
+            "targets": [0, 1],
+            "className": "text-nowrap"
         }
     ],
     "order": [
@@ -1215,6 +1220,10 @@ var tabla_clientes = $('#listado_clientes').DataTable({
 // reajustar anchos de columnas para que el header y las filas queden alineados.
 $('#modal_cliente').on('shown.bs.modal', function () {
     tabla_clientes.columns.adjust();
+});
+// Handler delegado del botón "Seleccionar" — lee rut/nombre de la fila exacta.
+$('#listado_clientes tbody').on('click', '.bb-sel-rut', function () {
+    seleccion_rut(this.getAttribute('data-rut') || '', this.getAttribute('data-nombre') || '');
 });
 var origen = '';
 var item='';
