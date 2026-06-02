@@ -7,7 +7,7 @@
   <div class="container">
     <div class="footer__grid">
       <div class="footer__brand">
-        <img src="/assets/img/logo-2.png" alt="Bamboo Seguros — asesoría y confianza" width="180" height="64">
+        <img src="/assets/img/logo-2.png" alt="Bamboo Seguros — asesoría y confianza" width="79" height="64">
         <p>Corredora de seguros independiente en Chile. Comparamos entre las principales aseguradoras del país para que asegures lo que más quieres, con confianza y sin costo de asesoría.</p>
         <div class="footer__social">
           <?php if ($SITE['instagram']): ?><a href="<?= e($SITE['instagram']) ?>" aria-label="Instagram" target="_blank" rel="noopener"><?= bb_icon('instagram') ?></a><?php endif; ?>

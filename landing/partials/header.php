@@ -12,7 +12,7 @@ $navlinks = [
   <div class="container">
     <nav class="nav" aria-label="Principal">
       <a href="/" class="nav__brand" aria-label="Bamboo Seguros — Inicio">
-        <img src="/assets/img/logo.png" alt="Bamboo Seguros" width="160" height="42">
+        <img src="/assets/img/logo.png" alt="Bamboo Seguros" width="74" height="60">
       </a>
 
       <ul class="nav__links">
@@ -50,7 +50,7 @@ $navlinks = [
   <div class="mobile-drawer__bd" data-drawer-close></div>
   <div class="mobile-drawer__panel" role="dialog" aria-modal="true" aria-label="Menú">
     <div class="mobile-drawer__top">
-      <img src="/assets/img/logo.png" alt="Bamboo Seguros" width="150" height="40">
+      <img src="/assets/img/logo.png" alt="Bamboo Seguros" width="49" height="40">
       <button type="button" class="modal__close" data-drawer-close aria-label="Cerrar menú"><?= bb_icon('close') ?></button>
     </div>
     <nav aria-label="Menú móvil">

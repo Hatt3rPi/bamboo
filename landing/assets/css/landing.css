@@ -147,9 +147,9 @@ p{text-wrap:pretty}
   border-bottom:1px solid transparent;transition:box-shadow .3s,border-color .3s,background .3s;
 }
 .site-header.is-stuck{border-bottom-color:var(--line);box-shadow:0 4px 20px rgb(31 40 34/.05)}
-.nav{display:flex;align-items:center;gap:24px;height:72px}
+.nav{display:flex;align-items:center;gap:24px;height:84px}
 .nav__brand{display:flex;align-items:center;gap:10px;margin-right:auto}
-.nav__brand img{height:42px;width:auto}
+.nav__brand img{height:60px;width:auto}
 .nav__links{display:flex;align-items:center;gap:4px}
 .nav__links a{
   padding:8px 14px;border-radius:var(--r-pill);font-size:var(--step--1);font-weight:500;
