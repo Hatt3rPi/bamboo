@@ -5,6 +5,17 @@
  * Toggle via DB_ENGINE en .env (mysql|pgsql)
  */
 
+/* ── Visualización de errores (centralizado) ─────────────────────────────
+   db.php se carga en CADA request vía config.php. Apagar la IMPRESIÓN de
+   warnings/notices replica el entorno de producción (display_errors Off) y
+   evita que aparezcan "pantallas de mensajes PHP" en QA/redesign al guardar.
+   NO toca error_reporting: los warnings siguen yendo al log del servidor.
+   En consola (CLI, scripts de infra) se respeta la config del entorno. */
+if (PHP_SAPI !== 'cli') {
+    @ini_set('display_errors', '0');
+    @ini_set('display_startup_errors', '0');
+}
+
 function db_connect() {
     $engine = defined('DB_ENGINE') ? DB_ENGINE : 'mysql';
 
