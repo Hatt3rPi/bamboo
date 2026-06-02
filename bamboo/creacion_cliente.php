@@ -273,29 +273,20 @@ function valida_rut_duplicado() {
             },
             dataType: 'JSON',
             success: function(response) {
-
+                // Solo ALERTAR (no bloquear): la decisión de impedir duplicados
+                // la define la usuaria. Avisamos a quién(es) ya está registrado.
                 if (response.resultado == 'duplicado') {
-                    var r = confirm(
-                        "El rut que acabas de ingresar ya se encuentra en la base de datos. ¿Deseas ver la información asociada al rut?"
-                    );
-                    if (r == true) {
-                        $.redirect('/bamboo/listado_clientes.php', {
-                            'busqueda': rut_sin_dv
-                        }, 'post');
-
-                    } else {
-                        location.href =
-                            "http://gestionipn.cl/bamboo/creacion_cliente.php";
-                        $.notify({
-                            // options
-                            message: 'Se han limpiado los valores del formulario'
-                        }, {
-                            // settings
-                            type: 'info'
-                        });
-                    }
+                    var nombres = (response.nombres || []).filter(Boolean).join(', ');
+                    var msg = '⚠️ El RUT ingresado ya está registrado' +
+                              (nombres ? ' a: <strong>' + nombres + '</strong>' : ' a otro cliente') + '.';
+                    $.notify({
+                        message: msg
+                    }, {
+                        type: 'warning',
+                        delay: 8000,
+                        allow_html: true
+                    });
                 }
-
             }
 
         });
