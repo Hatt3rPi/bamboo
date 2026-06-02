@@ -35,8 +35,10 @@ RewriteRule ^seguros-apv\.php$ /seguros/apv [R=301,L]
 RewriteRule ^seguros-ingenieria\.php$ /seguros/ingenieria [R=301,L]
 RewriteRule ^seguros-administrador\.php$ /seguros/rc-administradores [R=301,L]
 
-# ---- URLs limpias: redirigir *.php externo a sin extensión (excepto /backend/) ----
-RewriteCond %{REQUEST_URI} !^/backend/
+# ---- URLs limpias: redirigir *.php externo a sin extensión ----
+# Excluir el portal co-alojado (/backend, /bamboo, /bambooQA, /vendor): quitarles
+# el .php rompería sus POST/AJAX (un 301 convierte POST en GET).
+RewriteCond %{REQUEST_URI} !^/(backend|bamboo|bambooQA|vendor)/
 RewriteCond %{THE_REQUEST} \s/+([^.\s?]+)\.php[\s?] [NC]
 RewriteRule ^ /%1 [R=301,L]
 
