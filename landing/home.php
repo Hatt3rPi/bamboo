@@ -186,8 +186,7 @@ require __DIR__ . '/partials/head.php';
     <div class="about">
       <div class="about__photo reveal">
         <div class="ph">
-          <!-- TODO: reemplazar por foto profesional de Adriana (4:5). Mientras, fallback de marca. -->
-          <div class="ph-fallback"><?= bb_icon('leaf') ?><div class="brand-font" style="font-size:var(--step-1);color:var(--bamboo-700)">Adriana Sandoval</div></div>
+          <img src="/assets/img/adriana.png" alt="Adriana Sandoval, corredora de seguros de Bamboo" width="512" height="512">
         </div>
         <div class="about__exp"><b>+30</b><span>años de experiencia</span></div>
       </div>
