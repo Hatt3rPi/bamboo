@@ -5,9 +5,14 @@ Options -Indexes +FollowSymLinks
 DirectoryIndex index.php
 RewriteEngine On
 
-# ---- Canonical: forzar HTTPS + www ----
-RewriteCond %{HTTPS} off [OR]
-RewriteCond %{HTTP_HOST} !^www\. [NC]
+# ---- Canonical: forzar HTTPS + www SOLO en el dominio de producción ----
+# (no aplica en subdominios de staging tipo *.customware.cl, así no se rompe el preview)
+# Producción por HTTP -> HTTPS www
+RewriteCond %{HTTP_HOST} (^|\.)bambooseguros\.cl$ [NC]
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://www.bambooseguros.cl%{REQUEST_URI} [R=301,L]
+# Producción apex (sin www) -> www
+RewriteCond %{HTTP_HOST} ^bambooseguros\.cl$ [NC]
 RewriteRule ^ https://www.bambooseguros.cl%{REQUEST_URI} [R=301,L]
 
 # ---- Sitemap dinámico servido como /sitemap.xml ----
