@@ -36,7 +36,7 @@ $items_sql = "SELECT a.numero_poliza,
     ) ORDER BY a.numero_item) as items_json,
     string_agg(COALESCE(' - ' || a.patente_ubicacion, ''), '' ORDER BY a.numero_item) as consolidado_patentes
     FROM items a
-    LEFT JOIN clientes c ON a.rut_asegurado = c.rut_sin_dv AND c.rut_sin_dv IS NOT NULL
+    LEFT JOIN clientes c ON c.id = (SELECT MAX(c2.id) FROM clientes c2 WHERE c2.rut_sin_dv = a.rut_asegurado AND c2.rut_sin_dv IS NOT NULL)
     LEFT JOIN polizas_2 p ON a.numero_poliza = p.numero_poliza
     GROUP BY a.numero_poliza";
 $items_result = db_query($link, $items_sql);
@@ -121,7 +121,7 @@ $sql = "SELECT a.numero_poliza, a.estado, a.tipo_propuesta, a.moneda_poliza,
     a.id as id_poliza, b.id as \"idP\", b.grupo, b.referido,
     a.fech_cancela, a.motivo_cancela
     FROM polizas_2 a
-    LEFT JOIN clientes b ON a.rut_proponente = b.rut_sin_dv AND b.rut_sin_dv IS NOT NULL
+    LEFT JOIN clientes b ON b.id = (SELECT MAX(b2.id) FROM clientes b2 WHERE b2.rut_sin_dv = a.rut_proponente AND b2.rut_sin_dv IS NOT NULL)
     WHERE a.estado <> 'Rechazado'";
 $resultado = db_query($link, $sql);
 

@@ -36,7 +36,7 @@ $sql = "SELECT s.id, s.numero_siniestro, s.numero_poliza, s.ramo, s.tipo_siniest
     COALESCE(sp.pendientes_compania, 0)   as pendientes_compania,
     COALESCE(sp.pendientes_taller, 0)     as pendientes_taller
 FROM siniestros s
-LEFT JOIN clientes c ON s.rut_asegurado = c.rut_sin_dv AND c.rut_sin_dv IS NOT NULL
+LEFT JOIN clientes c ON c.id = (SELECT MAX(c2.id) FROM clientes c2 WHERE c2.rut_sin_dv = s.rut_asegurado AND c2.rut_sin_dv IS NOT NULL)
 LEFT JOIN polizas_2 p ON s.id_poliza = p.id
 LEFT JOIN (
     SELECT id_siniestro,

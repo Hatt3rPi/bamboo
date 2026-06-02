@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST["accion"]) && isset($_
                                    CONCAT_WS(' ', c.nombre_cliente, c.apellido_paterno, c.apellido_materno) AS nombre_cliente,
                                    c.rut_sin_dv, c.dv, c.telefono, c.correo
                             FROM polizas_2 p
-                            LEFT JOIN clientes c ON p.rut_proponente = c.rut_sin_dv
+                            LEFT JOIN clientes c ON c.id = (SELECT MAX(c2.id) FROM clientes c2 WHERE c2.rut_sin_dv = p.rut_proponente AND c2.rut_sin_dv IS NOT NULL)
                             WHERE p.id = '$id_poliza_param'
                             LIMIT 1");
     while ($row = db_fetch_object($res)) {
