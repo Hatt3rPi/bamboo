@@ -47,11 +47,117 @@ function db_connect() {
     }
 }
 
+/* ── Conversión '' → NULL para columnas no-texto (PostgreSQL) ─────────────
+   MySQL acepta '' en columnas date/numeric (lo trata como 0/NULL); PostgreSQL
+   lo rechaza ("invalid input syntax for type date: """). Estas funciones
+   detectan, en INSERT/UPDATE, los valores '' que caen en columnas de tipo
+   date/timestamp/numeric/integer/etc y los convierten a NULL — sin tocar
+   columnas de texto (varchar/text), que sí aceptan ''. Defensivo: si el SQL
+   no calza con el patrón esperado, se devuelve intacto. */
+
+function bb_pg_typed_cols($link, $table) {
+    static $cache = array();
+    $t = strtolower($table);
+    if (array_key_exists($t, $cache)) { return $cache[$t]; }
+    $safe = preg_replace('/[^a-z0-9_]/', '', $t);
+    $cols = array();
+    $r = @pg_query($link, "SELECT lower(column_name) AS c FROM information_schema.columns WHERE table_schema='public' AND lower(table_name)='" . $safe . "' AND data_type IN ('date','timestamp without time zone','timestamp with time zone','time without time zone','numeric','integer','bigint','smallint','double precision','real','boolean')");
+    if ($r) { while ($row = pg_fetch_assoc($r)) { $cols[$row['c']] = true; } }
+    $cache[$t] = $cols;
+    return $cols;
+}
+
+// Split de una lista de valores SQL respetando comillas simples (y escapes \' y '').
+function bb_split_sql_values($s) {
+    $vals = array(); $cur = ''; $inStr = false; $n = strlen($s); $depth = 0;
+    for ($i = 0; $i < $n; $i++) {
+        $ch = $s[$i];
+        if ($inStr) {
+            if ($ch === '\\' && $i + 1 < $n) { $cur .= $ch . $s[$i + 1]; $i++; continue; }
+            if ($ch === "'") {
+                if ($i + 1 < $n && $s[$i + 1] === "'") { $cur .= "''"; $i++; continue; } // '' escapada
+                $inStr = false; $cur .= $ch; continue;
+            }
+            $cur .= $ch; continue;
+        }
+        if ($ch === "'") { $inStr = true; $cur .= $ch; continue; }
+        if ($ch === '(') { $depth++; $cur .= $ch; continue; }
+        if ($ch === ')') { $depth--; $cur .= $ch; continue; }
+        if ($ch === ',' && $depth === 0) { $vals[] = $cur; $cur = ''; continue; }
+        $cur .= $ch;
+    }
+    $vals[] = $cur;
+    return $vals;
+}
+
+// Encuentra el índice del ')' que cierra el '(' abierto en $open (respetando strings).
+function bb_find_matching_paren($s, $open) {
+    $depth = 1; $inStr = false; $n = strlen($s);
+    for ($i = $open; $i < $n; $i++) {
+        $ch = $s[$i];
+        if ($inStr) {
+            if ($ch === '\\') { $i++; continue; }
+            if ($ch === "'") {
+                if ($i + 1 < $n && $s[$i + 1] === "'") { $i++; continue; }
+                $inStr = false;
+            }
+            continue;
+        }
+        if ($ch === "'") { $inStr = true; continue; }
+        if ($ch === '(') { $depth++; continue; }
+        if ($ch === ')') { $depth--; if ($depth === 0) { return $i; } }
+    }
+    return false;
+}
+
+function bb_pg_nullify_empty($link, $sql) {
+    // INSERT INTO <tabla> (cols) VALUES (vals) [resto]
+    if (preg_match('/\bINSERT\s+INTO\s+"?(\w+)"?\s*\(/is', $sql, $m, PREG_OFFSET_CAPTURE)) {
+        $table = $m[1][0];
+        $typed = bb_pg_typed_cols($link, $table);
+        if (!$typed) { return $sql; }
+        $colsOpen = $m[0][1] + strlen($m[0][0]);           // posición tras '(' de columnas
+        $colsClose = bb_find_matching_paren($sql, $colsOpen);
+        if ($colsClose === false) { return $sql; }
+        $colsRaw = substr($sql, $colsOpen, $colsClose - $colsOpen);
+        if (!preg_match('/\bVALUES\s*\(/is', $sql, $vm, PREG_OFFSET_CAPTURE, $colsClose)) { return $sql; }
+        $valsOpen = $vm[0][1] + strlen($vm[0][0]);
+        $valsClose = bb_find_matching_paren($sql, $valsOpen);
+        if ($valsClose === false) { return $sql; }
+        $valsRaw = substr($sql, $valsOpen, $valsClose - $valsOpen);
+
+        $cols = array();
+        foreach (explode(',', $colsRaw) as $c) { $cols[] = strtolower(trim($c, " \t\r\n\"")); }
+        $vals = bb_split_sql_values($valsRaw);
+        if (count($cols) !== count($vals)) { return $sql; }   // no calza: no tocar
+
+        $changed = false;
+        foreach ($cols as $i => $c) {
+            if (isset($typed[$c]) && trim($vals[$i]) === "''") { $vals[$i] = ' NULL'; $changed = true; }
+        }
+        if (!$changed) { return $sql; }
+        return substr($sql, 0, $valsOpen) . implode(',', $vals) . substr($sql, $valsClose);
+    }
+
+    // UPDATE <tabla> SET ... col = '' ...  → col = NULL (solo cols tipadas)
+    if (preg_match('/\bUPDATE\s+"?(\w+)"?\s+SET\b/is', $sql, $um)) {
+        $typed = bb_pg_typed_cols($link, $um[1]);
+        if (!$typed) { return $sql; }
+        foreach (array_keys($typed) as $c) {
+            $sql = preg_replace('/\b' . preg_quote($c, '/') . '\s*=\s*\'\'(?=\s*(,|;|$|WHERE\b))/i', $c . ' = NULL', $sql);
+        }
+        return $sql;
+    }
+
+    return $sql;
+}
+
 function db_query($link, $sql) {
     $engine = defined('DB_ENGINE') ? DB_ENGINE : 'mysql';
 
     if ($engine === 'pgsql') {
         $sql = sql_translate($sql);
+        $sql = bb_pg_nullify_empty($link, $sql);
         $result = pg_query($link, $sql);
         if ($result === false) {
             $err = pg_last_error($link);
@@ -210,6 +316,11 @@ function db_prepare_and_execute($link, $sql, $types, $params) {
 function sql_translate($sql) {
     // Eliminar backticks
     $sql = str_replace('`', '', $sql);
+
+    // MySQL "ON DUPLICATE KEY UPDATE ..." → PostgreSQL "ON CONFLICT DO NOTHING".
+    // Estas tablas no tienen un índice único de upsert; en creación los registros
+    // son nuevos, así que DO NOTHING evita el error de sintaxis MySQL en Postgres.
+    $sql = preg_replace('/\bON\s+DUPLICATE\s+KEY\s+UPDATE\b[^;]*/is', 'ON CONFLICT DO NOTHING', $sql);
 
     // SET @rownum=0 → ignorar (no-op en PG)
     if (preg_match('/^\s*SET\s+@/i', $sql)) {
