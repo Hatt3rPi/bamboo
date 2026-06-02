@@ -44,7 +44,22 @@ h4 { font-size: var(--text-lg); }
   padding: 20px 16px;
   border-right: 1px solid var(--bamboo-800);
   position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  display: flex; flex-direction: column;
 }
+
+/* Pie del sidebar — versión del deploy, anclada abajo */
+.bb-sidebar-footer {
+  margin-top: auto;
+  padding: 14px 12px 4px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; line-height: 1.3;
+  color: rgba(255,255,255,.45);
+}
+.bb-sidebar-footer i { opacity: .6; }
+.bb-sidebar-footer b { color: rgba(255,255,255,.7); font-family: var(--font-mono); font-weight: 500; }
+.app-shell.collapsed .bb-sidebar-footer span { display: none; }
+.app-shell.collapsed .bb-sidebar-footer { justify-content: center; }
 .bb-sidebar .brand {
   display: flex; align-items: center; gap: 10px;
   padding: 6px 8px 18px; margin-bottom: 12px;

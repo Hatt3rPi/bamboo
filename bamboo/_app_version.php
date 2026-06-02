@@ -19,3 +19,17 @@ function bb_app_version() {
     }
     return (string) $v;
 }
+
+/* Etiqueta legible (fecha/hora del deploy en hora de Chile) para mostrar
+   en el sidebar. No altera el timezone global del request. */
+function bb_app_version_label() {
+    $v = (int) bb_app_version();
+    if ($v <= 0) { return ''; }
+    try {
+        $dt = new DateTime('@' . $v);
+        $dt->setTimezone(new DateTimeZone('America/Santiago'));
+        return $dt->format('d-m-Y H:i');
+    } catch (Exception $e) {
+        return '';
+    }
+}

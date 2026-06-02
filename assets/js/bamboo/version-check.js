@@ -113,22 +113,32 @@
     barShown = true;
     var bar = document.createElement('div');
     bar.id = 'bb-update-bar';
-    bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:19000;background:#2e3b30;' +
-      'color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px;justify-content:center;' +
-      'font-size:14px;box-shadow:0 -2px 12px rgba(0,0,0,.2)';
+    // Ámbar/dorado (earth) — distinto del verde del resto de la app, bien visible.
+    bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:19000;' +
+      'background:linear-gradient(90deg,#b5832e,#8a6515);color:#fff;' +
+      'padding:14px 22px;display:flex;align-items:center;gap:18px;justify-content:center;' +
+      'font-size:15px;box-shadow:0 -4px 22px rgba(0,0,0,.32);border-top:3px solid #e0b256;' +
+      'transform:translateY(110%);transition:transform .35s cubic-bezier(.2,.7,.2,1)';
     bar.innerHTML =
-      '<span><strong>Hay una nueva versión disponible.</strong> Actualizá para tener los últimos cambios.</span>' +
-      '<button type="button" id="bb-update-now">Actualizar</button>' +
+      '<span style="font-size:20px;line-height:1">🔔</span>' +
+      '<span><strong style="font-size:15px">¡Hay una nueva versión disponible!</strong> ' +
+      'Actualizá para tener los últimos cambios (se conserva lo que estás trabajando).</span>' +
+      '<button type="button" id="bb-update-now">Actualizar ahora</button>' +
       '<button type="button" id="bb-update-later">Después</button>';
     document.body.appendChild(bar);
 
     var bNow = document.getElementById('bb-update-now');
     var bLater = document.getElementById('bb-update-later');
-    bNow.style.cssText = 'background:#fff;color:#2e3b30;border:0;border-radius:6px;padding:7px 18px;font-weight:600;cursor:pointer';
-    bLater.style.cssText = 'background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:6px;padding:7px 14px;cursor:pointer';
+    bNow.style.cssText = 'background:#fff;color:#8a6515;border:0;border-radius:7px;padding:9px 20px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.2)';
+    bLater.style.cssText = 'background:transparent;color:#fff;border:1px solid rgba(255,255,255,.55);border-radius:7px;padding:9px 16px;font-size:14px;cursor:pointer';
 
     bNow.onclick = function () { saveDraft(); location.reload(); };
     bLater.onclick = function () { if (bar.parentNode) bar.parentNode.removeChild(bar); barShown = false; };
+
+    // Animación de entrada (slide-up).
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { bar.style.transform = 'translateY(0)'; });
+    });
   }
 
   // ---------- Polling ----------

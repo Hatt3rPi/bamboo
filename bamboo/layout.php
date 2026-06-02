@@ -109,6 +109,11 @@ function bb_nav_class($id, $active) {
     <a href="/bamboo/admin_email_templates.php" class="<?= bb_nav_class('correos', $page_active) ?>">
       <i class="fas fa-envelope"></i><span>Correos</span>
     </a>
+
+    <div class="bb-sidebar-footer">
+      <i class="fas fa-code-branch"></i>
+      <span>Versión<br><b><?= htmlspecialchars(bb_app_version_label()) ?></b></span>
+    </div>
   </aside>
 
   <!-- ================ CONTENT COLUMN ================ -->
