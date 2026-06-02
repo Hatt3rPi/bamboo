@@ -2,7 +2,10 @@
 # BAMBOO SEGUROS · LANDING · .htaccess (Apache / LiteSpeed)
 # ============================================================
 Options -Indexes +FollowSymLinks
-DirectoryIndex index.php
+# La home de la landing es home.php (NO index.php). Así, aunque deploy_redesign.php
+# deje el index.php del portal en la raíz, "/" sigue sirviendo la landing.
+# En /bamboo, /backend, etc. no existe home.php → cae a su index.php normal.
+DirectoryIndex home.php index.php
 RewriteEngine On
 
 # ---- Canonical: forzar HTTPS + www SOLO en el dominio de producción ----
