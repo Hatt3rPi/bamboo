@@ -157,9 +157,11 @@ p{text-wrap:pretty}
 }
 .nav__links a:hover{background:var(--bamboo-50);color:var(--bamboo-700)}
 .nav__cta{display:flex;align-items:center;gap:10px}
-.nav__login{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:var(--r-pill);font-size:var(--step--1);font-weight:600;color:var(--bamboo-700);border:1px solid var(--line-strong);transition:background .2s,border-color .2s}
-.nav__login:hover{background:var(--bamboo-50);border-color:var(--bamboo-300)}
-.nav__login .bb-ic{width:17px;height:17px;color:var(--bamboo-600)}
+/* Acceso al portal: discreto (es para el staff, no un CTA de cliente) */
+.nav__login{display:inline-flex;align-items:center;gap:6px;padding:8px 6px;font-size:var(--step--1);font-weight:500;color:var(--fg-subtle);transition:color .2s}
+.nav__login:hover{color:var(--bamboo-700)}
+.nav__login .bb-ic{width:15px;height:15px;color:var(--fg-subtle)}
+.nav__login:hover .bb-ic{color:var(--bamboo-600)}
 .drawer-login{display:flex;align-items:center;gap:9px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line);color:var(--fg-muted);font-weight:600;font-size:var(--step--1)}
 .drawer-login .bb-ic{width:18px;height:18px;color:var(--bamboo-600)}
 .drawer-login:hover{color:var(--bamboo-700)}
@@ -232,7 +234,7 @@ p{text-wrap:pretty}
 .marquee__track{display:flex;align-items:center;gap:clamp(36px,6vw,72px);width:max-content;animation:scroll 38s linear infinite}
 .marquee:hover .marquee__track{animation-play-state:paused}
 @keyframes scroll{to{transform:translateX(-50%)}}
-.marquee img{height:38px;width:auto;object-fit:contain;filter:grayscale(1);opacity:.62;transition:filter .3s,opacity .3s}
+.marquee img{height:52px;width:auto;object-fit:contain;filter:grayscale(1);opacity:.72;transition:filter .3s,opacity .3s}
 .marquee img:hover{filter:grayscale(0);opacity:1}
 
 /* ============================================================ VALUE / POR QUÉ */
