@@ -42,7 +42,7 @@ $SITE = [
     'area_served'   => 'Chile',
 
     // ---- Regulación ----
-    'cmf_reg'       => '',                      // TODO N° de inscripción CMF (vacío = se muestra sin número)
+    'cmf_reg'       => '8404',                  // Reg. Auxiliares del Comercio de Seguros CMF (Cert. N° 585, 10-oct-2018)
     'cmf_url'       => 'https://www.cmfchile.cl/portal/principal/613/w3-channel.html',
 
     // ---- Redes (solo LinkedIn por decisión del cliente) ----

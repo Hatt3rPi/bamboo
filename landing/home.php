@@ -206,7 +206,7 @@ require __DIR__ . '/partials/head.php';
 </section>
 
 <!-- ============ TESTIMONIOS ============ -->
-<!-- TODO: reemplazar por testimonios reales (idealmente reseñas de Google) que Adriana pueda recopilar. -->
+<!-- Testimonios reales de clientes (recopilados por Adriana, jun-2026). -->
 <section class="section section--cream" id="testimonios">
   <div class="container">
     <div class="section-head section-head--center reveal">
@@ -216,9 +216,13 @@ require __DIR__ . '/partials/head.php';
     <div class="tcards">
       <?php
       $tst = [
-        ['t' => 'Me explicaron todo con paciencia y consiguieron un mejor precio que el que tenía. Por fin entiendo mi póliza.', 'n' => 'Carolina M.', 'r' => 'Seguro de auto', 'a' => 'C'],
-        ['t' => 'Necesitaba pólizas de garantía para una licitación —un trámite que pide harto— y me guiaron en cada paso hasta dejarlo impecable.', 'n' => 'Rodrigo P.', 'r' => 'Garantía · Pyme', 'a' => 'R'],
-        ['t' => 'Tuve un siniestro y Adriana me acompañó en todo el proceso. Sentí que tenía a alguien de mi lado.', 'n' => 'Francisca L.', 'r' => 'Seguro de hogar', 'a' => 'F'],
+        ['t' => 'Después de 2 años estoy muy contento de contar con una agente que vela por mis intereses. Su servicio es mucho más que informar: sugiere acciones, muestra el camino, advierte riesgos y está siempre disponible. Una profesional muy responsable, que cuida verdaderamente a sus clientes.', 'n' => 'Bernardo Andrews', 'r' => 'Cliente', 'a' => 'B'],
+        ['t' => 'Elegí Bamboo especialmente por la cordialidad y eficiencia en la atención de Adriana, tanto en el acompañamiento al elegir una compañía —por sus coberturas y costos— como en la orientación al momento de un siniestro. 100% recomendable.', 'n' => 'Alex Ambler', 'r' => 'Cliente', 'a' => 'A'],
+        ['t' => 'La atención de Adriana me ha brindado la confianza y tranquilidad que busco al tomar decisiones importantes. Destaco su asesoría personalizada, su profundo conocimiento de la industria y su compromiso por encontrar las mejores alternativas. La recomiendo totalmente.', 'n' => 'Anamorella Peñalba', 'r' => 'Cliente', 'a' => 'A'],
+        ['t' => 'Prefiero la atención de Adriana por dos razones: su reacción inmediata y proactiva ante los siniestros, y su respuesta en tiempo real y detallada a cada consulta que le hago como cliente.', 'n' => 'Roberto de Groote', 'r' => 'Cliente', 'a' => 'R'],
+        ['t' => 'Asesorarme por Adriana ha sido una experiencia excelente. Destaco su compromiso, su impecable gestión, muy resolutiva, y la tranquilidad de saber que estás en manos de expertos.', 'n' => 'Marcela Jara', 'r' => 'Cliente', 'a' => 'M'],
+        ['t' => 'Excelente asesoramiento en la búsqueda de mejores alternativas en el mercado asegurador, con un servicio de post venta cercano y ágil.', 'n' => 'César Naranjo', 'r' => 'Cliente', 'a' => 'C'],
+        ['t' => 'Me siento «segura» por el excelente servicio y asesoría.', 'n' => 'Gabriela Darvasi', 'r' => 'Cliente', 'a' => 'G'],
       ];
       foreach ($tst as $i => $t): ?>
         <article class="tcard reveal" data-d="<?= $i + 1 ?>">

@@ -317,7 +317,7 @@ p{text-wrap:pretty}
 .tag .bb-ic{width:17px;height:17px;color:var(--earth-600)}
 
 /* ============================================================ TESTIMONIOS */
-.tcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:20px}
+.tcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
 .tcard{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:28px}
 .tcard__stars{display:flex;gap:2px;color:var(--earth-600);margin-bottom:14px}
 .tcard__stars .bb-ic{width:18px;height:18px;fill:currentColor}
