@@ -52,6 +52,23 @@ require_once 'layout.php';
 
 <div class="card">
   <div class="card-body">
+    <style>
+      /* Títulos con wrap (multilínea) y centrados verticalmente, para que las
+         cabeceras largas no desordenen la tabla. */
+      #listado_propuesta_polizas thead th {
+        white-space: normal !important;
+        word-break: break-word;
+        vertical-align: middle;
+      }
+      /* Columnas Estado / Nro propuesta / Fecha envío / Vigencia inicio /
+         Vigencia término con ancho uniforme. */
+      #listado_propuesta_polizas thead th.bb-col-fija,
+      #listado_propuesta_polizas tbody td.bb-col-fija {
+        width: 130px;
+        min-width: 130px;
+        max-width: 130px;
+      }
+    </style>
     <table class="display w-100" id="listado_propuesta_polizas">
       <thead>
         <tr>
@@ -98,6 +115,7 @@ $(document).ready(function() {
     table = $('#listado_propuesta_polizas').DataTable({
         "ajax": "/bamboo/backend/propuesta_polizas/busqueda_listado_propuesta_polizas.php",
         "scrollX": true,
+        "autoWidth": false,
         "searchPanes":{
             "columns":[2,3,13,14],
         },
@@ -168,8 +186,13 @@ $(document).ready(function() {
         //          "search": {
         //          "search": "abarca"
         //          },
-        "columnDefs": 
+        "columnDefs":
         [
+            {
+                "targets": [1, 2, 3, 4, 5],
+                "width": "130px",
+                "className": "bb-col-fija"
+            },
             {
                 "targets": [8, 9 , 10],
                 "visible": false,
