@@ -223,6 +223,7 @@ require __DIR__ . '/partials/head.php';
         ['t' => 'Asesorarme por Adriana ha sido una experiencia excelente. Destaco su compromiso, su impecable gestión, muy resolutiva, y la tranquilidad de saber que estás en manos de expertos.', 'n' => 'Marcela Jara', 'r' => 'Cliente', 'a' => 'M'],
         ['t' => 'Excelente asesoramiento en la búsqueda de mejores alternativas en el mercado asegurador, con un servicio de post venta cercano y ágil.', 'n' => 'César Naranjo', 'r' => 'Cliente', 'a' => 'C'],
         ['t' => 'Me siento «segura» por el excelente servicio y asesoría.', 'n' => 'Gabriela Darvasi', 'r' => 'Cliente', 'a' => 'G'],
+        ['t' => 'Destaca por su responsabilidad, confianza y atención oportuna.', 'n' => 'Karolina Schachter', 'r' => 'Cliente', 'a' => 'K'],
       ];
       foreach ($tst as $i => $t): ?>
         <article class="tcard reveal" data-d="<?= $i + 1 ?>">
