@@ -67,10 +67,16 @@ require_once 'layout.php';
          Vigencia término con ancho uniforme (header clonado + cuerpo). */
       #listado_propuesta_polizas_wrapper th.bb-col-fija,
       #listado_propuesta_polizas_wrapper td.bb-col-fija {
-        width: 130px !important;
-        min-width: 130px !important;
-        max-width: 130px !important;
+        width: 90px !important;
+        min-width: 90px !important;
+        max-width: 90px !important;
         white-space: normal !important;
+      }
+      /* Proponente: columna más ancha para nombres largos. */
+      #listado_propuesta_polizas_wrapper th.bb-col-proponente,
+      #listado_propuesta_polizas_wrapper td.bb-col-proponente {
+        width: 230px !important;
+        min-width: 230px !important;
       }
     </style>
     <table class="display w-100" id="listado_propuesta_polizas">
@@ -194,8 +200,13 @@ $(document).ready(function() {
         [
             {
                 "targets": [1, 2, 3, 4, 5],
-                "width": "130px",
+                "width": "90px",
                 "className": "bb-col-fija"
+            },
+            {
+                "targets": [11],
+                "width": "230px",
+                "className": "bb-col-proponente"
             },
             {
                 "targets": [8, 9 , 10],
