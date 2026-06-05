@@ -53,20 +53,24 @@ require_once 'layout.php';
 <div class="card">
   <div class="card-body">
     <style>
-      /* Títulos con wrap (multilínea) y centrados verticalmente, para que las
-         cabeceras largas no desordenen la tabla. */
-      #listado_propuesta_polizas thead th {
+      /* OJO: con scrollX, DataTables clona la cabecera a .dataTables_scrollHead
+         y el <table> clonado pierde el id. Por eso targeteamos el _wrapper, que
+         contiene tanto la cabecera clonada como el cuerpo. */
+      /* Títulos con wrap (multilínea) y centrados, para que las cabeceras largas
+         no fuercen columnas anchas. */
+      #listado_propuesta_polizas_wrapper th {
         white-space: normal !important;
         word-break: break-word;
         vertical-align: middle;
       }
       /* Columnas Estado / Nro propuesta / Fecha envío / Vigencia inicio /
-         Vigencia término con ancho uniforme. */
-      #listado_propuesta_polizas thead th.bb-col-fija,
-      #listado_propuesta_polizas tbody td.bb-col-fija {
-        width: 130px;
-        min-width: 130px;
-        max-width: 130px;
+         Vigencia término con ancho uniforme (header clonado + cuerpo). */
+      #listado_propuesta_polizas_wrapper th.bb-col-fija,
+      #listado_propuesta_polizas_wrapper td.bb-col-fija {
+        width: 130px !important;
+        min-width: 130px !important;
+        max-width: 130px !important;
+        white-space: normal !important;
       }
     </style>
     <table class="display w-100" id="listado_propuesta_polizas">
