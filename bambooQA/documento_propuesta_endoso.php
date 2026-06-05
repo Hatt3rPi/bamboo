@@ -15,8 +15,8 @@ $_POST["numero_propuesta"]='E000012';
       db_set_charset($link, 'utf8');
       db_select_db($link, DB_NAME);
       $query = "select a.descripcion_endoso, numero_propuesta_endoso as numero_propuesta,moneda_poliza_endoso, a.compania, a.ramo, a.rut_proponente, a.dv_proponente, b.nombre_cliente, b.telefono, b.correo, b.direccion_personal, b.direccion_laboral,DATE_FORMAT(fecha_ingreso_endoso,'%d-%m-%Y') as fecha_propuesta , DATE_FORMAT(vigencia_inicial,'%d-%m-%Y') as vigencia_inicial, DATE_FORMAT(vigencia_final,'%d-%m-%Y') as vigencia_final, CONCAT(DATEDIFF(vigencia_final,vigencia_inicial),' días') as plazo_vigencia,DATE_FORMAT(fecha_prorroga,'%d-%m-%Y') as fecha_prorroga,  CONCAT_WS(' ',FORMAT(tasa_afecta_endoso, 2, 'de_DE'),'%') as tasa_afecta ,CONCAT_WS(' ',FORMAT(tasa_exenta_endoso, 2, 'de_DE'),'%')as tasa_exenta, CONCAT_WS(' ',FORMAT(prima_neta_afecta, 2, 'de_DE')) as prima_afecta,CONCAT_WS(' ',FORMAT(prima_neta_exenta, 2, 'de_DE')) as prima_exenta, CONCAT_WS(' ',FORMAT(IVA, 2, 'de_DE')) as prima_afecta_iva, CONCAT_WS(' ',FORMAT(prima_total, 2, 'de_DE')) as prima_bruta_anual, 
-            a.comentario_endoso, a.debe_decir, a.dice, a.monto_asegurado_endoso, a.tipo_endoso, a.numero_poliza, count(c.id) as numero_items
-            from propuesta_endosos as a left join clientes as b on a.rut_proponente=b.rut_sin_dv left join items as c on a.numero_poliza=c.numero_poliza where a.numero_propuesta_endoso='".$_POST["numero_propuesta"]."'";
+            a.comentario_endoso, a.debe_decir, a.dice, a.monto_asegurado_endoso, a.tipo_endoso, a.numero_poliza, (select count(*) from items as c where c.numero_poliza=a.numero_poliza) as numero_items
+            from propuesta_endosos as a left join clientes as b on a.rut_proponente=b.rut_sin_dv where a.numero_propuesta_endoso='".$_POST["numero_propuesta"]."'";
       $resultado = db_query($link, $query );
       While( $row = db_fetch_object( $resultado ) ) {
         $comentario_endoso = str_replace( "\r\n", "<br/>", $row->comentario_endoso );

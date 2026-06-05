@@ -17,7 +17,7 @@ $poliza_renovada='';
       $accion_secundaria=$_POST["accion_secundaria"];
       if ($accion_secundaria=='renovar'){
           $poliza_renovada=$_POST["numero_poliza"];
-        $query = "select '' as numero_propuesta, a.id, a.rut_proponente,a.dv_proponente,a.fecha_propuesta, a.vigencia_inicial, a.vigencia_final, a.moneda_poliza, a.compania, a.ramo, a.comentarios_int, a.comentarios_ext, a.vendedor, a.forma_pago, a.valor_cuota, a.nro_cuotas, a.moneda_valor_cuota, a.fecha_primera_cuota, a.porcentaje_comision, count(e.numero_endoso) as numero_endosos from polizas_2 as a left join endosos as e on a.id=e.id_poliza where a.numero_poliza='".$poliza_renovada."'";
+        $query = "select '' as numero_propuesta, a.id, a.rut_proponente,a.dv_proponente,a.fecha_propuesta, a.vigencia_inicial, a.vigencia_final, a.moneda_poliza, a.compania, a.ramo, a.comentarios_int, a.comentarios_ext, a.vendedor, a.forma_pago, a.valor_cuota, a.nro_cuotas, a.moneda_valor_cuota, a.fecha_primera_cuota, a.porcentaje_comision, (select count(*) from endosos as e where e.id_poliza=a.id) as numero_endosos from polizas_2 as a where a.numero_poliza='".$poliza_renovada."'";
         $query_item = "SELECT numero_item, rut_asegurado, dv_asegurado, materia_asegurada, patente_ubicacion, cobertura, deducible, tasa_afecta, tasa_exenta, prima_afecta, prima_exenta, prima_neta, prima_bruta_anual, monto_asegurado,venc_gtia FROM `items` where numero_poliza='".$poliza_renovada."' order by numero_item asc";
 
       }    
@@ -99,7 +99,7 @@ $poliza_renovada='';
       require_once "/home/gestio10/public_html/backend/config.php";
       db_set_charset($link, 'utf8');
       db_select_db($link, DB_NAME);
-      $query = "select a.id, a.numero_poliza,a.numero_propuesta, a.rut_proponente,a.dv_proponente,b.nombre_cliente,a.fecha_propuesta, a.vigencia_inicial, a.vigencia_final, a.moneda_poliza, a.compania, a.ramo, a.comentarios_int, a.comentarios_ext, a.vendedor, a.forma_pago, a.valor_cuota, a.nro_cuotas, a.moneda_valor_cuota, a.fecha_primera_cuota, a.porcentaje_comision, a.comision, a.comision_bruta, a.comision_neta, a.depositado_fecha, a.comision_negativa, a.boleta_negativa, a.numero_boleta, a.fecha_emision_poliza, count(e.numero_endoso) as numero_endosos from polizas_2 as a left join endosos as e on a.id=e.id_poliza left join clientes as b on a.rut_proponente=b.rut_sin_dv where a.numero_poliza='".$_POST["numero_poliza"]."'";
+      $query = "select a.id, a.numero_poliza,a.numero_propuesta, a.rut_proponente,a.dv_proponente,b.nombre_cliente,a.fecha_propuesta, a.vigencia_inicial, a.vigencia_final, a.moneda_poliza, a.compania, a.ramo, a.comentarios_int, a.comentarios_ext, a.vendedor, a.forma_pago, a.valor_cuota, a.nro_cuotas, a.moneda_valor_cuota, a.fecha_primera_cuota, a.porcentaje_comision, a.comision, a.comision_bruta, a.comision_neta, a.depositado_fecha, a.comision_negativa, a.boleta_negativa, a.numero_boleta, a.fecha_emision_poliza, (select count(*) from endosos as e where e.id_poliza=a.id) as numero_endosos from polizas_2 as a left join clientes as b on a.rut_proponente=b.rut_sin_dv where a.numero_poliza='".$_POST["numero_poliza"]."'";
       $resultado = db_query($link, $query );
       While( $row = db_fetch_object( $resultado ) ) {
         $id = $row->id;

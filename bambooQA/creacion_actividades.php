@@ -39,7 +39,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 $tabla_clientes=$tabla_clientes.'<tr><td>'.$num_cliente.'</td><td><input type="checkbox" id="'.$id.'" name="check_cliente" checked disabled></td><td>'.$rut.'</td><td>'.$nombre.'</td><td>'.$telefono.'</td><td>'.$correo.'</td></tr>'."<br>";        
             }
             //poliza
-            $resultado_poliza=db_query($link, 'SELECT id, compania, vigencia_final, numero_poliza, materia_asegurada, patente_ubicacion,cobertura FROM polizas where rut_proponente="'.$rutsindv.'" or rut_asegurado="'.$rutsindv.'"  order by compania, numero_poliza;');
+            $resultado_poliza=db_query($link, "SELECT id, compania, vigencia_final, numero_poliza, materia_asegurada, patente_ubicacion,cobertura FROM polizas where rut_proponente='".$rutsindv."' or rut_asegurado='".$rutsindv."'  order by compania, numero_poliza;");
 
             While($row=db_fetch_object($resultado_poliza))
                 {

@@ -29,16 +29,20 @@ $camino =  $_POST[ "tipo" ];
       $template = estandariza_info( $_POST[ "template" ] );
       $instancia = $_POST[ "instancia" ];
       $ramo = $_POST[ "seguro" ];
-      $verif_combi = db_query($link, 'SELECT COUNT(*) AS contador FROM template_correos WHERE producto="' . $ramo . '" and instancia="' . $instancia . '"' );
+      // PG trata "..." como identificador, no como string: usar comilla simple y escapar ' duplicandola (vale en MySQL y PG)
+      $template_sql = str_replace("'", "''", $template);
+      $ramo_sql = str_replace("'", "''", $ramo);
+      $instancia_sql = str_replace("'", "''", $instancia);
+      $verif_combi = db_query($link, "SELECT COUNT(*) AS contador FROM template_correos WHERE producto='" . $ramo_sql . "' and instancia='" . $instancia_sql . "'" );
       While( $row = db_fetch_object( $verif_combi ) ) {
         $verif = estandariza_info( $row->contador );
       }
       if ( !$verif == 0 ) {
-        $query_template_update='UPDATE template_correos SET template="' . $template . '" where producto="' . $ramo . '" and instancia="' . $instancia . '"' ;
+        $query_template_update="UPDATE template_correos SET template='" . $template_sql . "' where producto='" . $ramo_sql . "' and instancia='" . $instancia_sql . "'" ;
         db_query($link, $query_template_update);
         db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Actualiza template', '".str_replace("'","**",$query_template_update)."','template',null, '".$_SERVER['PHP_SELF']."')");
       } else {
-        $query_template='INSERT INTO template_correos(template, producto, instancia) values ("' . $template . '","' . $ramo . '", "' . $instancia . '");';
+        $query_template="INSERT INTO template_correos(template, producto, instancia) values ('" . $template_sql . "','" . $ramo_sql . "', '" . $instancia_sql . "');";
         db_query($link, $query_template );
         db_query($link, "select trazabilidad('".$_SESSION["username"]."', 'Agrega template', '".str_replace("'","**",$query_template)."','template',null, '".$_SERVER['PHP_SELF']."')");
       }
@@ -46,7 +50,9 @@ $camino =  $_POST[ "tipo" ];
     case "buscar":
       $instancia = $_POST[ "instancia" ];
       $ramo = $_POST[ "seguro" ];
-      $resultado_template = db_query($link, 'SELECT template FROM template_correos where producto="' . $ramo . '" and instancia="' . $instancia . '"' );
+      $ramo_sql = str_replace("'", "''", $ramo);
+      $instancia_sql = str_replace("'", "''", $instancia);
+      $resultado_template = db_query($link, "SELECT template FROM template_correos where producto='" . $ramo_sql . "' and instancia='" . $instancia_sql . "'" );
       While( $row = db_fetch_object( $resultado_template ) ) {
         $template = estandariza_info( $row->template );
       }

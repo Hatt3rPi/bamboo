@@ -456,6 +456,15 @@ function sql_translate($sql) {
         $sql
     );
 
+    // DATEDIFF(fecha1, fecha2) → (fecha1::date - fecha2::date)
+    // MySQL devuelve la diferencia en días; PG no tiene DATEDIFF y resta dates directamente.
+    // Args simples (columna/función sin comas ni paréntesis anidados), que es como se usa en el portal.
+    $sql = preg_replace(
+        '/DATEDIFF\s*\(\s*([^,()]+?)\s*,\s*([^,()]+?)\s*\)/i',
+        '($1::date - $2::date)',
+        $sql
+    );
+
     // MATCH(cols) AGAINST ('term') → to_tsvector('spanish', cols) @@ plainto_tsquery('spanish', 'term')
     // Se maneja como caso especial en busca_cliente.php
 
