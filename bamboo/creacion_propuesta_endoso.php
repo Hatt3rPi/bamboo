@@ -18,7 +18,9 @@ $numero_propuesta='';
 $camino=$_POST["accion"];
 if ($_SERVER[ "REQUEST_METHOD" ] == "POST" and ($_POST["accion"] == 'crea_propuesta_endoso_web' or $_POST["accion"] == 'crea_propuesta_endoso_manual'))
 {
-        $query = "select distinct a.numero_poliza, a.compania, a.id as id_poliza,a.ramo, a.vigencia_inicial, a.vigencia_final, CONCAT_WS('-',a.rut_proponente, a.dv_proponente) as rut_proponente, CONCAT_WS(' ',b.nombre_cliente, b.apellido_paterno, ' ', b.apellido_materno) as nombre_proponente, FORMAT(sum(c.prima_afecta), 2, 'de_DE') as total_prima_afecta, FORMAT(sum(c.prima_exenta), 2, 'de_DE') as total_prima_exenta, FORMAT(sum(c.prima_neta), 2, 'de_DE') as total_prima_neta, FORMAT(sum(c.prima_bruta_anual), 2, 'de_DE') as total_prima_bruta, FORMAT(sum(c.monto_asegurado), 2, 'de_DE') as total_monto_asegurado, a.moneda_poliza from polizas_2 as a left join clientes as b on a.rut_proponente=b.rut_sin_dv left join items as c on a.numero_poliza=c.numero_poliza where a.id='".$_POST["numero_poliza"]."' group by a.numero_poliza, a.compania, a.id, a.ramo, a.vigencia_inicial, a.vigencia_final, a.rut_proponente, a.dv_proponente, b.nombre_cliente, b.apellido_paterno, b.apellido_materno, a.moneda_poliza";
+        // Precarga de datos de la póliza para el endoso. SELECT simple (sin sum/items/FORMAT/GROUP BY):
+        // los totales no se usan en este formulario y la versión con agregados fallaba en PostgreSQL.
+        $query = "select a.numero_poliza, a.compania, a.id as id_poliza, a.ramo, a.vigencia_inicial, a.vigencia_final, CONCAT_WS('-',a.rut_proponente, a.dv_proponente) as rut_proponente, CONCAT_WS(' ',b.nombre_cliente, b.apellido_paterno, ' ', b.apellido_materno) as nombre_proponente, a.moneda_poliza from polizas_2 as a left join clientes as b on a.rut_proponente=b.rut_sin_dv where a.id='".$_POST["numero_poliza"]."' limit 1";
         $resultado = db_query($link, $query );
         While( $row = db_fetch_object( $resultado ) ) {
             $numero_poliza = $row->numero_poliza;
@@ -29,11 +31,6 @@ if ($_SERVER[ "REQUEST_METHOD" ] == "POST" and ($_POST["accion"] == 'crea_propue
             $vigencia_final = $row->vigencia_final;
             $rut_proponente = $row->rut_proponente;
             $nombre_proponente = $row->nombre_proponente;
-            $total_prima_afecta = $row->total_prima_afecta;
-            $total_prima_exenta = $row->total_prima_exenta;
-            $total_prima_neta = $row->total_prima_neta;
-            $total_prima_bruta = $row->total_prima_bruta;
-            $total_monto_asegurado = $row->total_monto_asegurado;
             $moneda_poliza = $row->moneda_poliza;
         }
 }
