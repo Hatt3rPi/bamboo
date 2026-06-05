@@ -178,6 +178,9 @@ p{text-wrap:pretty}
   padding:14px;width:min(520px,86vw);display:grid;grid-template-columns:1fr 1fr;gap:4px;
   opacity:0;visibility:hidden;transition:opacity .2s,transform .2s var(--ease);
 }
+/* Puente invisible que cubre el gap de 10px botón↔panel: sin él, al cruzar el hueco
+   se pierde el :hover y el menú se cierra antes de llegar a las opciones. */
+.nav__panel::before{content:"";position:absolute;left:0;right:0;top:-18px;height:18px}
 .nav__has-menu:hover .nav__panel,.nav__has-menu:focus-within .nav__panel{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
 .nav__panel a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-sm);font-size:var(--step--1)}
 .nav__panel a .bb-ic{width:20px;height:20px;color:var(--bamboo-500);flex:none}
