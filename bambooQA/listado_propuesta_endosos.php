@@ -110,6 +110,8 @@ $buscar= estandariza_info($_POST["busqueda"]);
 var table_propuestas_endosos = ''
 $(document).ready(function() {
     table_propuestas_endosos = $('#listado_propuesta_endosos').DataTable({
+        "stateSave": true,    // recuerda página/búsqueda/orden al volver (issue #1)
+        "stateDuration": -1,  // sessionStorage: se limpia al cerrar la pestaña
         "ajax": "/bambooQA/backend/endosos/busqueda_listado_propuesta_endoso.php",
         "scrollX": true,
         "dom": 'Pfrtip',

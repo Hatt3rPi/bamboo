@@ -21,10 +21,17 @@ así que el seguimiento vive aquí (versionado). Estado: `abierto` | `en progres
 - Los 6 botones "Volver al listado" de las páginas de creación/edición (endoso,
   siniestro, propuesta de póliza, actividad, cliente, template póliza) usan `bbVolver`.
 
+**Réplica a bambooQA (parcial — 16-jun-2026).** `bambooQA/` es la versión antigua
+(sin rediseñar): cada listado trae su `<head>` inline, usa `header2.php`, no tiene
+`layout_end.php` ni botones "Volver al listado", y su "volver" es otro paradigma
+(`volveratras()` → `retrocede()` server-side + `$.redirect` POST). Se replicó **solo
+el `stateSave`** a sus 8 listados (núcleo del fix; funciona con cualquier mecanismo de
+volver). NO se portó `bbVolver`/botones: alto esfuerzo en código que no se despliega en
+redesign y que quedará obsoleto cuando redesign sea master.
+
 **Pendiente.**
 - Validar en redesign.customware.cl el caso reportado (pólizas pág. 5 → crear
   endoso → Volver → pág. 5) y el botón "atrás" del navegador.
-- Replicar a `bambooQA/` (no es espejo perfecto de `bamboo/`; verificar estructura).
 - El scroll vertical de la ventana no se restaura (stateSave cubre la paginación,
   que es el caso del reporte); evaluar si hace falta.
 

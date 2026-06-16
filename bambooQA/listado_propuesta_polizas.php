@@ -118,6 +118,8 @@ $buscar= estandariza_info($_POST["busqueda"]);
 var table = ''
 $(document).ready(function() {
     table = $('#listado_propuesta_polizas').DataTable({
+        "stateSave": true,    // recuerda página/búsqueda/orden al volver (issue #1)
+        "stateDuration": -1,  // sessionStorage: se limpia al cerrar la pestaña
         "ajax": "/bambooQA/backend/propuesta_polizas/busqueda_listado_propuesta_polizas.php",
         "scrollX": true,
         "searchPanes":{
