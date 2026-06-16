@@ -226,8 +226,8 @@ require_once 'layout.php';
     <h1>Nueva tarea</h1>
     <div class="subtitle">Asignar una actividad a clientes, pólizas o propuestas</div>
   </div>
-  <a href="listado_tareas.php" class="btn btn-secondary">
-    <i class="fas fa-arrow-left mr-2"></i>Volver al listado
+  <a href="listado_tareas.php" class="btn btn-secondary" onclick="return bbVolver('listado_tareas.php')">
+    <i class="fas fa-arrow-left mr-2"></i>Volver
   </a>
 </div>
 

@@ -158,8 +158,8 @@ require_once 'layout.php';
     <h1><?= htmlspecialchars($breadcrumb_main) ?></h1>
     <div class="subtitle">Datos del siniestro, bienes afectados, liquidador y taller</div>
   </div>
-  <a href="listado_siniestros.php" class="btn btn-secondary">
-    <i class="fas fa-arrow-left mr-2"></i>Volver al listado
+  <a href="listado_siniestros.php" class="btn btn-secondary" onclick="return bbVolver('listado_siniestros.php')">
+    <i class="fas fa-arrow-left mr-2"></i>Volver
   </a>
 </div>
 

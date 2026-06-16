@@ -115,8 +115,8 @@ require_once 'layout.php';
     <h1>Propuesta de endoso</h1>
     <div class="subtitle">Creación manual o vía propuesta web</div>
   </div>
-  <a href="listado_propuesta_endosos.php" class="btn btn-secondary">
-    <i class="fas fa-arrow-left mr-2"></i>Volver al listado
+  <a href="listado_propuesta_endosos.php" class="btn btn-secondary" onclick="return bbVolver('listado_propuesta_endosos.php')">
+    <i class="fas fa-arrow-left mr-2"></i>Volver
   </a>
 </div>
 

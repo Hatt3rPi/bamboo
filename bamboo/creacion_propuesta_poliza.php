@@ -200,8 +200,8 @@ require_once 'layout.php';
     <h1>Propuesta de póliza</h1>
     <div class="subtitle">Crear o editar una propuesta de póliza</div>
   </div>
-  <a href="listado_propuesta_polizas.php" class="btn btn-secondary">
-    <i class="fas fa-arrow-left mr-2"></i>Volver al listado
+  <a href="listado_propuesta_polizas.php" class="btn btn-secondary" onclick="return bbVolver('listado_propuesta_polizas.php')">
+    <i class="fas fa-arrow-left mr-2"></i>Volver
   </a>
 </div>
 

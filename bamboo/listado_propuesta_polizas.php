@@ -123,6 +123,8 @@ require_once 'layout.php';
 var table = ''
 $(document).ready(function() {
     table = $('#listado_propuesta_polizas').DataTable({
+        "stateSave": true,    // recuerda página/búsqueda/orden al volver (issue #1)
+        "stateDuration": -1,  // sessionStorage: se limpia al cerrar la pestaña
         "ajax": "/bamboo/backend/propuesta_polizas/busqueda_listado_propuesta_polizas.php",
         "scrollX": true,
         "autoWidth": false,

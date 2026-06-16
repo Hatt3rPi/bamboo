@@ -17,6 +17,23 @@
 <script src="/assets/js/bamboo/legacy.js"></script>
 <script src="/assets/js/bamboo/version-check.js"></script>
 
+<!-- "Volver" inteligente (issue #1): regresa a la página de origen conservando su
+     estado (bfcache del navegador + stateSave de DataTables). Si no hay un origen
+     interno en el historial, navega al fallback que se le pase. -->
+<script>
+  window.bbVolver = function (fallbackUrl) {
+    try {
+      var ref = document.referrer;
+      if (ref && new URL(ref).origin === window.location.origin && window.history.length > 1) {
+        window.history.back();
+        return false;
+      }
+    } catch (e) {}
+    if (fallbackUrl) window.location.href = fallbackUrl;
+    return false;
+  };
+</script>
+
 <!-- Sidebar collapse persistence -->
 <script>
   (function () {

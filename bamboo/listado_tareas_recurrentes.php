@@ -124,7 +124,8 @@ $(document).ready(function() {
         document.getElementById("acciones_multiples").style.display = "none";
     });
     table_tareas = $('#tareas_completas').DataTable({
-
+        "stateSave": true,    // recuerda página/búsqueda/orden al volver (issue #1)
+        "stateDuration": -1,  // sessionStorage: se limpia al cerrar la pestaña
         "ajax": "/bamboo/backend/actividades/busqueda_listado_tareas_recurrentes.php",
         "scrollX": true,
 

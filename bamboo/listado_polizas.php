@@ -114,6 +114,8 @@ require_once 'layout.php';
 var table = ''
 $(document).ready(function() {
     table = $('#listado_polizas').DataTable({
+        "stateSave": true,    // recuerda página/búsqueda/orden al volver (issue #1)
+        "stateDuration": -1,  // sessionStorage: se limpia al cerrar la pestaña
         "ajax": "/bamboo/backend/polizas/busqueda_listado_polizas.php",
         "scrollX": true,
         "searchPanes":{

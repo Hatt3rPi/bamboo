@@ -285,8 +285,8 @@ require_once 'layout.php';
     <h1>Plantilla de envío de póliza</h1>
     <div class="subtitle">Generación de correo para envío / reenvío de póliza al asegurado</div>
   </div>
-  <a href="listado_polizas.php" class="btn btn-secondary">
-    <i class="fas fa-arrow-left mr-2"></i>Volver al listado
+  <a href="listado_polizas.php" class="btn btn-secondary" onclick="return bbVolver('listado_polizas.php')">
+    <i class="fas fa-arrow-left mr-2"></i>Volver
   </a>
 </div>
 
