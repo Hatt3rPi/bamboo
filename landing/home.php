@@ -216,6 +216,7 @@ require __DIR__ . '/partials/head.php';
     <div class="tcards">
       <?php
       $tst = [
+        ['t' => 'Llevamos más de 10 años trabajando con Bamboo y su gerente Adriana Sandoval. Destacamos su gran profesionalismo, sus prontas respuestas y su experiencia para gestionar las mejores opciones de seguros, siempre orientando a la cobertura que mejor se acomoda a las expectativas de nuestra empresa.', 'n' => 'Rubén Córdoba Pizarro', 'r' => 'Gerente General · Rescate Familiar', 'a' => 'R'],
         ['t' => 'Después de 2 años estoy muy contento de contar con una agente que vela por mis intereses. Su servicio es mucho más que informar: sugiere acciones, muestra el camino, advierte riesgos y está siempre disponible. Una profesional muy responsable, que cuida verdaderamente a sus clientes.', 'n' => 'Bernardo Andrews', 'r' => 'Cliente', 'a' => 'B'],
         ['t' => 'Elegí Bamboo especialmente por la cordialidad y eficiencia en la atención de Adriana, tanto en el acompañamiento al elegir una compañía —por sus coberturas y costos— como en la orientación al momento de un siniestro. 100% recomendable.', 'n' => 'Alex Ambler', 'r' => 'Cliente', 'a' => 'A'],
         ['t' => 'La atención de Adriana me ha brindado la confianza y tranquilidad que busco al tomar decisiones importantes. Destaco su asesoría personalizada, su profundo conocimiento de la industria y su compromiso por encontrar las mejores alternativas. La recomiendo totalmente.', 'n' => 'Anamorella Peñalba', 'r' => 'Cliente', 'a' => 'A'],
