@@ -7,9 +7,26 @@ así que el seguimiento vive aquí (versionado). Estado: `abierto` | `en progres
 
 ## #1 — Navegación "volver": preservar el estado del listado (página, filtros, scroll)
 
-- **Estado:** abierto
+- **Estado:** en validación (implementado en `bamboo/`, desplegado a redesign.customware.cl — 16-jun-2026)
 - **Prioridad:** media-alta (UX de trabajo diario)
 - **Reportado por:** Adriana — 16-jun-2026
+
+**Implementado (commit 9f1ae0e).**
+- `stateSave: true` + `stateDuration: -1` (sessionStorage) en los 8 listados
+  DataTables → recuerdan página, búsqueda y orden durante la sesión.
+- Helper global `bbVolver(fallbackUrl)` en `layout_end.php`: el botón "Volver"
+  usa `history.back()` para regresar a la página de origen (donde el listado se
+  restaura con su estado vía bfcache/stateSave); si no hay origen interno en el
+  historial, navega al fallback.
+- Los 6 botones "Volver al listado" de las páginas de creación/edición (endoso,
+  siniestro, propuesta de póliza, actividad, cliente, template póliza) usan `bbVolver`.
+
+**Pendiente.**
+- Validar en redesign.customware.cl el caso reportado (pólizas pág. 5 → crear
+  endoso → Volver → pág. 5) y el botón "atrás" del navegador.
+- Replicar a `bambooQA/` (no es espejo perfecto de `bamboo/`; verificar estructura).
+- El scroll vertical de la ventana no se restaura (stateSave cubre la paginación,
+  que es el caso del reporte); evaluar si hace falta.
 
 **Problema.** Al entrar a una acción desde un listado y luego volver, se pierde la
 posición. Ejemplo: estoy en el *listado de pólizas, página 5*, hago clic en *crear
