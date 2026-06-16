@@ -5,7 +5,7 @@
   <div class="modal__backdrop" data-modal-close></div>
   <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="qfTitle">
     <div class="modal__head">
-      <h3 id="qfTitle">Cotiza tu seguro gratis</h3>
+      <h3 id="qfTitle">Cotiza tu seguro</h3>
       <button type="button" class="modal__close" data-modal-close aria-label="Cerrar"><?= bb_icon('close') ?></button>
     </div>
 

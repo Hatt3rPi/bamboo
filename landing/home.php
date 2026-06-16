@@ -38,12 +38,12 @@ require __DIR__ . '/partials/head.php';
         <h1 class="reveal" data-d="1">El seguro correcto, explicado <span class="ink-underline">en simple</span> y elegido para ti</h1>
         <p class="hero__lead reveal" data-d="2">Comparamos entre más de 15 aseguradoras para encontrar tu mejor opción. Asesoría personalizada, independiente y <strong>sin costo para ti</strong>.</p>
         <div class="hero__cta reveal" data-d="3">
-          <button type="button" class="btn btn--primary btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotiza tu seguro gratis</button>
+          <button type="button" class="btn btn--primary btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotiza tu seguro</button>
           <a href="<?= e(wa_link()) ?>" class="btn btn--ghost btn--lg" target="_blank" rel="noopener"><?= bb_icon('whatsapp') ?> Hablar con Adriana</a>
         </div>
         <ul class="hero__trust reveal" data-d="4">
           <li><?= bb_icon('check-circle') ?> Respuesta el mismo día</li>
-          <li><?= bb_icon('check-circle') ?> Asesoría 100% gratis</li>
+          <li><?= bb_icon('check-circle') ?> Asesoría sin costo para ti</li>
           <li><?= bb_icon('shield-check') ?> Registrada en la CMF</li>
         </ul>
       </div>
@@ -100,7 +100,7 @@ require __DIR__ . '/partials/head.php';
       <article class="vcard reveal" data-d="2">
         <div class="vcard__ic"><?= bb_icon('shield-check') ?></div>
         <h3>Sin costo para ti</h3>
-        <p>Nuestra asesoría es 100% gratis. Tú solo le pagas la prima a la compañía; nunca le pagas a Bamboo. La comisión la paga la aseguradora.</p>
+        <p>Nuestra asesoría no tiene costo para ti. Tú solo le pagas la prima a la compañía; nunca le pagas a Bamboo. La comisión la paga la aseguradora.</p>
       </article>
       <article class="vcard reveal" data-d="3">
         <div class="vcard__ic"><?= bb_icon('handshake') ?></div>
@@ -266,12 +266,12 @@ require __DIR__ . '/partials/head.php';
       <h2>¿Listo para asegurar lo que más te importa?</h2>
       <p>Cotiza con Bamboo en minutos. Te respondemos el mismo día, comparamos por ti y te asesoramos sin costo.</p>
       <div class="cta-final__btns">
-        <button type="button" class="btn btn--on-dark btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotizar gratis</button>
+        <button type="button" class="btn btn--on-dark btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotizar</button>
         <a href="<?= e(wa_link()) ?>" class="btn btn--whatsapp btn--lg" target="_blank" rel="noopener"><?= bb_icon('whatsapp') ?> Cotizar por WhatsApp</a>
       </div>
       <p class="cta-final__alt">También puedes escribirnos: <a href="tel:+<?= e($SITE['phone_e164']) ?>"><?= e($SITE['phone_display']) ?></a> · <a href="mailto:<?= e($SITE['email']) ?>"><?= e($SITE['email']) ?></a></p>
       <div class="cta-final__micro">
-        <span><?= bb_icon('check') ?> Asesoría gratis</span>
+        <span><?= bb_icon('check') ?> Asesoría sin costo</span>
         <span><?= bb_icon('check') ?> Sin compromiso</span>
         <span><?= bb_icon('shield-check') ?> Corredora registrada en la CMF</span>
       </div>

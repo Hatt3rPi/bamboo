@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__ . '/data/config.php';
 $page = [
-  'title' => 'Cómo Operamos | Asesoría de Seguros Gratis y Personalizada — Bamboo',
-  'desc' => 'Te escuchamos, comparamos las mejores compañías y contratas tu póliza. La asesoría de Bamboo es gratis: solo pagas la prima a la aseguradora. Descubre cómo trabajamos.',
+  'title' => 'Cómo Operamos | Asesoría de Seguros Personalizada — Bamboo',
+  'desc' => 'Te escuchamos, comparamos las mejores compañías y contratas tu póliza. La asesoría de Bamboo no tiene costo para ti: solo pagas la prima a la aseguradora. Descubre cómo trabajamos.',
   'canonical' => '/como-operamos',
   'active' => 'como',
   'schema' => [[
@@ -57,7 +57,7 @@ require __DIR__ . '/partials/head.php';
     <h2 style="margin-top:14px">No te dejamos solo frente a la compañía</h2>
     <p class="lead" style="margin-top:18px">En la eventualidad de un siniestro, tendrás a Bamboo cerca de ti: te orientamos y damos seguimiento al caso hasta que sea indemnizado, según corresponda. Esa es la verdadera diferencia de contar con una corredora que te conoce.</p>
     <div class="cta-final__btns" style="justify-content:center;margin-top:32px">
-      <button type="button" class="btn btn--primary btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotizar gratis</button>
+      <button type="button" class="btn btn--primary btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotizar</button>
       <a href="<?= e(wa_link()) ?>" class="btn btn--ghost btn--lg" target="_blank" rel="noopener"><?= bb_icon('whatsapp') ?> Hablar por WhatsApp</a>
     </div>
   </div>

@@ -97,7 +97,7 @@ require __DIR__ . '/partials/head.php';
     <h2>Conversemos sobre lo que quieres proteger</h2>
     <p>Cuéntanos qué necesitas y te asesoramos sin costo, con la experiencia de quien conoce el mercado por dentro.</p>
     <div class="cta-final__btns">
-      <button type="button" class="btn btn--on-dark btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotizar gratis</button>
+      <button type="button" class="btn btn--on-dark btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotizar</button>
       <a href="<?= e(wa_link()) ?>" class="btn btn--whatsapp btn--lg" target="_blank" rel="noopener"><?= bb_icon('whatsapp') ?> Hablar por WhatsApp</a>
     </div>
   </div>

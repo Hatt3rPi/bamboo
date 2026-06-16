@@ -12,7 +12,7 @@ $faqs = [
   ['q' => '¿Cuáles son las obligaciones de un corredor de seguros?', 'a' => 'Según la CMF, el corredor debe: asesorar a quien desea asegurarse, ofrecer la cobertura más conveniente a sus necesidades, informar las condiciones del contrato y sus modificaciones, asistir al cliente durante la vigencia de la póliza y al momento de un siniestro, y remitir las primas y documentos a la compañía.'],
   ['q' => '¿Qué diferencia hay entre un corredor y un agente de seguros?', 'a' => 'La diferencia clave es la independencia. Un agente representa y vende los productos de una sola aseguradora. Un corredor es independiente: trabaja con múltiples compañías y elige la mejor opción para el cliente sin conflicto de interés. Ambos deben inscribirse en la CMF, pero el corredor ofrece comparación imparcial.'],
   ['q' => '¿Cómo elegir el mejor corredor de seguros?', 'a' => 'Verifica que esté inscrito en el Registro de la CMF, que sea independiente (que compare varias aseguradoras), que entregue asesoría sin costo para ti y que ofrezca acompañamiento en caso de siniestro. Pide referencias y confirma que te explique con claridad coberturas, deducibles y exclusiones antes de contratar.'],
-  ['q' => '¿Qué necesito para cotizar un seguro con Bamboo?', 'a' => 'Indícanos el tipo de seguro (auto, hogar, vida, viaje, etc.) y los datos básicos del bien o persona a asegurar. Para auto, el RUT del titular y los datos del vehículo. Puedes solicitar tu cotización gratis por WhatsApp al ' . $SITE['phone_display'] . ' o al correo ' . $SITE['email'] . '.'],
+  ['q' => '¿Qué necesito para cotizar un seguro con Bamboo?', 'a' => 'Indícanos el tipo de seguro (auto, hogar, vida, viaje, etc.) y los datos básicos del bien o persona a asegurar. Para auto, el RUT del titular y los datos del vehículo. Puedes solicitar tu cotización por WhatsApp al ' . $SITE['phone_display'] . ' o al correo ' . $SITE['email'] . '.'],
   ['q' => '¿Atiende Bamboo a empresas y pymes o solo a personas?', 'a' => 'Atendemos tanto a personas como a empresas y pymes en Chile. Para pymes ofrecemos seguros de responsabilidad civil, incendio, transporte, garantía, ingeniería y RC de administradores; para personas, seguros de vehículo, vida, viaje, accidentes personales, hogar y APV. La asesoría es personalizada, independiente y sin costo.'],
 ];
 
@@ -59,7 +59,7 @@ require __DIR__ . '/partials/head.php';
     <h2>¿Te quedó alguna duda?</h2>
     <p>Conversemos. Te respondemos el mismo día hábil, sin compromiso.</p>
     <div class="cta-final__btns">
-      <button type="button" class="btn btn--on-dark btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotizar gratis</button>
+      <button type="button" class="btn btn--on-dark btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotizar</button>
       <a href="<?= e(wa_link()) ?>" class="btn btn--whatsapp btn--lg" target="_blank" rel="noopener"><?= bb_icon('whatsapp') ?> Escríbenos por WhatsApp</a>
     </div>
   </div>

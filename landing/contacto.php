@@ -2,7 +2,7 @@
 require_once __DIR__ . '/data/config.php';
 $page = [
   'title' => 'Contacto | Cotiza tu Seguro por WhatsApp o Teléfono — Bamboo Seguros',
-  'desc' => 'Habla con Bamboo Seguros: cotiza por WhatsApp al ' . $SITE['phone_display'] . ' o escríbenos a ' . $SITE['email'] . '. Asesoría de seguros gratis en todo Chile.',
+  'desc' => 'Habla con Bamboo Seguros: cotiza por WhatsApp al ' . $SITE['phone_display'] . ' o escríbenos a ' . $SITE['email'] . '. Asesoría de seguros sin costo en todo Chile.',
   'canonical' => '/contacto',
   'active' => 'contacto',
   'schema' => [[
@@ -44,7 +44,7 @@ require __DIR__ . '/partials/head.php';
       <a href="#" role="button" class="vcard reveal" data-d="4" data-cotizar style="border:1.5px solid var(--bamboo-300);background:var(--bamboo-50)">
         <div class="vcard__ic" style="background:var(--bamboo-600);color:#fff"><?= bb_icon('chat') ?></div>
         <h3>Formulario de cotización</h3><p>Completa 3 pasos simples y armamos tu propuesta.</p>
-        <span class="svc__go">Cotizar gratis <?= bb_icon('arrow') ?></span>
+        <span class="svc__go">Cotizar <?= bb_icon('arrow') ?></span>
       </a>
     </div>
 
