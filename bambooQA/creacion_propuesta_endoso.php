@@ -169,6 +169,7 @@ elseif($_SERVER[ "REQUEST_METHOD" ] == "POST" and $_POST["accion"] == 'crear_end
                     <option value="Endoso Prorroga">Endoso Prorroga</option>
                     <option value="Endoso Sin Movimiento">Endoso Sin Movimiento</option>
                     <option value="Endoso de Cancelación">Endoso de Cancelación</option>
+                    <option value="Endoso de Rehabilitación">Endoso de Rehabilitación</option>
                 </select>
                 <div class="invalid-feedback">No puedes dejar este campo en blanco</div>
             </div>

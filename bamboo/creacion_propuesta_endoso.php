@@ -173,6 +173,7 @@ require_once 'layout.php';
                     <option value="Endoso Sin Movimiento">Endoso Sin Movimiento</option>
                      <option value="Endoso de Anulación">Endoso de Anulación</option>
                     <option value="Endoso de Cancelación">Endoso de Cancelación</option>
+                    <option value="Endoso de Rehabilitación">Endoso de Rehabilitación</option>
                 </select>
                 <div class="invalid-feedback">No puedes dejar este campo en blanco</div>
             </div>
