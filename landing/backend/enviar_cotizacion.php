@@ -9,6 +9,10 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../data/config.php';
 
+// El servidor corre en UTC; mostramos la fecha del lead en hora local de Chile.
+// America/Santiago maneja el cambio invierno/verano (UTC-4 / UTC-3) automáticamente.
+date_default_timezone_set('America/Santiago');
+
 function fail(string $msg, int $code = 400): void {
     http_response_code($code);
     echo json_encode(['ok' => false, 'error' => $msg], JSON_UNESCAPED_UNICODE);
