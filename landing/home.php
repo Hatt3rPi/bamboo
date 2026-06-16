@@ -222,7 +222,7 @@ require __DIR__ . '/partials/head.php';
         ['t' => 'La atención de Adriana me ha brindado la confianza y tranquilidad que busco al tomar decisiones importantes. Destaco su asesoría personalizada, su profundo conocimiento de la industria y su compromiso por encontrar las mejores alternativas. La recomiendo totalmente.', 'n' => 'Anamorella Peñalba', 'r' => 'Cliente', 'a' => 'A'],
         ['t' => 'Prefiero la atención de Adriana por dos razones: su reacción inmediata y proactiva ante los siniestros, y su respuesta en tiempo real y detallada a cada consulta que le hago como cliente.', 'n' => 'Roberto de Groote', 'r' => 'Cliente', 'a' => 'R'],
         ['t' => 'Asesorarme por Adriana ha sido una experiencia excelente. Destaco su compromiso, su impecable gestión, muy resolutiva, y la tranquilidad de saber que estás en manos de expertos.', 'n' => 'Marcela Jara', 'r' => 'Cliente', 'a' => 'M'],
-        ['t' => 'Excelente asesoramiento en la búsqueda de mejores alternativas en el mercado asegurador, con un servicio de post venta cercano y ágil.', 'n' => 'César Naranjo', 'r' => 'Cliente', 'a' => 'C'],
+        ['t' => 'Excelente asesoramiento en la búsqueda de mejores alternativas en el mercado asegurador, con un servicio de post venta cercano y ágil.', 'n' => 'César Naranjo Ramírez', 'r' => 'Cliente', 'a' => 'C'],
         ['t' => 'Me siento «segura» por el excelente servicio y asesoría.', 'n' => 'Gabriela Darvasi', 'r' => 'Cliente', 'a' => 'G'],
         ['t' => 'Destaca por su responsabilidad, confianza y atención oportuna.', 'n' => 'Karolina Schachter', 'r' => 'Cliente', 'a' => 'K'],
       ];
