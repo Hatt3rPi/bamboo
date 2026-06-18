@@ -84,7 +84,7 @@ require __DIR__ . '/../partials/head.php';
         <p><?= e($s['para_quien']) ?> Como corredora independiente, cotizamos este seguro con las aseguradoras del mercado chileno y te asesoramos sin costo para que elijas con toda la información.</p>
 
         <h3>¿Por qué cotizarlo con Bamboo?</h3>
-        <p>Comparamos coberturas, deducibles y precios entre las principales compañías por ti. Te explicamos todo en simple y, si algún día tienes un siniestro, te acompañamos en el proceso hasta que quede resuelto. Y nuestra asesoría no te cuesta nada: solo le pagas la prima a la compañía.</p>
+        <p>Comparamos coberturas, deducibles y precios entre las principales compañías por ti. Te explicamos todo en simple y, si algún día tienes un siniestro, te acompañamos en el proceso hasta que quede resuelto.</p>
 
         <?php if (!empty($s['faqs'])): ?>
           <h2 style="margin-top:44px">Preguntas frecuentes</h2>

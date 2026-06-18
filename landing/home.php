@@ -165,7 +165,7 @@ require __DIR__ . '/partials/head.php';
   </div>
 </section>
 
-<!-- Banda "Nuestra asesoría no te cuesta nada" eliminada a pedido de Adriana (jun-2026). -->
+<!-- Banda de costo de asesoría eliminada a pedido de Adriana (jun-2026). -->
 
 <!-- ============ SOBRE ADRIANA ============ -->
 <section class="section" id="nosotros-preview">
