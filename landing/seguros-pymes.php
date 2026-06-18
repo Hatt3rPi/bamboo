@@ -3,7 +3,7 @@ require_once __DIR__ . '/data/config.php';
 require_once __DIR__ . '/data/seguros.php';
 $page = [
   'title' => 'Seguros para Pymes y Empresas en Chile | Bamboo Seguros',
-  'desc' => 'Seguros para pymes: responsabilidad civil, incendio, transporte, garantía e ingeniería. Una corredora independiente que compara +15 aseguradoras por ti, sin costo. Cotiza.',
+  'desc' => 'Seguros para pymes: responsabilidad civil, incendio, transporte, garantía e ingeniería. Una corredora independiente que compara por ti las aseguradoras del mercado, sin costo. Cotiza.',
   'canonical' => '/seguros-pymes',
   'active' => 'servicios',
   'schema' => [[
@@ -19,7 +19,7 @@ require __DIR__ . '/partials/head.php';
     <nav class="crumbs reveal" aria-label="Ruta"><a href="/">Inicio</a><span class="sep">/</span><span>Seguros para Pymes</span></nav>
     <span class="eyebrow reveal"><?= bb_icon('briefcase') ?> Empresas y Pymes</span>
     <h1 class="reveal" data-d="1">Protege tu empresa con quien conoce el mercado por dentro</h1>
-    <p class="lead reveal" data-d="2">Responsabilidad civil, garantías para licitaciones, transporte de carga, ingeniería y más. Comparamos entre más de 15 aseguradoras y te asesoramos sin costo para que tu pyme opere tranquila.</p>
+    <p class="lead reveal" data-d="2">Responsabilidad civil, garantías para licitaciones, transporte de carga, ingeniería y más. Comparamos entre las aseguradoras del mercado y te asesoramos sin costo para que tu pyme opere tranquila.</p>
     <div class="hero__cta reveal" data-d="3" style="margin-top:28px">
       <button type="button" class="btn btn--primary btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotizar para mi empresa</button>
       <a href="<?= e(wa_link('Hola Adriana, quiero cotizar un seguro para mi empresa o pyme.')) ?>" class="btn btn--ghost btn--lg" target="_blank" rel="noopener"><?= bb_icon('whatsapp') ?> WhatsApp</a>
@@ -53,7 +53,7 @@ require __DIR__ . '/partials/head.php';
       <h2>Un aliado, no un proveedor más</h2>
     </div>
     <div class="cards">
-      <article class="vcard reveal" data-d="1"><div class="vcard__ic"><?= bb_icon('compare') ?></div><h3>Comparamos el mercado</h3><p>Más de 15 aseguradoras compitiendo por tu empresa. Tú decides con todas las opciones sobre la mesa.</p></article>
+      <article class="vcard reveal" data-d="1"><div class="vcard__ic"><?= bb_icon('compare') ?></div><h3>Comparamos el mercado</h3><p>Las aseguradoras del mercado compitiendo por tu empresa. Tú decides con todas las opciones sobre la mesa.</p></article>
       <article class="vcard reveal" data-d="2"><div class="vcard__ic"><?= bb_icon('document') ?></div><h3>Garantías ágiles</h3><p>Pólizas de garantía para licitaciones —seriedad de la oferta, fiel cumplimiento— más económicas que la boleta bancaria.</p></article>
       <article class="vcard reveal" data-d="3"><div class="vcard__ic"><?= bb_icon('handshake') ?></div><h3>Acompañamiento real</h3><p>Si tu empresa tiene un siniestro, gestionamos el caso contigo hasta su resolución. Sin costo de asesoría.</p></article>
     </div>

@@ -5,9 +5,9 @@ require_once __DIR__ . '/data/seguros.php';
 /* FAQ del home (también alimenta el schema FAQPage) */
 $home_faqs = [
   ['q' => '¿Cuánto me cuesta la asesoría de Bamboo?', 'a' => 'Nada. Tú solo le pagas la prima a la compañía de seguros, igual que si contrataras directo. Nuestra comisión la paga la aseguradora, así que tienes un experto de tu lado sin gastar un peso de más.'],
-  ['q' => '¿Es lo mismo contratar con Bamboo que directo con la aseguradora?', 'a' => 'El precio es el mismo, pero con Bamboo tienes asesoría independiente, comparación entre más de 15 compañías y acompañamiento si algún día tienes un siniestro. No representamos a una sola marca: trabajamos para ti.'],
+  ['q' => '¿Es lo mismo contratar con Bamboo que directo con la aseguradora?', 'a' => 'El precio es el mismo, pero con Bamboo tienes asesoría independiente, comparación entre las compañías del mercado y acompañamiento si algún día tienes un siniestro. No representamos a una sola marca: trabajamos para ti.'],
   ['q' => '¿Con qué aseguradoras trabajan?', 'a' => 'Con las principales del país: Sura, BCI Seguros, Mapfre, Chubb, HDI, Consorcio, Reale, Renta Nacional, Southbridge y más. Comparamos entre todas para encontrar tu mejor opción.'],
-  ['q' => '¿Cómo cotizo un seguro?', 'a' => 'Nos escribes por WhatsApp o completas el formulario de cotización, te hacemos unas pocas preguntas y te enviamos una propuesta clara con coberturas y precios. Sin compromiso.'],
+  ['q' => '¿Cómo cotizo un seguro?', 'a' => 'Puedes escribirnos por WhatsApp o completar el formulario de cotización, te hacemos unas pocas preguntas y te enviamos una propuesta clara con coberturas y precios. Sin compromiso.'],
   ['q' => '¿Qué pasa si tengo un siniestro?', 'a' => 'Nos avisas a nosotros primero. Te guiamos en todo el proceso con la compañía —orientación y seguimiento del caso— hasta que quede resuelto. No te dejamos solo frente a un call center.'],
   ['q' => '¿Bamboo está regulada?', 'a' => 'Sí. Somos una corredora de seguros inscrita en el Registro de Corredores de la Comisión para el Mercado Financiero (CMF) de Chile, requisito legal para ejercer y garantía de nuestras obligaciones de asesoría.'],
 ];
@@ -22,9 +22,9 @@ $page = [
   'schema' => [],
 ];
 
-$insurers = ['sura','bci','mapfre','chubb','hdi','consorcio','reale','renta','southbridge','chilena','confuturo','unnio','colmena','augustar','coris'];
-$insurer_names = ['sura'=>'Sura','bci'=>'BCI Seguros','mapfre'=>'Mapfre','chubb'=>'Chubb','hdi'=>'HDI','consorcio'=>'Consorcio','reale'=>'Reale','renta'=>'Renta Nacional','southbridge'=>'Southbridge','chilena'=>'Chilena Consolidada','confuturo'=>'Confuturo','unnio'=>'Unnio','colmena'=>'Colmena','augustar'=>'Augustar','coris'=>'Coris'];
-$ext = [];
+$insurers = ['sura','bci','mapfre','chubb','hdi','consorcio','reale','renta','southbridge','zurich','confuturo','unnio','colmena','augustar','coris'];
+$insurer_names = ['sura'=>'Sura','bci'=>'BCI Seguros','mapfre'=>'Mapfre','chubb'=>'Chubb','hdi'=>'HDI','consorcio'=>'Consorcio','reale'=>'Reale','renta'=>'Renta Nacional','southbridge'=>'Southbridge','zurich'=>'Zurich','confuturo'=>'Confuturo','unnio'=>'Unnio','colmena'=>'Colmena','augustar'=>'Augustar','coris'=>'Coris'];
+$ext = ['zurich'=>'svg'];
 
 require __DIR__ . '/partials/head.php';
 ?>
@@ -36,7 +36,7 @@ require __DIR__ . '/partials/head.php';
       <div class="hero__copy">
         <span class="eyebrow hero__eyebrow reveal"><?= bb_icon('leaf') ?> Corredora de seguros · Chile</span>
         <h1 class="reveal" data-d="1">El seguro correcto, explicado <span class="ink-underline">en simple</span> y elegido para ti</h1>
-        <p class="hero__lead reveal" data-d="2">Comparamos entre más de 15 aseguradoras para encontrar tu mejor opción. Asesoría personalizada, independiente y <strong>sin costo para ti</strong>.</p>
+        <p class="hero__lead reveal" data-d="2">Comparamos por ti en el mercado para encontrar tu mejor opción. Asesoría personalizada, independiente y <strong>cercana</strong>.</p>
         <div class="hero__cta reveal" data-d="3">
           <button type="button" class="btn btn--primary btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotiza tu seguro</button>
           <a href="<?= e(wa_link()) ?>" class="btn btn--ghost btn--lg" target="_blank" rel="noopener"><?= bb_icon('whatsapp') ?> Hablar con Adriana</a>
@@ -54,7 +54,7 @@ require __DIR__ . '/partials/head.php';
         <?= bb_icon('leaf', 'hero__leaf hero__leaf--2') ?>
         <div class="hero__card hero__card--1">
           <span class="ic"><?= bb_icon('compare') ?></span>
-          <span><b>+15</b><span>aseguradoras</span></span>
+          <span><b>Comparamos</b><span>por ti</span></span>
         </div>
         <div class="hero__card hero__card--2">
           <span class="ic"><?= bb_icon('clock') ?></span>
@@ -72,7 +72,7 @@ require __DIR__ . '/partials/head.php';
 <!-- ============ ASEGURADORAS ============ -->
 <section class="insurers" aria-label="Compañías con las que trabajamos">
   <div class="container">
-    <p class="insurers__label">Comparamos entre las mejores aseguradoras de Chile · <b>trabajamos con más de 15 compañías</b></p>
+    <p class="insurers__label">Comparamos entre las mejores aseguradoras de Chile <b>para encontrar tu mejor opción</b></p>
   </div>
   <div class="marquee" aria-hidden="true">
     <div class="marquee__track">
@@ -89,13 +89,13 @@ require __DIR__ . '/partials/head.php';
     <div class="section-head section-head--center reveal">
       <span class="eyebrow eyebrow--center">Por qué Bamboo</span>
       <h2>No somos una compañía de seguros.<br>Somos tu corredora.</h2>
-      <p>Trabajamos para ti, no para las aseguradoras. Esa es toda la diferencia.</p>
+      <p>Trabajamos para ti. Esa es toda la diferencia.</p>
     </div>
     <div class="cards">
       <article class="vcard reveal" data-d="1">
         <div class="vcard__ic"><?= bb_icon('compare') ?></div>
         <h3>Asesoría independiente</h3>
-        <p>Comparamos entre más de 15 compañías y te recomendamos lo que de verdad te conviene, no lo que le conviene a una marca. Te lo explicamos en simple, sin letra chica.</p>
+        <p>Comparamos por ti en el mercado y te recomendamos lo que de verdad te conviene. Te lo explicamos en simple.</p>
       </article>
       <article class="vcard reveal" data-d="2">
         <div class="vcard__ic"><?= bb_icon('shield-check') ?></div>
@@ -122,12 +122,12 @@ require __DIR__ . '/partials/head.php';
     <div class="section-head section-head--center reveal">
       <span class="eyebrow eyebrow--center">Cómo trabajamos</span>
       <h2>Cotizar es simple y conversado</h2>
-      <p>Sin formularios eternos. Nos cuentas qué necesitas y nosotros hacemos el trabajo.</p>
+      <p>Nos cuentas qué necesitas y nosotros hacemos el trabajo.</p>
     </div>
     <div class="steps">
       <div class="step reveal" data-d="1"><div class="step__n"></div><div class="step__b"><h3>Cuéntanos qué necesitas</h3><p>Escríbenos por WhatsApp o llámanos. Te hacemos unas pocas preguntas para entender qué quieres proteger.</p></div></div>
-      <div class="step reveal" data-d="2"><div class="step__n"></div><div class="step__b"><h3>Comparamos por ti</h3><p>Revisamos las opciones de más de 15 aseguradoras y armamos una propuesta clara, con coberturas y precios explicados en simple.</p></div></div>
-      <div class="step reveal" data-d="3"><div class="step__n"></div><div class="step__b"><h3>Contratas y te acompañamos</h3><p>Eliges con toda la información sobre la mesa. Nosotros gestionamos todo y quedamos a tu lado para renovaciones, dudas y siniestros.</p></div></div>
+      <div class="step reveal" data-d="2"><div class="step__n"></div><div class="step__b"><h3>Comparamos por ti</h3><p>Revisamos las opciones del mercado y armamos una propuesta clara, con coberturas y precios explicados en simple.</p></div></div>
+      <div class="step reveal" data-d="3"><div class="step__n"></div><div class="step__b"><h3>Contratas y te acompañamos</h3><p>Eliges con la información sobre la mesa. Nosotros gestionamos todo y quedamos a tu lado para renovaciones, dudas y siniestros.</p></div></div>
     </div>
     <div class="steps__cta reveal">
       <button type="button" class="btn btn--primary btn--lg" data-cotizar><?= bb_icon('chat') ?> Empezar ahora</button>
@@ -141,7 +141,7 @@ require __DIR__ . '/partials/head.php';
     <div class="section-head section-head--center reveal">
       <span class="eyebrow eyebrow--center">Seguros</span>
       <h2>Seguros para cada etapa de tu vida y tu negocio</h2>
-      <p>Elige lo que necesitas y cotiza en minutos, sin compromiso.</p>
+      <p>Elige lo que necesitas y cotiza rápidamente.</p>
     </div>
     <div class="reveal" style="text-align:center">
       <div class="segtabs" role="tablist" aria-label="Personas o Pymes" data-segtabs>
@@ -156,7 +156,7 @@ require __DIR__ . '/partials/head.php';
           <a class="svc" href="/seguros/<?= e($s['slug']) ?>">
             <div class="svc__ic"><?= bb_icon($s['icon']) ?></div>
             <h3><?= e($s['nombre']) ?></h3>
-            <p><?= e($s['para_quien']) ?></p>
+            <p><?= e($s['para_quien_' . $seg] ?? $s['para_quien']) ?></p>
             <span class="svc__go">Cotizar <?= bb_icon('arrow') ?></span>
           </a>
         <?php endforeach; ?>
@@ -165,20 +165,7 @@ require __DIR__ . '/partials/head.php';
   </div>
 </section>
 
-<!-- ============ BANDA: SOLO LE PAGAS A LA COMPAÑÍA ============ -->
-<section class="section band">
-  <div class="container">
-    <div class="band__inner reveal">
-      <div class="band__badge"><?= bb_icon('shield-check') ?></div>
-      <div>
-        <span class="eyebrow" style="color:var(--earth-300)">Lo más importante</span>
-        <h2>Nuestra asesoría no te cuesta nada</h2>
-        <p>Tú solo le pagas la prima a la compañía de seguros, igual que si contrataras directo. <strong>Nunca le pagas a Bamboo.</strong> Nuestra comisión la paga la aseguradora, así que tienes un experto de tu lado sin gastar un peso de más —y con la libertad de que siempre buscamos lo mejor para ti, no para una compañía.</p>
-        <span class="band__seal"><?= bb_icon('shield-check') ?> <?= cmf_label() ?></span>
-      </div>
-    </div>
-  </div>
-</section>
+<!-- Banda "Nuestra asesoría no te cuesta nada" eliminada a pedido de Adriana (jun-2026). -->
 
 <!-- ============ SOBRE ADRIANA ============ -->
 <section class="section" id="nosotros-preview">
@@ -192,14 +179,13 @@ require __DIR__ . '/partials/head.php';
       </div>
       <div class="about__copy reveal" data-d="1">
         <span class="eyebrow">Detrás de Bamboo</span>
-        <blockquote>«Creé Bamboo para que contratar un seguro deje de ser un trámite frío y complicado. Te explico todo en simple, comparo por ti entre más de 15 aseguradoras y, si algún día tienes un siniestro, me tienes a mí —no un call center— hasta el final.»</blockquote>
+        <blockquote>«Fundé Bamboo para que contratar un seguro deje de ser un trámite frío y complicado. Te explico todo en simple, comparo por ti en el mercado y, si algún día tienes un siniestro, me tienes a mí —no un call center— hasta el final.»</blockquote>
         <div class="about__sign"><?= e($SITE['founder']) ?><span><?= e($SITE['founder_role']) ?></span></div>
         <div class="about__tags">
           <span class="tag"><?= bb_icon('check') ?> Asesoría independiente</span>
           <span class="tag"><?= bb_icon('shield-check') ?> Registrada en la CMF</span>
           <span class="tag"><?= bb_icon('handshake') ?> Atención personal</span>
         </div>
-        <div style="margin-top:28px"><a href="/nosotros" class="btn btn--ghost">Conoce más sobre nosotros <?= bb_icon('arrow') ?></a></div>
       </div>
     </div>
   </div>

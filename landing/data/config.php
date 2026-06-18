@@ -57,7 +57,7 @@ $SITE = [
 
     // ---- Defaults SEO ----
     'default_title' => 'Bamboo Seguros | Corredora de Seguros — Cotiza Sin Compromiso',
-    'default_desc'  => 'Corredora de seguros independiente en Chile. Comparamos +15 aseguradoras por ti y te asesoramos sin costo: auto, vida, viaje, hogar, pymes y más. Cotiza hoy.',
+    'default_desc'  => 'Corredora de seguros independiente en Chile. Comparamos por ti las aseguradoras del mercado: auto, vida, viaje, hogar, pymes y más. Cotiza hoy.',
     // TODO: generar og-bamboo.jpg (1200x630) y apuntar aquí. Mientras, usamos el logo.
     'og_image'      => '/assets/img/logo.png',
 ];

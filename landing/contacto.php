@@ -28,7 +28,7 @@ require __DIR__ . '/partials/head.php';
     <div class="cards">
       <a class="vcard reveal" data-d="1" href="<?= e(wa_link()) ?>" target="_blank" rel="noopener">
         <div class="vcard__ic" style="background:#e7f9ee;color:var(--wa-dark)"><?= bb_icon('whatsapp') ?></div>
-        <h3>WhatsApp</h3><p>La vía más rápida. Escríbenos y cotiza en minutos.</p>
+        <h3>WhatsApp</h3><p>La vía más rápida. Escríbenos y cotiza rápidamente.</p>
         <span class="svc__go"><?= e($SITE['phone_display']) ?> <?= bb_icon('arrow') ?></span>
       </a>
       <a class="vcard reveal" data-d="2" href="tel:+<?= e($SITE['phone_e164']) ?>">

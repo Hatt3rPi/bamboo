@@ -78,7 +78,7 @@ require __DIR__ . '/partials/head.php';
     </div>
     <div class="cards">
       <article class="vcard reveal" data-d="1"><div class="vcard__ic"><?= bb_icon('chat') ?></div><h3>Claridad</h3><p>Respuestas claras y sencillas, en el menor tiempo posible, para abordar lo que de verdad necesitas.</p></article>
-      <article class="vcard reveal" data-d="2"><div class="vcard__ic"><?= bb_icon('handshake') ?></div><h3>Cumplimiento</h3><p>Cumplimos los compromisos que tomamos contigo. Tu tranquilidad es nuestra responsabilidad.</p></article>
+      <article class="vcard reveal" data-d="2"><div class="vcard__ic"><?= bb_icon('handshake') ?></div><h3>Cumplimiento</h3><p>Cumplimos los compromisos que asumimos contigo. Tu protección es nuestra responsabilidad y prioridad.</p></article>
       <article class="vcard reveal" data-d="3"><div class="vcard__ic"><?= bb_icon('heart') ?></div><h3>Cercanía</h3><p>Atención personalizada, de calidad y confianza. Hablas siempre con alguien que conoce tu historia.</p></article>
       <article class="vcard reveal" data-d="4"><div class="vcard__ic"><?= bb_icon('shield-check') ?></div><h3>Acompañamiento</h3><p>Asesoría permanente: en la contratación, en las renovaciones y, sobre todo, el día de un siniestro.</p></article>
     </div>
@@ -95,7 +95,7 @@ require __DIR__ . '/partials/head.php';
 <section class="section cta-final">
   <div class="container container--narrow reveal">
     <h2>Conversemos sobre lo que quieres proteger</h2>
-    <p>Cuéntanos qué necesitas y te asesoramos sin costo, con la experiencia de quien conoce el mercado por dentro.</p>
+    <p>Cuéntanos qué necesitas y te asesoramos con la experiencia de quien conoce el mercado por dentro.</p>
     <div class="cta-final__btns">
       <button type="button" class="btn btn--on-dark btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotizar</button>
       <a href="<?= e(wa_link()) ?>" class="btn btn--whatsapp btn--lg" target="_blank" rel="noopener"><?= bb_icon('whatsapp') ?> Hablar por WhatsApp</a>

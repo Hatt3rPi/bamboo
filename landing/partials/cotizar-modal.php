@@ -49,7 +49,7 @@
           <div class="field">
             <label for="qfDetalle">Detalle</label>
             <textarea id="qfDetalle" name="detalle" data-qf-detalle
-              placeholder="Ej: auto modelo 2022 uso particular, o arriendo de un departamento en Ñuñoa."></textarea>
+              placeholder="Cuéntanos qué quieres asegurar y los detalles que tengas a mano."></textarea>
           </div>
           <div class="qf__nav">
             <button type="button" class="btn btn--ghost qf__back" data-qf-prev aria-label="Volver al paso anterior"><?= bb_icon('arrow') ?></button>

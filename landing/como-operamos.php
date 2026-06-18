@@ -9,8 +9,8 @@ $page = [
     '@context' => 'https://schema.org', '@type' => 'HowTo',
     'name' => 'Cómo cotizar y contratar un seguro con Bamboo',
     'step' => [
-      ['@type' => 'HowToStep', 'position' => 1, 'name' => 'Cuéntanos qué necesitas', 'text' => 'Nos escribes por WhatsApp o nos llamas. Te hacemos unas pocas preguntas para entender qué quieres proteger.'],
-      ['@type' => 'HowToStep', 'position' => 2, 'name' => 'Comparamos por ti', 'text' => 'Revisamos las opciones de más de 15 aseguradoras y armamos una propuesta clara con coberturas y precios.'],
+      ['@type' => 'HowToStep', 'position' => 1, 'name' => 'Cuéntanos qué necesitas', 'text' => 'Puedes escribirnos por WhatsApp o llamarnos. Te hacemos unas pocas preguntas para entender qué quieres proteger.'],
+      ['@type' => 'HowToStep', 'position' => 2, 'name' => 'Comparamos por ti', 'text' => 'Revisamos las opciones del mercado y armamos una propuesta clara con coberturas y precios.'],
       ['@type' => 'HowToStep', 'position' => 3, 'name' => 'Contratas y te acompañamos', 'text' => 'Eliges con toda la información. Gestionamos todo y quedamos a tu lado para renovaciones, dudas y siniestros.'],
     ],
   ]],
@@ -30,8 +30,8 @@ require __DIR__ . '/partials/head.php';
 <section class="section">
   <div class="container">
     <div class="steps">
-      <div class="step reveal" data-d="1"><div class="step__n"></div><div class="step__b"><h3>Cuéntanos qué necesitas</h3><p>Estás interesado en contratar un seguro. Nos escribes por WhatsApp o nos llamas, y te hacemos unas pocas preguntas para entender qué quieres proteger.</p></div></div>
-      <div class="step reveal" data-d="2"><div class="step__n"></div><div class="step__b"><h3>Buscamos las mejores alternativas</h3><p>Comparamos coberturas, deducibles y precios entre más de 15 aseguradoras y te armamos una propuesta clara, explicada en simple.</p></div></div>
+      <div class="step reveal" data-d="1"><div class="step__n"></div><div class="step__b"><h3>Cuéntanos qué necesitas</h3><p>Estás interesado en contratar un seguro. Puedes escribirnos por WhatsApp o llamarnos, y te hacemos unas pocas preguntas para entender qué quieres proteger.</p></div></div>
+      <div class="step reveal" data-d="2"><div class="step__n"></div><div class="step__b"><h3>Buscamos las mejores alternativas</h3><p>Comparamos coberturas, deducibles y precios entre las aseguradoras del mercado y te armamos una propuesta clara, explicada en simple.</p></div></div>
       <div class="step reveal" data-d="3"><div class="step__n"></div><div class="step__b"><h3>Contratas tu póliza y te acompañamos</h3><p>Eliges con toda la información sobre la mesa. Gestionamos todo y quedamos a tu lado para renovaciones, dudas y, sobre todo, el día de un siniestro.</p></div></div>
     </div>
   </div>
