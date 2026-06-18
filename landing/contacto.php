@@ -2,7 +2,7 @@
 require_once __DIR__ . '/data/config.php';
 $page = [
   'title' => 'Contacto | Cotiza tu Seguro por WhatsApp o Teléfono — Bamboo Seguros',
-  'desc' => 'Habla con Bamboo Seguros: cotiza por WhatsApp al ' . $SITE['phone_display'] . ' o escríbenos a ' . $SITE['email'] . '. Asesoría de seguros sin costo en todo Chile.',
+  'desc' => 'Habla con Bamboo Seguros: cotiza por WhatsApp al ' . $SITE['phone_display'] . ' o escríbenos a ' . $SITE['email'] . '. Asesoría de seguros en todo Chile.',
   'canonical' => '/contacto',
   'active' => 'contacto',
   'schema' => [[

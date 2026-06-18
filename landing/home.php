@@ -43,7 +43,7 @@ require __DIR__ . '/partials/head.php';
         </div>
         <ul class="hero__trust reveal" data-d="4">
           <li><?= bb_icon('check-circle') ?> Respuesta el mismo día</li>
-          <li><?= bb_icon('check-circle') ?> Asesoría sin costo para ti</li>
+          <li><?= bb_icon('check-circle') ?> Asesoría independiente</li>
           <li><?= bb_icon('shield-check') ?> Registrada en la CMF</li>
         </ul>
       </div>
@@ -250,14 +250,14 @@ require __DIR__ . '/partials/head.php';
   <div class="container container--narrow">
     <div class="reveal">
       <h2>¿Listo para asegurar lo que más te importa?</h2>
-      <p>Cotiza con Bamboo en minutos. Te respondemos el mismo día, comparamos por ti y te asesoramos sin costo.</p>
+      <p>Cotiza con Bamboo rápidamente. Te respondemos el mismo día, comparamos por ti y te acompañamos siempre.</p>
       <div class="cta-final__btns">
         <button type="button" class="btn btn--on-dark btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotizar</button>
         <a href="<?= e(wa_link()) ?>" class="btn btn--whatsapp btn--lg" target="_blank" rel="noopener"><?= bb_icon('whatsapp') ?> Cotizar por WhatsApp</a>
       </div>
       <p class="cta-final__alt">También puedes escribirnos: <a href="tel:+<?= e($SITE['phone_e164']) ?>"><?= e($SITE['phone_display']) ?></a> · <a href="mailto:<?= e($SITE['email']) ?>"><?= e($SITE['email']) ?></a></p>
       <div class="cta-final__micro">
-        <span><?= bb_icon('check') ?> Asesoría sin costo</span>
+        <span><?= bb_icon('check') ?> Asesoría independiente</span>
         <span><?= bb_icon('check') ?> Sin compromiso</span>
         <span><?= bb_icon('shield-check') ?> Corredora registrada en la CMF</span>
       </div>

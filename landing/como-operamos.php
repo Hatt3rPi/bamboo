@@ -44,7 +44,7 @@ require __DIR__ . '/partials/head.php';
       <div>
         <span class="eyebrow" style="color:var(--earth-300)">Lo más importante</span>
         <h2>El cliente únicamente paga la prima de su seguro</h2>
-        <p>Tú solo le pagas la prima a la compañía, igual que si contrataras directo. <strong>Son las compañías quienes comisionan a los corredores de seguros</strong>, no tú. Así tienes un experto de tu lado sin costo adicional.</p>
+        <p>Tú solo le pagas la prima a la compañía, igual que si contrataras directo. <strong>Son las compañías quienes comisionan a los corredores de seguros</strong>, no tú. Así tienes un experto de tu lado.</p>
         <span class="band__seal"><?= bb_icon('shield-check') ?> <?= cmf_label() ?></span>
       </div>
     </div>

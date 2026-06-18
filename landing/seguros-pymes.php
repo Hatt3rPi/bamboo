@@ -3,7 +3,7 @@ require_once __DIR__ . '/data/config.php';
 require_once __DIR__ . '/data/seguros.php';
 $page = [
   'title' => 'Seguros para Pymes y Empresas en Chile | Bamboo Seguros',
-  'desc' => 'Seguros para pymes: responsabilidad civil, incendio, transporte, garantía e ingeniería. Una corredora independiente que compara por ti las aseguradoras del mercado, sin costo. Cotiza.',
+  'desc' => 'Seguros para pymes: responsabilidad civil, incendio, transporte, garantía e ingeniería. Una corredora independiente que compara por ti las aseguradoras del mercado. Cotiza.',
   'canonical' => '/seguros-pymes',
   'active' => 'servicios',
   'schema' => [[
@@ -19,7 +19,7 @@ require __DIR__ . '/partials/head.php';
     <nav class="crumbs reveal" aria-label="Ruta"><a href="/">Inicio</a><span class="sep">/</span><span>Seguros para Pymes</span></nav>
     <span class="eyebrow reveal"><?= bb_icon('briefcase') ?> Empresas y Pymes</span>
     <h1 class="reveal" data-d="1">Protege tu empresa con quien conoce el mercado por dentro</h1>
-    <p class="lead reveal" data-d="2">Responsabilidad civil, garantías para licitaciones, transporte de carga, ingeniería y más. Comparamos entre las aseguradoras del mercado y te asesoramos sin costo para que tu pyme opere tranquila.</p>
+    <p class="lead reveal" data-d="2">Responsabilidad civil, garantías para licitaciones, transporte de carga, ingeniería y más. Comparamos entre las aseguradoras del mercado y te asesoramos para que tu pyme opere tranquila.</p>
     <div class="hero__cta reveal" data-d="3" style="margin-top:28px">
       <button type="button" class="btn btn--primary btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotizar para mi empresa</button>
       <a href="<?= e(wa_link('Hola Adriana, quiero cotizar un seguro para mi empresa o pyme.')) ?>" class="btn btn--ghost btn--lg" target="_blank" rel="noopener"><?= bb_icon('whatsapp') ?> WhatsApp</a>
