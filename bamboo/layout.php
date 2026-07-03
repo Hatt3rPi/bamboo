@@ -83,30 +83,30 @@ function bb_nav_class($id, $active) {
     </div>
 
     <div class="nav-section"><span>Operación</span></div>
-    <a href="/bamboo/index.php" class="<?= bb_nav_class('inicio', $page_active) ?>">
+    <a href="/bamboo/index.php" class="<?= bb_nav_class('inicio', $page_active) ?>" aria-label="Inicio" data-tooltip="Inicio">
       <i class="fas fa-home"></i><span>Inicio</span>
     </a>
-    <a href="/bamboo/listado_clientes.php" class="<?= bb_nav_class('clientes', $page_active) ?>">
+    <a href="/bamboo/listado_clientes.php" class="<?= bb_nav_class('clientes', $page_active) ?>" aria-label="Clientes" data-tooltip="Clientes">
       <i class="fas fa-users"></i><span>Clientes</span>
     </a>
-    <a href="/bamboo/polizas.php" class="<?= bb_nav_class('polizas', $page_active) ?>">
+    <a href="/bamboo/polizas.php" class="<?= bb_nav_class('polizas', $page_active) ?>" aria-label="Pólizas" data-tooltip="Pólizas">
       <i class="fas fa-file-contract"></i><span>Pólizas</span>
     </a>
-    <a href="/bamboo/endosos.php" class="<?= bb_nav_class('endosos', $page_active) ?>">
+    <a href="/bamboo/endosos.php" class="<?= bb_nav_class('endosos', $page_active) ?>" aria-label="Endosos" data-tooltip="Endosos">
       <i class="fas fa-file-signature"></i><span>Endosos</span>
     </a>
 
     <div class="nav-section"><span>Gestión</span></div>
-    <a href="/bamboo/listado_tareas.php" class="<?= bb_nav_class('tareas', $page_active) ?>">
+    <a href="/bamboo/listado_tareas.php" class="<?= bb_nav_class('tareas', $page_active) ?>" aria-label="Tareas" data-tooltip="Tareas">
       <i class="fas fa-tasks"></i><span>Tareas</span>
       <?php if (!empty($tareas_pendientes)): ?>
         <span class="badge badge-warning"><?= (int)$tareas_pendientes ?></span>
       <?php endif; ?>
     </a>
-    <a href="/bamboo/listado_siniestros.php" class="<?= bb_nav_class('siniestros', $page_active) ?>">
+    <a href="/bamboo/listado_siniestros.php" class="<?= bb_nav_class('siniestros', $page_active) ?>" aria-label="Siniestros" data-tooltip="Siniestros">
       <i class="fas fa-exclamation-triangle"></i><span>Siniestros</span>
     </a>
-    <a href="/bamboo/admin_email_templates.php" class="<?= bb_nav_class('correos', $page_active) ?>">
+    <a href="/bamboo/admin_email_templates.php" class="<?= bb_nav_class('correos', $page_active) ?>" aria-label="Correos" data-tooltip="Correos">
       <i class="fas fa-envelope"></i><span>Correos</span>
     </a>
 

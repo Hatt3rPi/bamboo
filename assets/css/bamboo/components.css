@@ -94,7 +94,20 @@ h4 { font-size: var(--text-lg); }
 .app-shell.collapsed .bb-sidebar .nav-section,
 .app-shell.collapsed .bb-sidebar .nav-link span,
 .app-shell.collapsed .bb-sidebar .nav-link .badge { display: none; }
-.app-shell.collapsed .bb-sidebar .nav-link { justify-content: center; }
+.app-shell.collapsed .bb-sidebar .nav-link { justify-content: center; position: relative; }
+/* Tooltip inmediato al pasar el cursor sobre un ícono con el sidebar colapsado
+   (requerimiento Adriana jun-2026: "al posicionarme no dice qué son"). */
+.app-shell.collapsed .bb-sidebar .nav-link::after {
+  content: attr(data-tooltip);
+  position: absolute; left: calc(100% + 10px); top: 50%; transform: translateY(-50%);
+  background: var(--bamboo-800, #2f3b30); color: #fff;
+  padding: 5px 10px; border-radius: 6px;
+  font-family: var(--font-sans); font-size: 12px; font-weight: 500; line-height: 1;
+  white-space: nowrap; opacity: 0; pointer-events: none;
+  transition: opacity .12s ease; z-index: 200;
+  box-shadow: 0 4px 14px rgba(0,0,0,.22);
+}
+.app-shell.collapsed .bb-sidebar .nav-link:hover::after { opacity: 1; }
 
 /* ---------- TOPBAR ---------- */
 .bb-topbar {
