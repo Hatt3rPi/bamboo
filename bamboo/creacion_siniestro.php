@@ -396,6 +396,7 @@ require_once 'layout.php';
       <div class="tab-pane fade show active" id="tab-propios" role="tabpanel">
         <?php if ($camino != 'modifica_siniestro'): ?>
         <button type="button" class="btn btn-sm btn-primary mb-2" onclick="nuevoBien('propio')">+ Agregar bien propio</button>
+        <small class="text-muted d-block mb-2">En siniestros de vehículo, el bien propio se precarga con el vehículo asegurado. Puedes editar sus datos o eliminarlo si no corresponde.</small>
         <?php endif; ?>
         <table class="table table-sm table-bordered" id="tabla_bienes_propios">
           <thead><tr><th style="width:14%">Categoría</th><th style="width:30%">Descripción</th><th>Estado</th><th>Alarma</th><th>Acciones</th></tr></thead>
@@ -2338,6 +2339,7 @@ function enviarCorreoLiquidador() {
           (<span id="notif_liq_correo"></span>) para avanzar con el finiquito?</p>
       </div>
       <div class="modal-footer">
+        <button type="button" class="btn btn-link text-muted" data-dismiss="modal">No es necesario</button>
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Más tarde</button>
         <button type="button" class="btn btn-bamboo" onclick="enviarCorreoLiquidador()">✉️ Abrir correo</button>
       </div>

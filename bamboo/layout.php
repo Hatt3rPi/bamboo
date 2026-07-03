@@ -117,7 +117,7 @@ function bb_nav_class($id, $active) {
   </aside>
 
   <!-- ================ CONTENT COLUMN ================ -->
-  <div>
+  <div class="bb-content">
 
     <!-- TOPBAR -->
     <header class="bb-topbar">

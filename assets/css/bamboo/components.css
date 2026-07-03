@@ -36,6 +36,13 @@ h4 { font-size: var(--text-lg); }
   min-height: 100vh;
 }
 .app-shell.collapsed { grid-template-columns: var(--sidebar-w-collapsed) 1fr; }
+/* La columna de contenido debe poder encogerse al ancho del viewport. Sin min-width:0,
+   una tabla/DataTable ancha expande el grid y aparece scroll horizontal de TODA la página
+   (req. Adriana jun-2026: "la pantalla no se muestra entera, debo correr el cursor a la
+   derecha"). Con esto, las tablas anchas hacen su propio scroll (DataTables scrollX). */
+.bb-content { min-width: 0; }
+.bb-content .table-responsive,
+.bb-content .dataTables_wrapper { max-width: 100%; }
 
 /* ---------- SIDEBAR ---------- */
 .bb-sidebar {
@@ -145,6 +152,7 @@ h4 { font-size: var(--text-lg); }
   display: flex; align-items: flex-end; justify-content: space-between;
   gap: var(--space-4); margin-bottom: var(--space-6);
   padding-bottom: var(--space-5); border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap; /* la barra de acciones (Pólizas/Descargar) se reacomoda en anchos menores */
 }
 .bb-page-header h1 { margin: 0; }
 .bb-page-header .subtitle { color: var(--fg-muted); margin-top: 4px; font-size: var(--text-md); }
