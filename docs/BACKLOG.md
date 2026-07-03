@@ -58,7 +58,10 @@ en que estaba: página de paginación, término de búsqueda, columna/orden y sc
 
 ## #2 — Responsividad: el contenido se corta horizontalmente en la pantalla de la usuaria
 
-- **Estado:** abierto
+- **Estado:** ✅ resuelto (commit 1b29417 — 17-jun). `.bb-content { min-width:0 }` en la
+  columna de contenido del grid (no se encogía → tablas anchas causaban scroll horizontal
+  de toda la página) + `flex-wrap` en la barra de acciones + `max-width` en wrappers de
+  tablas. **Validar en QA** a distintos escalados de Windows.
 - **Prioridad:** alta (afecta el trabajo diario de la usuaria principal)
 - **Reportado por:** Adriana — 16-jun-2026 · **reconfirmado 17-jun** ("La pantalla no se
   muestra entera, debo correr el cursor hacia la derecha para verla completa" — visto en
@@ -109,7 +112,9 @@ CSS en `components.css` que aparece de inmediato al hover cuando el sidebar est�
 
 ## #4 — Exportar a Excel el historial de un siniestro por fecha
 
-- **Estado:** abierto
+- **Estado:** ✅ resuelto (commit 8d857e8 — 17-jun). Endpoint
+  `genera_excel_historial_siniestro.php` + botón "Exportar historial" en la vista del
+  siniestro. Exporta la bitácora en orden cronológico.
 - **Prioridad:** media
 - **Reportado por:** Adriana — 17-jun-2026
 
@@ -125,7 +130,10 @@ Falta un botón "Exportar historial" que genere un Excel ordenado por fecha (pat
 
 ## #5 — Bug: "Agregar bien propio" trae los datos del auto
 
-- **Estado:** abierto (por investigar)
+- **Estado:** ✅ resuelto vía aclaración (commit 1b29417 — 17-jun). La precarga es
+  intencional; se agregó una nota en la UI que explica que en siniestros de vehículo el
+  bien propio se precarga con el vehículo asegurado (editable/eliminable). Si Adriana
+  prefiere cambiar el comportamiento (bien propio en blanco), reabrir.
 - **Prioridad:** media-alta (confunde el flujo de bienes afectados)
 - **Reportado por:** Adriana — 17-jun-2026
 
@@ -145,7 +153,10 @@ comportamiento (bien propio en blanco por defecto)? No tocar sin definir esto.
 
 ## #6 — Fecha editable en cada etapa del siniestro (no asumir la fecha de sistema)
 
-- **Estado:** abierto
+- **Estado:** ✅ resuelto (commit 075c259 — 17-jun). Campo "Fecha de esta etapa" (default
+  hoy, editable) en el modal Resolver de todas las etapas; backend respeta fechas pasadas
+  (mantiene NOW() para hoy/vacío). **Requiere validación de Adriana en QA** (toca el
+  guardado de pendientes).
 - **Prioridad:** alta (Adriana no registra los eventos el día que ocurren)
 - **Reportado por:** Adriana — 17-jun-2026
 
@@ -160,7 +171,8 @@ del evento real, editable.
 
 ## #7 — Opción "No" en el modal "Notificar al liquidador"
 
-- **Estado:** abierto
+- **Estado:** ✅ resuelto (commit 1b29417 — 17-jun). Botón "No es necesario" que cierra el
+  modal sin notificar. Si más adelante se quiere dejar traza en bitácora, reabrir.
 - **Prioridad:** media
 - **Reportado por:** Adriana — 17-jun-2026
 
