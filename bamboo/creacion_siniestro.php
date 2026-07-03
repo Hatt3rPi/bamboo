@@ -1520,6 +1520,11 @@ function abrirModalResolver(id_pendiente) {
     $('#resolver_codigo_tarea').val(p.codigo_tarea || '');
     $('#resolver_descripcion').html('<strong>' + escHtml(p.descripcion) + '</strong>');
     $('#resolver_notas').val(p.notas || '');
+    // Fecha de la etapa: por defecto hoy (o la registrada, si se está editando). Editable
+    // para registrar avances en su fecha real aunque se ingresen otro día (issue #6 Adriana).
+    $('#resolver_fecha_entrega').val(
+        (modoEdicion && p.fecha_entrega) ? String(p.fecha_entrega).slice(0, 10) : fechaHoyIso()
+    );
     $('#resolver_body').html('<em>Cargando…</em>');
     $('#modalResolverPendiente').modal('show');
 
@@ -1925,9 +1930,17 @@ function guardarResolverPendiente() {
     // Si la tarea ya estaba Entregada, conservamos su fecha original para no
     // sobrescribirla con la fecha de hoy.
     var modoEdicion = $('#modalResolverPendiente').data('modo_edicion') === true;
-    var fechaEnvio = modoEdicion && p.fecha_entrega
-        ? String(p.fecha_entrega).slice(0, 19).replace('T', ' ')
-        : fechaHoyIso();
+    // Fecha de la etapa: la que indique la usuaria en el campo (por defecto hoy). Permite
+    // registrar avances en su fecha real aunque se ingresen otro día (issue #6 Adriana).
+    var fechaCampo = $('#resolver_fecha_entrega').val();
+    var fechaEnvio;
+    if (fechaCampo) {
+        fechaEnvio = fechaCampo;
+    } else if (modoEdicion && p.fecha_entrega) {
+        fechaEnvio = String(p.fecha_entrega).slice(0, 19).replace('T', ' ');
+    } else {
+        fechaEnvio = fechaHoyIso();
+    }
     var data = {
         id:             p.id,
         responsable:    p.responsable,
@@ -2369,6 +2382,11 @@ function enviarCorreoLiquidador() {
         <input type="hidden" id="resolver_codigo_tarea">
         <div id="resolver_descripcion" class="mb-3"></div>
         <div id="resolver_body"></div>
+        <div class="form-group mt-3">
+          <label for="resolver_fecha_entrega">Fecha de esta etapa</label>
+          <input type="date" class="form-control" id="resolver_fecha_entrega">
+          <small class="text-muted">Fecha en que ocurrió este avance. Por defecto hoy; cámbiala si lo registras en otra fecha.</small>
+        </div>
         <div class="form-group mt-3">
           <label>Notas <small class="text-muted">(opcional)</small></label>
           <textarea class="form-control" id="resolver_notas" rows="2"></textarea>

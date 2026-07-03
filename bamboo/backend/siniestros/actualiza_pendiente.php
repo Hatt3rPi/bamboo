@@ -435,20 +435,30 @@ else {
         // - Si el pendiente ya estaba Entregado y la fecha (YYYY-MM-DD) no cambió, preservar
         //   la hora original para no degradar a 00:00 al editar otros campos.
         $tiene_hora = (strpos($fecha_entrega, ':') !== false);
-        if ($esta_entregando && ($fecha_entrega === '' || !$tiene_hora)) {
-            $fe = "NOW()";
-        } elseif ($fecha_entrega !== '') {
-            if ($est_anterior === 'Entregado' && !$tiene_hora) {
+        if ($fecha_entrega === '') {
+            // Sin fecha: al entregar, NOW(); si no, NULL.
+            $fe = $esta_entregando ? "NOW()" : "NULL";
+        } elseif ($tiene_hora) {
+            $fe = "NULLIF('" . sqlesc($fecha_entrega) . "','')::timestamp";
+        } else {
+            // Fecha sin hora (input date). Si coincide con hoy, usar NOW() para conservar la
+            // hora real (robusto ante desfase de zona horaria navegador/servidor). Si es otra
+            // fecha (la usuaria registra un avance en su fecha real, pasada), respetarla —
+            // issue #6 Adriana. Al editar una tarea ya entregada cuya fecha no cambió, se
+            // preserva la hora original.
+            $f = sqlesc($fecha_entrega);
+            if ($est_anterior === 'Entregado') {
                 $fe = "CASE
-                          WHEN to_char(fecha_entrega, 'YYYY-MM-DD') = '" . sqlesc($fecha_entrega) . "'
-                          THEN fecha_entrega
-                          ELSE NULLIF('" . sqlesc($fecha_entrega) . "','')::timestamp
+                          WHEN to_char(fecha_entrega, 'YYYY-MM-DD') = '$f' THEN fecha_entrega
+                          WHEN '$f' = to_char(NOW(), 'YYYY-MM-DD')          THEN NOW()
+                          ELSE NULLIF('$f','')::timestamp
                        END";
             } else {
-                $fe = "NULLIF('" . sqlesc($fecha_entrega) . "','')::timestamp";
+                $fe = "CASE
+                          WHEN '$f' = to_char(NOW(), 'YYYY-MM-DD') THEN NOW()
+                          ELSE NULLIF('$f','')::timestamp
+                       END";
             }
-        } else {
-            $fe = "NULL";
         }
         db_query($link, "UPDATE siniestros_pendientes SET
                             responsable   = '$r',
