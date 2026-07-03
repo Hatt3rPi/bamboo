@@ -158,9 +158,16 @@ require_once 'layout.php';
     <h1><?= htmlspecialchars($breadcrumb_main) ?></h1>
     <div class="subtitle">Datos del siniestro, bienes afectados, liquidador y taller</div>
   </div>
-  <a href="listado_siniestros.php" class="btn btn-secondary" onclick="return bbVolver('listado_siniestros.php')">
-    <i class="fas fa-arrow-left mr-2"></i>Volver
-  </a>
+  <div class="d-flex flex-wrap" style="gap:.5rem">
+    <?php if ($camino == 'modifica_siniestro' && $id_siniestro !== ''): ?>
+    <a href="/bamboo/backend/siniestros/genera_excel_historial_siniestro.php?id_siniestro=<?= (int)$id_siniestro ?>" class="btn btn-bamboo">
+      <i class="fas fa-file-excel mr-2"></i>Exportar historial
+    </a>
+    <?php endif; ?>
+    <a href="listado_siniestros.php" class="btn btn-secondary" onclick="return bbVolver('listado_siniestros.php')">
+      <i class="fas fa-arrow-left mr-2"></i>Volver
+    </a>
+  </div>
 </div>
 
 <div class="card">
