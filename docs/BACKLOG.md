@@ -133,8 +133,13 @@ Falta un botón "Exportar historial" que genere un Excel ordenado por fecha (pat
 precargan los datos del auto; el objetivo del botón no queda claro.
 
 **Notas.** Vive en `creacion_siniestro.php` (+ `backend/siniestros/crea_bien_afectado.php`).
-Revisar la precarga del formulario de bien propio: probablemente hereda datos del ítem/póliza
-(vehículo) cuando no debería, o falta distinguir "bien propio" vs "daño a terceros".
+
+**Hallazgo (investigado 17-jun):** la precarga **es intencional** — `nuevoBien('propio')`
+(líneas ~1075-1131) pre-puebla el siguiente ítem-vehículo marcado como "bien propio",
+porque en un siniestro de auto el bien propio dañado *es* el vehículo asegurado. No es un
+bug con fix obvio, sino una expectativa/UX que Adriana no entiende. **Decisión pendiente
+con Adriana:** ¿mantener la precarga y aclararla en la UI (label/hint), o cambiar el
+comportamiento (bien propio en blanco por defecto)? No tocar sin definir esto.
 
 ---
 
@@ -163,6 +168,13 @@ del evento real, editable.
 Falta una opción **"No"** para casos en que no corresponde notificar (ej. el liquidador ya
 dio la orden de reparación), que cierre el pendiente sin generar correo.
 
-**Notas.** Modal en `creacion_siniestro.php`; el envío en `backend/siniestros/notifica_liquidador.php`
-y el estado del pendiente en `backend/siniestros/actualiza_pendiente.php`. Agregar acción "No"
-que marque el pendiente como resuelto/no-aplica sin abrir correo.
+**Notas.** Modal `#modalNotificarLiquidador` en `creacion_siniestro.php` (líneas ~2326-2345);
+botones actuales: "Más tarde" (data-dismiss) y "Abrir correo" (`enviarCorreoLiquidador()`).
+Envío en `backend/siniestros/notifica_liquidador.php`, estado del pendiente en
+`backend/siniestros/actualiza_pendiente.php`.
+
+**Hallazgo (investigado 17-jun):** el modal aparece **después** de resolver el pendiente del
+cliente (el flujo ya avanzó); "Más tarde" solo cierra sin enviar. Funcionalmente "No" y "Más
+tarde" no cambian el estado — la única diferencia real sería semántica. **Decisión pendiente
+con Adriana:** ¿"No" es solo un botón con etiqueta clara que cierra (trivial), o debe además
+registrar "no se notificará" en la bitácora/pendiente para dejar traza? Definir antes de tocar.
