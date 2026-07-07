@@ -21,7 +21,7 @@ $SEGUROS = [
     'lead' => 'El seguro de vehículo protege tu auto, moto o flota frente a accidentes, robo y daños a terceros. Como corredora independiente, comparamos coberturas, deducibles y precios entre las aseguradoras del mercado para encontrar la opción que de verdad te conviene.',
     'coberturas' => [
       'Full cobertura (daños propios, robo y responsabilidad civil)',
-      'Daños a terceros',
+      'Pérdida total y daños a terceros',
       'Auto de reemplazo y asistencia en ruta',
       'Cobertura para motos y vehículos comerciales',
       'Seguros de flotas para empresas',
