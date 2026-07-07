@@ -7,13 +7,12 @@ $faqs = [
   ['q' => '¿Conviene contratar un seguro con corredor o directamente con la aseguradora?', 'a' => 'Contratar con un corredor conviene cuando se busca asesoría imparcial: el corredor es independiente y compara coberturas y precios de varias compañías (Bamboo trabaja con las principales del mercado), mientras que un canal directo solo ofrece los productos de una. Además, el corredor te acompaña en caso de siniestro.'],
   ['q' => '¿Cómo cotizar un seguro de auto en Chile?', 'a' => 'Para cotizar un seguro de auto: 1) reúne los datos del vehículo (marca, modelo, año, patente) y del propietario (RUT, comuna); 2) indica el uso (particular o comercial); 3) pide a tu corredor que compare coberturas y deducibles entre aseguradoras; 4) revisa prima, deducible y exclusiones antes de contratar. Con un corredor recibes varias cotizaciones con una sola solicitud.'],
   ['q' => '¿Qué seguros puedo contratar con Bamboo Seguros?', 'a' => 'Para personas y pymes: seguro de vehículo, vida, complementario de salud (individual y empresas), viaje, accidentes personales, incendio y sismo, responsabilidad civil, garantía, transporte, hogar, APV e ingeniería, entre otros. Como corredora independiente, los cotizamos con las principales aseguradoras del mercado chileno.'],
-  ['q' => '¿Adriana Sandoval está inscrita en la CMF?', 'a' => 'Sí. Adriana Sandoval, fundadora de Bamboo, es corredora de seguros persona natural inscrita en el Registro de la Comisión para el Mercado Financiero (CMF), con Código CMF N° 8404. La inscripción en la CMF es un requisito legal en Chile y garantiza que la corredora cumple sus obligaciones de asesoría e información.'],
   ['q' => '¿Cuáles son las obligaciones de un corredor de seguros?', 'a' => 'Según la CMF, el corredor debe: asesorar a quien desea asegurarse, ofrecer la cobertura más conveniente a sus necesidades, informar las condiciones del contrato y sus modificaciones, asistir al cliente durante la vigencia de la póliza y al momento de un siniestro, y remitir los documentos a la compañía.'],
 ];
 
 $page = [
   'title' => 'Preguntas Frecuentes sobre Seguros y Corredores | Bamboo Seguros',
-  'desc' => '¿Cuánto cuesta un corredor? ¿Conviene corredor o directo? ¿Quién paga la comisión? Resolvemos las dudas más comunes sobre seguros y corredoras en Chile.',
+  'desc' => '¿Cuánto cuesta un corredor? ¿Conviene corredor o directo? ¿Qué seguros puedo contratar? Resolvemos las dudas más comunes sobre seguros y corredoras en Chile.',
   'canonical' => '/faq',
   'active' => 'faq',
   'schema' => [[

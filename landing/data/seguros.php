@@ -145,7 +145,7 @@ $SEGUROS = [
     'meta_title' => 'Seguro de Incendio para tu Hogar | Cotiza — Bamboo Seguros',
     'meta_desc' => 'Protege tu casa contra incendio, sismo y robo. Comparamos coberturas de las mejores aseguradoras y te asesoramos. Cotiza tu seguro de hogar.',
     'h1' => 'Seguro de Incendio',
-    'lead' => 'El seguro de incendio protege tu propiedad —casa, departamento, local comercial, oficina, bodega o industria, con su estructura y contenido— frente a incendio, terremoto, robo y otros daños. En un país sísmico como Chile, es la base para resguardar tu patrimonio. Comparamos coberturas por ti.',
+    'lead' => 'El seguro de incendio protege tu propiedad —casa, departamento, local comercial, condominio, restaurante, oficina, bodega o industria, con su estructura y contenido— frente a incendio, terremoto, robo y otros daños. En un país sísmico como Chile, es la base para resguardar tu patrimonio. Comparamos coberturas por ti.',
     'coberturas' => [
       'Incendio de estructura y contenido',
       'Sismo y terremoto',
