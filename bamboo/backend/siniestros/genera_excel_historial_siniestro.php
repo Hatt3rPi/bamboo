@@ -2,6 +2,7 @@
 // Exporta a Excel el historial (bitácora) de UN siniestro, ordenado por fecha (cronológico).
 // Requerimiento Adriana (jun-2026): reconstituir la escena de un siniestro por fecha para
 // enviar a la compañía. Fuente: tabla siniestros_bitacora (misma que busqueda_bitacora_siniestro.php).
+ob_start(); // captura salida espuria (whitespace/warnings de los includes) para no corromper el .xlsx
 if (!isset($_SESSION)) { session_start(); }
 require "/home/gestio10/public_html/vendor/autoload.php";
 require_once "/home/gestio10/public_html/backend/config.php";
@@ -72,6 +73,8 @@ $fecha = new DateTime(date("Y-m-d H:i:sP"), new DateTimeZone('America/Santiago')
 $nombre_archivo = 'Historial_siniestro_'.preg_replace('/[^A-Za-z0-9_-]/', '', $num_siniestro)
                 . '_' . date_format($fecha, 'd-m-Y_His') . '.xlsx';
 
+// Descartar cualquier salida previa (whitespace de includes) para que el .xlsx empiece en 'PK'.
+while (ob_get_level()) { ob_end_clean(); }
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="'.$nombre_archivo.'"');
 header('Cache-Control: max-age=0');

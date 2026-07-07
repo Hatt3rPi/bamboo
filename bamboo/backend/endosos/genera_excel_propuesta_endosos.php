@@ -1,4 +1,5 @@
 <?php
+ob_start(); // evita corromper el .xlsx con salida espuria de los includes (config.php)
 
 require "/home/gestio10/public_html/vendor/autoload.php";
 require_once "/home/gestio10/public_html/backend/config.php";
@@ -98,6 +99,7 @@ while ($rows = db_fetch_object($resultado))
 $fecha = new DateTime(date("Y-m-d H:i:sP"), new DateTimeZone('America/Santiago') );
 date_timezone_set($fecha, timezone_open('America/Santiago'));
 $hojaActiva->setAutoFilter('A2:T'.($fila-1));
+while (ob_get_level()) { ob_end_clean(); } // el .xlsx debe empezar en 'PK', sin basura previa
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="Listado_propuesta_endosos '.date_format($fecha, 'd-m-Y H:i:s').'.xlsx"');
 header('Cache-Control: max-age=0');
