@@ -24,7 +24,7 @@ $page = [
 
 $insurers = ['sura','bci','mapfre','chubb','hdi','consorcio','reale','renta','southbridge','zurich','confuturo','unnio','colmena','augustar','coris'];
 $insurer_names = ['sura'=>'Sura','bci'=>'BCI Seguros','mapfre'=>'Mapfre','chubb'=>'Chubb','hdi'=>'HDI','consorcio'=>'Consorcio','reale'=>'Reale','renta'=>'Renta Nacional','southbridge'=>'Southbridge','zurich'=>'Zurich','confuturo'=>'Confuturo','unnio'=>'Unnio','colmena'=>'Colmena','augustar'=>'Augustar','coris'=>'Coris'];
-$ext = ['zurich'=>'svg'];
+$ext = [];
 
 require __DIR__ . '/partials/head.php';
 ?>
