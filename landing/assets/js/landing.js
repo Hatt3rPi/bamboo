@@ -128,21 +128,22 @@
 
   var placeholders = {
     auto: 'Ej: Toyota Yaris 2022, uso particular, full cobertura.',
+    'auto|pyme': 'Ej: flota de 4 camionetas comerciales para mi empresa.',
     vida: 'Ej: tengo 35 años, quiero proteger a mi familia.',
     viaje: 'Ej: viaje a Europa 15 días en julio, 2 personas.',
     'accidentes-personales': 'Ej: cobertura para mi hijo en edad escolar / deportes.',
     'incendio-sismo': 'Ej: casa en Ñuñoa, 90 m², con cobertura de sismo.',
+    'incendio-sismo|pyme': 'Ej: oficina o local de 120 m² en Providencia, con cobertura de sismo.',
     'salud-individual': 'Ej: busco cobertura complementaria a mi Isapre o Fonasa.',
     'catastrofico-individual': 'Ej: quiero protegerme ante una enfermedad de alto costo.',
     'salud-empresas': 'Ej: seguro de salud para los colaboradores de mi empresa.',
     'catastrofico-empresas': 'Ej: cobertura catastrófica para mi equipo de trabajo.',
     'responsabilidad-civil': 'Ej: local comercial que atiende público / taller.',
-    arriendo: 'Ej: arriendo un departamento, quiero garantía de pago.',
     garantia: 'Ej: garantía de fiel cumplimiento para licitación pública.',
     transporte: 'Ej: importo mercadería desde China, vía marítima.',
     apv: 'Ej: quiero mejorar mi pensión y rebajar impuestos.',
     ingenieria: 'Ej: obra de construcción de 6 meses, todo riesgo.',
-    'rc-administradores': 'Ej: directorio de una empresa mediana (D&O).'
+    'rc-administradores': 'Ej: comité de administración de un condominio de 40 departamentos.'
   };
 
   if (modal && form) {
@@ -158,14 +159,26 @@
       if (active) { var h = $('h4', active); if (h) { h.setAttribute('tabindex', '-1'); try { h.focus(); } catch (_) {} } }
     }
 
+    // Placeholder del detalle según ramo + perfil. Permite variantes por segmento:
+    // p.ej. incendio para empresa habla de "oficina/local" en vez de "casa".
+    function currentSeg() {
+      var pb = $('[data-perfil][aria-pressed="true"]', form);
+      return pb ? (pb.getAttribute('data-seg') || 'persona') : 'persona';
+    }
+    function applyPlaceholder() {
+      var det = $('[data-qf-detalle]', form); if (!det) return;
+      var slug = form.dataset.slug; if (!slug) return;
+      var ph = placeholders[slug + '|' + currentSeg()] || placeholders[slug];
+      if (ph) det.placeholder = ph;
+    }
+
     function selectType(btn) {
       $$('.qf__type', form).forEach(function (t) { t.classList.remove('sel'); t.setAttribute('aria-pressed', 'false'); });
       btn.classList.add('sel'); btn.setAttribute('aria-pressed', 'true');
       $('#qfTipo').value = btn.getAttribute('data-value');
       form.dataset.slug = btn.getAttribute('data-slug');
       var n = $('.qf__step[data-step="1"] [data-qf-next]', form); if (n) n.disabled = false;
-      var det = $('[data-qf-detalle]', form);
-      if (det) det.placeholder = placeholders[btn.getAttribute('data-slug')] || det.placeholder;
+      applyPlaceholder();
     }
 
     // Filtra los tipos según el perfil (persona muestra persona+ambos; pyme muestra pyme+ambos).
@@ -186,6 +199,7 @@
       btn.setAttribute('aria-pressed', 'true');
       $('#qfPerfil').value = btn.getAttribute('data-perfil');
       filterTypes(btn.getAttribute('data-seg'));
+      applyPlaceholder();
     }
 
     function resetForm() {
