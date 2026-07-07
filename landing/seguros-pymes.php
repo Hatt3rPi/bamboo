@@ -55,7 +55,7 @@ require __DIR__ . '/partials/head.php';
     <div class="cards">
       <article class="vcard reveal" data-d="1"><div class="vcard__ic"><?= bb_icon('compare') ?></div><h3>Comparamos el mercado</h3><p>Las aseguradoras del mercado compitiendo por tu empresa. Tú decides con todas las opciones sobre la mesa.</p></article>
       <article class="vcard reveal" data-d="2"><div class="vcard__ic"><?= bb_icon('document') ?></div><h3>Garantías ágiles</h3><p>Pólizas de garantía para licitaciones —seriedad de la oferta, fiel cumplimiento— más económicas que la boleta bancaria.</p></article>
-      <article class="vcard reveal" data-d="3"><div class="vcard__ic"><?= bb_icon('handshake') ?></div><h3>Acompañamiento real</h3><p>Si tu empresa tiene un siniestro, gestionamos el caso contigo hasta su resolución. Sin costo de asesoría.</p></article>
+      <article class="vcard reveal" data-d="3"><div class="vcard__ic"><?= bb_icon('handshake') ?></div><h3>Acompañamiento real</h3><p>Si tu empresa tiene un siniestro, gestionamos el caso contigo hasta su resolución.</p></article>
     </div>
   </div>
 </section>
@@ -63,7 +63,7 @@ require __DIR__ . '/partials/head.php';
 <section class="section cta-final">
   <div class="container container--narrow reveal">
     <h2>Cotiza los seguros de tu empresa</h2>
-    <p>Cuéntanos tu rubro y qué necesitas proteger. Te armamos una propuesta a la medida, sin compromiso.</p>
+    <p>Cuéntanos tu rubro y qué necesitas proteger. Te armamos una propuesta a la medida.</p>
     <div class="cta-final__btns">
       <button type="button" class="btn btn--on-dark btn--lg" data-cotizar><?= bb_icon('chat') ?> Cotizar para mi empresa</button>
       <a href="<?= e(wa_link('Hola Adriana, quiero cotizar un seguro para mi empresa o pyme.')) ?>" class="btn btn--whatsapp btn--lg" target="_blank" rel="noopener"><?= bb_icon('whatsapp') ?> WhatsApp</a>

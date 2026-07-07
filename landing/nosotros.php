@@ -21,7 +21,7 @@ if ($SITE['cmf_reg'] !== '') {
 
 $page = [
   'title' => 'Quiénes Somos | Bamboo Seguros — Asesoría Independiente en Seguros',
-  'desc' => 'Somos una corredora de seguros independiente regulada por la CMF, con más de 30 años de experiencia. Te asesoramos para que tomes una decisión informada. Conócenos.',
+  'desc' => 'Bamboo es una corredora independiente; Adriana Sandoval es corredora de seguros persona natural inscrita en la CMF, con más de 30 años de experiencia. Te asesoramos para que tomes una decisión informada. Conócenos.',
   'canonical' => '/nosotros',
   'active' => 'nosotros',
   'schema' => [

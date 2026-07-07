@@ -7,9 +7,9 @@ $home_faqs = [
   ['q' => '¿Cuánto me cuesta la asesoría de Bamboo?', 'a' => 'Nada. Tú solo le pagas la prima a la compañía de seguros, igual que si contrataras directo. Nuestra comisión la paga la aseguradora, así que tienes un experto de tu lado sin gastar un peso de más.'],
   ['q' => '¿Es lo mismo contratar con Bamboo que directo con la aseguradora?', 'a' => 'El precio es el mismo, pero con Bamboo tienes asesoría independiente, comparación entre las compañías del mercado y acompañamiento si algún día tienes un siniestro. No representamos a una sola marca: trabajamos para ti.'],
   ['q' => '¿Con qué aseguradoras trabajan?', 'a' => 'Con las principales del país: Sura, BCI Seguros, Mapfre, Chubb, HDI, Consorcio, Reale, Renta Nacional, Southbridge y más. Comparamos entre todas para encontrar tu mejor opción.'],
-  ['q' => '¿Cómo cotizo un seguro?', 'a' => 'Puedes escribirnos por WhatsApp o completar el formulario de cotización, te hacemos unas pocas preguntas y te enviamos una propuesta clara con coberturas y precios. Sin compromiso.'],
+  ['q' => '¿Cómo cotizo un seguro?', 'a' => 'Puedes escribirnos por WhatsApp o completar el formulario de cotización, te hacemos unas pocas preguntas y te enviamos una propuesta clara con coberturas y precios.'],
   ['q' => '¿Qué pasa si tengo un siniestro?', 'a' => 'Nos avisas a nosotros primero. Te guiamos en todo el proceso con la compañía —orientación y seguimiento del caso— hasta que quede resuelto. No te dejamos solo frente a un call center.'],
-  ['q' => '¿Bamboo está regulada?', 'a' => 'Sí. Somos una corredora de seguros inscrita en el Registro de Corredores de la Comisión para el Mercado Financiero (CMF) de Chile, requisito legal para ejercer y garantía de nuestras obligaciones de asesoría.'],
+  ['q' => '¿Bamboo está regulada?', 'a' => 'Sí. Bamboo opera a través de Adriana Sandoval, corredora de seguros persona natural inscrita en la Comisión para el Mercado Financiero (CMF) de Chile (Código CMF N° 8404), requisito legal para ejercer y garantía de nuestras obligaciones de asesoría.'],
 ];
 
 $page = [
@@ -44,7 +44,7 @@ require __DIR__ . '/partials/head.php';
         <ul class="hero__trust reveal" data-d="4">
           <li><?= bb_icon('check-circle') ?> Respuesta el mismo día</li>
           <li><?= bb_icon('check-circle') ?> Asesoría independiente</li>
-          <li><?= bb_icon('shield-check') ?> Registrada en la CMF</li>
+          <li><?= bb_icon('shield-check') ?> Corredora inscrita en la CMF</li>
         </ul>
       </div>
 
@@ -62,7 +62,7 @@ require __DIR__ . '/partials/head.php';
         </div>
         <div class="hero__card hero__card--3">
           <span class="ic"><?= bb_icon('shield-check') ?></span>
-          <span><b>CMF</b><span>corredora registrada</span></span>
+          <span><b>CMF</b><span>corredora inscrita</span></span>
         </div>
       </div>
     </div>
@@ -99,8 +99,8 @@ require __DIR__ . '/partials/head.php';
       </article>
       <article class="vcard reveal" data-d="2">
         <div class="vcard__ic"><?= bb_icon('shield-check') ?></div>
-        <h3>Sin costo para ti</h3>
-        <p>Nuestra asesoría no tiene costo para ti. Tú solo le pagas la prima a la compañía; nunca le pagas a Bamboo. La comisión la paga la aseguradora.</p>
+        <h3>Transparencia</h3>
+        <p>Tú solo le pagas la prima a la compañía, igual que si contrataras directo; nunca le pagas a Bamboo. La comisión la paga la aseguradora.</p>
       </article>
       <article class="vcard reveal" data-d="3">
         <div class="vcard__ic"><?= bb_icon('handshake') ?></div>
@@ -183,7 +183,7 @@ require __DIR__ . '/partials/head.php';
         <div class="about__sign"><?= e($SITE['founder']) ?><span><?= e($SITE['founder_role']) ?></span></div>
         <div class="about__tags">
           <span class="tag"><?= bb_icon('check') ?> Asesoría independiente</span>
-          <span class="tag"><?= bb_icon('shield-check') ?> Registrada en la CMF</span>
+          <span class="tag"><?= bb_icon('shield-check') ?> Corredora inscrita en la CMF</span>
           <span class="tag"><?= bb_icon('handshake') ?> Atención personal</span>
         </div>
       </div>
@@ -258,8 +258,7 @@ require __DIR__ . '/partials/head.php';
       <p class="cta-final__alt">También puedes escribirnos: <a href="tel:+<?= e($SITE['phone_e164']) ?>"><?= e($SITE['phone_display']) ?></a> · <a href="mailto:<?= e($SITE['email']) ?>"><?= e($SITE['email']) ?></a></p>
       <div class="cta-final__micro">
         <span><?= bb_icon('check') ?> Asesoría independiente</span>
-        <span><?= bb_icon('check') ?> Sin compromiso</span>
-        <span><?= bb_icon('shield-check') ?> Corredora registrada en la CMF</span>
+        <span><?= bb_icon('shield-check') ?> Corredora inscrita en la CMF</span>
       </div>
     </div>
   </div>

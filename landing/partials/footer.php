@@ -51,7 +51,7 @@
     <div class="footer__legal">
       <p>
         <span class="footer__cmf"><?= bb_icon('shield-check') ?> <?= cmf_label() ?></span><br>
-        Bamboo Seguros es una corredora de seguros registrada en la Comisión para el Mercado Financiero (CMF) de Chile. La contratación de seguros está sujeta a la evaluación y condiciones de cada compañía aseguradora.
+        Bamboo Seguros opera a través de Adriana Sandoval Páez, corredora de seguros persona natural inscrita en la Comisión para el Mercado Financiero (CMF) de Chile (Código CMF N° 8404). La contratación de seguros está sujeta a la evaluación y condiciones de cada compañía aseguradora.
       </p>
       <p>© <?= date('Y') ?> <?= e($SITE['name']) ?>. Todos los derechos reservados.</p>
     </div>

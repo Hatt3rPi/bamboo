@@ -19,7 +19,7 @@ require __DIR__ . '/partials/head.php';
     <nav class="crumbs reveal" aria-label="Ruta"><a href="/">Inicio</a><span class="sep">/</span><span>Contacto</span></nav>
     <span class="eyebrow reveal">Contacto</span>
     <h1 class="reveal" data-d="1">Responderemos todas tus consultas</h1>
-    <p class="lead reveal" data-d="2">Elige el canal que más te acomode. Te respondemos el mismo día hábil, sin compromiso.</p>
+    <p class="lead reveal" data-d="2">Elige el canal que más te acomode. Te respondemos el mismo día hábil.</p>
   </div>
 </section>
 
@@ -38,12 +38,12 @@ require __DIR__ . '/partials/head.php';
       </a>
       <a class="vcard reveal" data-d="3" href="mailto:<?= e($SITE['email']) ?>">
         <div class="vcard__ic"><?= bb_icon('mail') ?></div>
-        <h3>Correo</h3><p>Cuéntanos tu caso con detalle y te respondemos.</p>
+        <h3>Correo</h3><p>Cuéntanos en qué podemos ayudarte o qué necesitas cotizar y te respondemos.</p>
         <span class="svc__go" style="word-break:break-all"><?= e($SITE['email']) ?></span>
       </a>
       <a href="#" role="button" class="vcard reveal" data-d="4" data-cotizar style="border:1.5px solid var(--bamboo-300);background:var(--bamboo-50)">
         <div class="vcard__ic" style="background:var(--bamboo-600);color:#fff"><?= bb_icon('chat') ?></div>
-        <h3>Formulario de cotización</h3><p>Completa 3 pasos simples y armamos tu propuesta.</p>
+        <h3>Formulario de cotización</h3><p>Completa 3 pasos simples y te contactamos.</p>
         <span class="svc__go">Cotizar <?= bb_icon('arrow') ?></span>
       </a>
     </div>

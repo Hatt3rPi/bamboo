@@ -101,7 +101,7 @@ require __DIR__ . '/../partials/head.php';
 
       <aside class="svc-aside reveal" data-d="1">
         <h3>Cotiza tu <?= e($s['menu']) ?></h3>
-        <p>Sin costo y sin compromiso. Te respondemos el mismo día hábil.</p>
+        <p>Te respondemos el mismo día hábil.</p>
         <button type="button" class="btn btn--primary btn--block" data-cotizar data-slug="<?= e($s['slug']) ?>"><?= bb_icon('chat') ?> Cotizar</button>
         <a href="<?= e(wa_link($wa_msg)) ?>" class="btn btn--whatsapp btn--block" style="margin-top:12px" target="_blank" rel="noopener"><?= bb_icon('whatsapp') ?> Cotizar por WhatsApp</a>
         <p class="qf__micro" style="margin-top:16px"><?= bb_icon('shield-check') ?> <?= cmf_label() ?></p>

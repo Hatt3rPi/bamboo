@@ -61,7 +61,7 @@
         <section class="qf__step" data-step="3">
           <div class="qf__steplabel">Paso 3 de 3</div>
           <h4>Déjanos tus datos y te contactamos</h4>
-          <p>Adriana revisará tu caso personalmente. Sin compromiso.</p>
+          <p>Adriana revisará tu caso personalmente.</p>
           <div class="field" data-validate="text">
             <label for="qfNombre">Nombre</label>
             <input type="text" id="qfNombre" name="nombre" autocomplete="name" required aria-describedby="err-nombre">

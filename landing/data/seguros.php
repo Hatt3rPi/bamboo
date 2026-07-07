@@ -21,7 +21,7 @@ $SEGUROS = [
     'lead' => 'El seguro de vehículo protege tu auto, moto o flota frente a accidentes, robo y daños a terceros. Como corredora independiente, comparamos coberturas, deducibles y precios entre las aseguradoras del mercado para encontrar la opción que de verdad te conviene.',
     'coberturas' => [
       'Full cobertura (daños propios, robo y responsabilidad civil)',
-      'Solo responsabilidad civil a terceros',
+      'Daños a terceros',
       'Auto de reemplazo y asistencia en ruta',
       'Cobertura para motos y vehículos comerciales',
       'Seguros de flotas para empresas',
@@ -31,7 +31,7 @@ $SEGUROS = [
     'para_quien_pyme' => 'Para autos comerciales y flotas.',
     'faqs' => [
       ['q' => '¿Qué datos necesito para cotizar mi seguro de auto?', 'a' => 'Necesitas los datos del vehículo (marca, modelo, año y patente) y del propietario (RUT y comuna). Con eso comparamos coberturas y deducibles entre las aseguradoras y te enviamos las mejores opciones.'],
-      ['q' => '¿Qué es el deducible en un seguro de auto?', 'a' => 'El deducible es el monto que pagas tú al usar el seguro en un siniestro; el resto lo cubre la compañía. A menor deducible, mayor prima. Te ayudamos a elegir el equilibrio que más te conviene.'],
+      ['q' => '¿Qué es el deducible en un seguro de auto?', 'a' => 'El deducible es el monto que pagas tú al usar el seguro en un siniestro; el resto lo cubre la compañía. A mayor deducible, menor prima. Te ayudamos a elegir el equilibrio que más te conviene.'],
     ],
   ],
 
@@ -66,12 +66,12 @@ $SEGUROS = [
     'meta_title' => 'Seguro Complementario de Salud | Cobertura Médica — Bamboo',
     'meta_desc' => 'Seguro de salud complementario: reembolso de gastos médicos, hospitalización y dental sobre tu Isapre o Fonasa. Cotiza con Bamboo Seguros.',
     'h1' => 'Seguro Complementario de Salud',
-    'lead' => 'El seguro complementario de salud refuerza tu Isapre o Fonasa reembolsando gastos médicos, hospitalarios y dentales que tu plan no cubre del todo. Comparamos coberturas entre las mejores compañías para que elijas la que se ajusta a ti.',
+    'lead' => 'El seguro complementario de salud reembolsa parte de los gastos médicos y hospitalarios que tu Isapre o Fonasa no cubre por completo: cubre el diferencial entre el gasto total y lo que bonifica tu sistema de salud. Comparamos coberturas entre las mejores compañías para que elijas la que se ajusta a ti.',
     'coberturas' => [
       'Reembolso de gastos médicos ambulatorios',
       'Hospitalización y cirugías',
-      'Cobertura dental y exámenes',
-      'Complemento a Isapre o Fonasa',
+      'Exámenes médicos',
+      'Complemento sobre Isapre o Fonasa (cubre el diferencial)',
     ],
     'para_quien' => 'Personas que quieren reforzar su cobertura de salud.',
     'faqs' => [],
@@ -88,10 +88,7 @@ $SEGUROS = [
     'h1' => 'Seguro Catastrófico de Salud Individual',
     'lead' => 'El seguro catastrófico te protege frente a enfermedades graves o tratamientos de alto costo —como los oncológicos— que tu plan de salud no alcanza a cubrir. Es la red de seguridad que evita que un evento médico mayor afecte tu patrimonio.',
     'coberturas' => [
-      'Gastos médicos de alto costo',
-      'Enfermedades graves y tratamientos prolongados',
-      'Cobertura sobre el deducible de Isapre/Fonasa',
-      'Topes de cobertura elevados',
+      'Gastos médicos de alto costo (enfermedades o accidentes)',
     ],
     'para_quien' => 'Personas y familias que quieren protegerse ante gastos médicos mayores, incluyendo seguro oncológico.',
     'faqs' => [],
@@ -148,7 +145,7 @@ $SEGUROS = [
     'meta_title' => 'Seguro de Incendio para tu Hogar | Cotiza — Bamboo Seguros',
     'meta_desc' => 'Protege tu casa contra incendio, sismo y robo. Comparamos coberturas de las mejores aseguradoras y te asesoramos. Cotiza tu seguro de hogar.',
     'h1' => 'Seguro de Incendio',
-    'lead' => 'El seguro de incendio protege tu casa o departamento —estructura y contenido— frente a incendio, terremoto, robo y otros daños. En un país sísmico como Chile, es la base para resguardar tu patrimonio. Comparamos coberturas por ti.',
+    'lead' => 'El seguro de incendio protege tu propiedad —casa, departamento, local comercial, oficina, bodega o industria, con su estructura y contenido— frente a incendio, terremoto, robo y otros daños. En un país sísmico como Chile, es la base para resguardar tu patrimonio. Comparamos coberturas por ti.',
     'coberturas' => [
       'Incendio de estructura y contenido',
       'Sismo y terremoto',
@@ -190,7 +187,7 @@ $SEGUROS = [
     'meta_title' => 'Seguro de Garantía y Pólizas para Licitaciones | Pymes — Bamboo',
     'meta_desc' => 'Pólizas de garantía para licitaciones: seriedad de la oferta, fiel cumplimiento y anticipo. Más económicas que la boleta bancaria. Cotiza con Bamboo Seguros.',
     'h1' => 'Seguro de Garantía',
-    'lead' => 'El seguro de garantía respalda el cumplimiento de obligaciones entre un contratista y el mandante: si el contratista no cumple, la compañía indemniza al mandante (Estado o privado). Es una alternativa más económica que la boleta de garantía bancaria.',
+    'lead' => 'El seguro de garantía respalda el cumplimiento de obligaciones entre un contratista y el mandante: si el contratista no cumple, la compañía indemniza al mandante (Estado o privado).',
     'coberturas' => [
       'Seriedad de la oferta',
       'Fiel cumplimiento del contrato',
@@ -297,7 +294,6 @@ $SEGUROS = [
     'lead' => 'El seguro de salud colectivo es un beneficio para tus colaboradores: cobertura médica, dental y hospitalaria a precios convenientes por ser grupal. Te ayudamos a diseñar el plan que mejor se ajusta a tu empresa.',
     'coberturas' => [
       'Cobertura médica y hospitalaria grupal',
-      'Cobertura dental',
       'Beneficio para colaboradores',
       'Planes a la medida de la empresa',
     ],
