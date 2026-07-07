@@ -64,7 +64,7 @@ $SEGUROS = [
     'segmento' => 'persona',
     'icon' => 'health',
     'meta_title' => 'Seguro Complementario de Salud | Cobertura Médica — Bamboo',
-    'meta_desc' => 'Seguro de salud complementario: reembolso de gastos médicos, hospitalización y dental sobre tu Isapre o Fonasa. Cotiza con Bamboo Seguros.',
+    'meta_desc' => 'Seguro de salud complementario: reembolso de gastos médicos y hospitalización sobre tu Isapre o Fonasa. Cotiza con Bamboo Seguros.',
     'h1' => 'Seguro Complementario de Salud',
     'lead' => 'El seguro complementario de salud reembolsa parte de los gastos médicos y hospitalarios que tu Isapre o Fonasa no cubre por completo: cubre el diferencial entre el gasto total y lo que bonifica tu sistema de salud. Comparamos coberturas entre las mejores compañías para que elijas la que se ajusta a ti.',
     'coberturas' => [
@@ -185,7 +185,7 @@ $SEGUROS = [
     'segmento' => 'pyme',
     'icon' => 'document',
     'meta_title' => 'Seguro de Garantía y Pólizas para Licitaciones | Pymes — Bamboo',
-    'meta_desc' => 'Pólizas de garantía para licitaciones: seriedad de la oferta, fiel cumplimiento y anticipo. Más económicas que la boleta bancaria. Cotiza con Bamboo Seguros.',
+    'meta_desc' => 'Pólizas de garantía para licitaciones: seriedad de la oferta, fiel cumplimiento y anticipo. Cotiza con Bamboo Seguros.',
     'h1' => 'Seguro de Garantía',
     'lead' => 'El seguro de garantía respalda el cumplimiento de obligaciones entre un contratista y el mandante: si el contratista no cumple, la compañía indemniza al mandante (Estado o privado).',
     'coberturas' => [
@@ -196,7 +196,7 @@ $SEGUROS = [
     ],
     'para_quien' => 'Contratistas, proveedores del Estado y pymes que participan en licitaciones.',
     'faqs' => [
-      ['q' => '¿Qué conviene más: boleta de garantía o póliza de garantía?', 'a' => 'La póliza de garantía suele ser más económica que la boleta bancaria y no inmoviliza capital de tu empresa. Te asesoramos para elegir el instrumento que mejor se ajusta a la licitación o contrato.'],
+      ['q' => '¿Qué conviene más: boleta de garantía o póliza de garantía?', 'a' => 'Depende del caso y de lo que exija la licitación o el contrato. Ambos instrumentos respaldan el cumplimiento de tus obligaciones ante el mandante. Te asesoramos para elegir el que mejor se ajuste a tu situación.'],
     ],
   ],
 
@@ -289,9 +289,9 @@ $SEGUROS = [
     'segmento' => 'pyme',
     'icon' => 'health',
     'meta_title' => 'Seguro de Salud Colectivo para Empresas | Bamboo Seguros',
-    'meta_desc' => 'Seguro de salud colectivo para tu empresa: cobertura médica, dental y hospitalaria para tus colaboradores. Asesoría independiente. Cotiza con Bamboo.',
+    'meta_desc' => 'Seguro de salud colectivo para tu empresa: cobertura médica y hospitalaria para tus colaboradores. Asesoría independiente. Cotiza con Bamboo.',
     'h1' => 'Seguro de Salud Colectivo para Empresas',
-    'lead' => 'El seguro de salud colectivo es un beneficio para tus colaboradores: cobertura médica, dental y hospitalaria a precios convenientes por ser grupal. Te ayudamos a diseñar el plan que mejor se ajusta a tu empresa.',
+    'lead' => 'El seguro de salud colectivo es un beneficio para tus colaboradores: cobertura médica y hospitalaria a precios convenientes por ser grupal. Te ayudamos a diseñar el plan que mejor se ajusta a tu empresa.',
     'coberturas' => [
       'Cobertura médica y hospitalaria grupal',
       'Beneficio para colaboradores',
