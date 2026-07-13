@@ -11,6 +11,11 @@
      - ga4_id   : ID de la propiedad GA4 nueva (reemplaza la UA muerta)
    ============================================================ */
 
+/* ¿Estamos sirviendo bajo el dominio de producción? (mismo criterio que el
+   .htaccess usa para la canónica). En producción el portal NO está co-alojado:
+   vive en gestionipn.cl mientras no ocurra el switch redesign→master. */
+$IS_PROD_HOST = (bool) preg_match('/(^|\.)bambooseguros\.cl$/i', isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '');
+
 $SITE = [
     // ---- Identidad ----
     'name'        => 'Bamboo Seguros',
@@ -25,9 +30,11 @@ $SITE = [
     'lang'        => 'es-CL',
 
     // ---- Acceso al portal interno (web de gestión) ----
-    // Co-alojado: el login del portal vive en /backend/login/login.php del mismo dominio.
-    // Si el portal queda en otro host, poner la URL absoluta aquí.
-    'portal_login_url' => '/backend/login/login.php',
+    // Producción (bambooseguros.cl): el portal vive en gestionipn.cl → URL absoluta.
+    // Staging (customware) co-aloja landing+portal → login relativo del mismo dominio.
+    'portal_login_url' => $IS_PROD_HOST
+        ? 'https://gestionipn.cl/backend/login/login.php'
+        : '/backend/login/login.php',
 
     // ---- Contacto (NAP) ----
     'phone_e164'    => '56995091193',          // sin +, sin espacios (para wa.me / tel: / schema)
