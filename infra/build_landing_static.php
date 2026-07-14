@@ -33,17 +33,20 @@ foreach (glob($landing . '/seguros/*.php') as $f) {
 sort($slugs);
 
 // request PHP => ruta de salida en dist/
+// Archivos PLANOS (nosotros.html, no nosotros/index.html): las pretty URLs de
+// Netlify sirven /nosotros -> nosotros.html directo SIN el 301 de trailing
+// slash que agregan los directorios, calzando con las canónicas (sin slash).
 $routes = [
     '/home.php'          => '/index.html',
-    '/nosotros.php'      => '/nosotros/index.html',
-    '/como-operamos.php' => '/como-operamos/index.html',
-    '/contacto.php'      => '/contacto/index.html',
-    '/faq.php'           => '/faq/index.html',
-    '/seguros-pymes.php' => '/seguros-pymes/index.html',
+    '/nosotros.php'      => '/nosotros.html',
+    '/como-operamos.php' => '/como-operamos.html',
+    '/contacto.php'      => '/contacto.html',
+    '/faq.php'           => '/faq.html',
+    '/seguros-pymes.php' => '/seguros-pymes.html',
     '/sitemap.php'       => '/sitemap.xml',
 ];
 foreach ($slugs as $slug) {
-    $routes["/seguros/$slug.php"] = "/seguros/$slug/index.html";
+    $routes["/seguros/$slug.php"] = "/seguros/$slug.html";
 }
 
 /* ---------- Servidor efímero ---------- */
