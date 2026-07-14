@@ -1,3 +1,7 @@
 # Leads capturados en runtime (datos personales — nunca versionar)
 backend/leads.log
 backend/leads.log.*
+
+# Build estático para Netlify (generado por infra/build_landing_static.php)
+dist/
+.netlify/

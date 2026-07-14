@@ -1,0 +1,131 @@
+# ============================================================
+# BAMBOO SEGUROS · LANDING · Netlify
+# El sitio se sirve ESTÁTICO desde dist/ (generado por
+# infra/build_landing_static.php). El formulario de cotización
+# corre como Function (netlify/functions/enviar-cotizacion.mjs)
+# y requiere la env var BREVO_API_KEY configurada en el sitio.
+# ============================================================
+
+[build]
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+
+# ---- Formulario: misma URL que usaba el PHP (landing.js no cambia) ----
+[[redirects]]
+  from = "/backend/enviar_cotizacion.php"
+  to = "/.netlify/functions/enviar-cotizacion"
+  status = 200
+
+# ---- 301 desde las URLs del sitio viejo (continuidad SEO, igual que .htaccess) ----
+[[redirects]]
+  from = "/index.php"
+  to = "/"
+  status = 301
+[[redirects]]
+  from = "/somos.php"
+  to = "/nosotros"
+  status = 301
+[[redirects]]
+  from = "/seguros.php"
+  to = "/#servicios"
+  status = 301
+[[redirects]]
+  from = "/seguros-vehiculo.php"
+  to = "/seguros/auto"
+  status = 301
+[[redirects]]
+  from = "/seguros-vida.php"
+  to = "/seguros/vida"
+  status = 301
+[[redirects]]
+  from = "/seguros-viaje.php"
+  to = "/seguros/viaje"
+  status = 301
+[[redirects]]
+  from = "/seguros-personales.php"
+  to = "/seguros/accidentes-personales"
+  status = 301
+[[redirects]]
+  from = "/seguros-incendio.php"
+  to = "/seguros/incendio-sismo"
+  status = 301
+[[redirects]]
+  from = "/seguros-responsabilidad-civil.php"
+  to = "/seguros/responsabilidad-civil"
+  status = 301
+[[redirects]]
+  from = "/seguros-garantia.php"
+  to = "/seguros/garantia"
+  status = 301
+[[redirects]]
+  from = "/seguros-transporte.php"
+  to = "/seguros/transporte"
+  status = 301
+[[redirects]]
+  from = "/seguros-credito.php"
+  to = "/#servicios"
+  status = 301
+[[redirects]]
+  from = "/seguros-apv.php"
+  to = "/seguros/apv"
+  status = 301
+[[redirects]]
+  from = "/seguros-ingenieria.php"
+  to = "/seguros/ingenieria"
+  status = 301
+[[redirects]]
+  from = "/seguros-administrador.php"
+  to = "/seguros/rc-administradores"
+  status = 301
+
+# ---- URLs .php de la landing (staging co-alojado) -> limpias ----
+[[redirects]]
+  from = "/home.php"
+  to = "/"
+  status = 301
+[[redirects]]
+  from = "/nosotros.php"
+  to = "/nosotros"
+  status = 301
+[[redirects]]
+  from = "/como-operamos.php"
+  to = "/como-operamos"
+  status = 301
+[[redirects]]
+  from = "/contacto.php"
+  to = "/contacto"
+  status = 301
+[[redirects]]
+  from = "/faq.php"
+  to = "/faq"
+  status = 301
+[[redirects]]
+  from = "/seguros-pymes.php"
+  to = "/seguros-pymes"
+  status = 301
+[[redirects]]
+  from = "/seguros/:slug.php"
+  to = "/seguros/:slug"
+  status = 301
+[[redirects]]
+  from = "/sitemap.php"
+  to = "/sitemap.xml"
+  status = 301
+
+# ---- Cabeceras (la CSP que antes emitía partials/head.php por PHP) ----
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; form-action 'self'"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
