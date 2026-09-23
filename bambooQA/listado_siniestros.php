@@ -17,8 +17,9 @@ $num=0;
  $busqueda=$busqueda_err=$data='';
  $rut=$nombre=$telefono=$correo=$lista='';
 
-if($_SERVER["REQUEST_METHOD"] == "POST" and isset($_POST["busqueda"])==true){
-$buscar= estandariza_info($_POST["busqueda"]);
+$buscar = '';
+if (isset($_REQUEST["busqueda"])) {
+$buscar= estandariza_info($_REQUEST["busqueda"]);
 }
 
 ?>
@@ -70,6 +71,7 @@ $buscar= estandariza_info($_POST["busqueda"]);
                     <th>Ítems</th>
                     <th>Bienes</th>
                     <th>Pendientes</th>
+                    <th>Último pendiente</th>
                     <th>Cliente</th>
                     <th>Liquidador</th>
                     <th>Patente</th>
@@ -116,7 +118,16 @@ $(document).ready(function() {
         "searchPanes":{
             "columns":[1],
         },
-        "dom": 'Pfrtip',
+        "dom": 'PBfrtip',
+        "buttons": [{
+            extend: 'excelHtml5',
+            text: 'Descargar Excel',
+            title: 'Listado de siniestros',
+            exportOptions: {
+                columns: ':not(:first-child)',
+                orthogonal: 'export'
+            }
+        }],
         "columns": [{
                 "className": 'details-control',
                 "orderable": false,
@@ -181,6 +192,23 @@ $(document).ready(function() {
                     return chips;
                 }
             }, //9
+            {
+                "data": "ultimo_pendiente_fecha",
+                title: "Último pendiente",
+                defaultContent: "",
+                render: function(data, type, r) {
+                    if (!data) return type === 'display' ? '<em>—</em>' : '';
+                    var m = moment(String(data).replace(' ', 'T').replace(/([+-]\d{2})$/, '$1:00'));
+                    if (type === 'sort' || type === 'type') return m.format('YYYYMMDDHHmmss');
+                    var dias = Math.max(0, moment().diff(m, 'days'));
+                    var texto = (r.ultimo_pendiente_responsable || '') + ': ' + (r.ultimo_pendiente_descripcion || '');
+                    if (type === 'export') return m.format('YYYY/MM/DD') + ' (' + dias + ' días) — ' + texto;
+                    if (type === 'filter') return m.format('YYYY/MM/DD') + ' ' + texto;
+                    var cls = dias >= 7 ? 'badge-danger' : (dias >= 3 ? 'badge-warning' : 'badge-light');
+                    return m.format('YYYY/MM/DD') + ' <span class="badge ' + cls + '" title="Días abierto">' + dias + ' d</span>' +
+                           '<br><small class="text-muted">' + $('<div>').text(texto).html() + '</small>';
+                }
+            }, //10
             {
                 "data": "nom_cliente",
                 title: "Cliente"
@@ -418,16 +446,13 @@ function botones(id, accion) {
     console.log("ID:" + id + " => acción:" + accion);
     switch (accion) {
         case "editar_siniestro": {
-            $.redirect('/bambooQA/creacion_siniestro.php', {
-                'id_siniestro': id,
-                'accion': 'modifica_siniestro'
-            }, 'post');
+            window.location.href = '/bambooQA/creacion_siniestro.php?id_siniestro=' + encodeURIComponent(id);
             break;
         }
         case "eliminar_siniestro": {
             var r2 = confirm("Estás a punto de eliminar este siniestro ¿Deseas continuar?");
             if (r2 == true) {
-                $.redirect('/bambooQA/backend/siniestros/elimina_siniestro.php', {
+                $.redirect('/bambooQA/backend/siniestros/crea_siniestro.php', {
                     'id_siniestro': id,
                     'accion': accion
                 }, 'post');

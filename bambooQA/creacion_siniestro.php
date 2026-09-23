@@ -3,10 +3,13 @@ if (!isset($_SESSION)) {
     session_start();
 }
 
-// Solo es accesible vía POST desde listado_polizas (crear) o desde el botón editar (modificar).
-// Cualquier acceso directo (GET o POST sin contexto) redirige al listado de pólizas.
+// Crear: solo vía POST desde listado_polizas. Editar: vía POST (botón editar) o
+// GET ?id_siniestro=N — el GET permite que Atrás/recargar funcionen sin reenviar
+// formularios. Cualquier otro acceso redirige al listado de pólizas.
 $es_creacion_valida  = $_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id_poliza"]) && !isset($_POST["accion"]);
-$es_edicion_valida   = $_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["accion"]) && $_POST["accion"] == 'modifica_siniestro' && isset($_POST["id_siniestro"]);
+$es_edicion_post     = $_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["accion"]) && $_POST["accion"] == 'modifica_siniestro' && isset($_POST["id_siniestro"]);
+$es_edicion_get      = $_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET["id_siniestro"]) && ctype_digit((string) $_GET["id_siniestro"]);
+$es_edicion_valida   = $es_edicion_post || $es_edicion_get;
 if (!$es_creacion_valida && !$es_edicion_valida) {
     header("Location: /bambooQA/listado_polizas.php");
     exit;
@@ -59,9 +62,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST["accion"]) && isset($_
     db_close($link);
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["accion"]) && $_POST["accion"] == 'modifica_siniestro' && isset($_POST["id_siniestro"])) {
+if ($es_edicion_valida) {
     $camino = 'modifica_siniestro';
-    $id_siniestro = $_POST["id_siniestro"];
+    $id_siniestro = preg_replace('/[^0-9]/', '', $es_edicion_get ? $_GET["id_siniestro"] : $_POST["id_siniestro"]);
     require_once "/home/gestio10/public_html/backend/config.php";
     db_set_charset($link, 'utf8');
     db_select_db($link, DB_NAME);
@@ -463,13 +466,15 @@ if (!$es_ramo_vehiculo_php) {
         <th>Responsable</th>
         <th>Descripción</th>
         <th>Estado</th>
-        <th>Fecha entrega</th>
+        <th>Desde</th>
+        <th>Días</th>
+        <th>Fecha cierre</th>
         <th>Notas</th>
         <th>Acciones</th>
       </tr>
     </thead>
     <tbody id="filas_pendientes">
-      <tr><td colspan="6" class="text-center text-muted"><em>Cargando…</em></td></tr>
+      <tr><td colspan="8" class="text-center text-muted"><em>Cargando…</em></td></tr>
     </tbody>
   </table>
   <br><br>
@@ -752,18 +757,23 @@ function marcarFormMutado() {
 
 // Aplica disabled al botón según el modo:
 // - Creación: requiere siniestroEsValido().
-// - Edición: requiere formMutado (al menos un cambio detectado).
+// - Edición: siempre habilitado; registraSiniestro avisa si no hay cambios.
 function actualizarBotonRegistrar() {
     var $btn = $('#boton_registrar');
     if (MODO_CREACION) {
         $btn.prop('disabled', !siniestroEsValido());
     } else {
-        $btn.prop('disabled', !formMutado);
+        $btn.prop('disabled', false);
     }
 }
 
 // ---- Envío del formulario ----
 function registraSiniestro(salirDespues) {
+    if (!MODO_CREACION && !formMutado && !salirDespues) {
+        alert('No hay cambios por guardar en los datos del siniestro.\n\n' +
+              'Los pendientes se guardan automáticamente al crearlos o cerrarlos.');
+        return;
+    }
     if (!validaSiniestro()) return;
 
     var camino = '<?php echo $camino; ?>';
@@ -1276,9 +1286,32 @@ function badgeResp(resp, usuario) {
 }
 function badgeEstadoPend(est) {
     if (est === 'Pendiente')  return '<span class="badge badge-secondary">Pendiente</span>';
-    if (est === 'Entregado')  return '<span class="badge badge-success">Entregado</span>';
+    if (est === 'Entregado')  return '<span class="badge badge-success">Cerrado</span>';
     if (est === 'No aplica')  return '<span class="badge badge-light">No aplica</span>';
     return est || '';
+}
+
+// Convierte un timestamp de Postgres ('2026-05-11 03:48:19.28+00') o una fecha
+// ('2026-05-11') a Date.
+function parseFechaPg(s) {
+    if (!s) return null;
+    var d = new Date(String(s).replace(' ', 'T').replace(/([+-]\d{2})$/, '$1:00'));
+    return isNaN(d.getTime()) ? null : d;
+}
+
+// Días que lleva (o llevó) el pendiente: desde su creación hasta hoy si sigue
+// abierto, o hasta su cierre si ya se cerró.
+function diasPendiente(p) {
+    var ini = parseFechaPg(p.fecha_creacion);
+    if (!ini) return '—';
+    var fin = (p.estado === 'Pendiente') ? new Date() : parseFechaPg(p.fecha_entrega);
+    if (!fin) return '—';
+    var dias = Math.max(0, Math.floor((fin - ini) / 86400000));
+    if (p.estado === 'Pendiente') {
+        var cls = dias >= 7 ? 'badge-danger' : (dias >= 3 ? 'badge-warning' : 'badge-light');
+        return '<span class="badge ' + cls + '">' + dias + '</span>';
+    }
+    return String(dias);
 }
 
 function calcularQuienLleva() {
@@ -1305,22 +1338,25 @@ function calcularQuienLleva() {
     }
 }
 
-function refrescarSelectBienesPendiente() {
-    var $sel = $('#pend_id_bien');
-    var actual = $sel.val();
-    $sel.empty().append('<option value="">— Siniestro en general —</option>');
-    (bienesMem || []).forEach(function(b) {
-        if (!b.id) return; // solo bienes persistidos
-        var label = (b.tipo === 'propio' ? 'Propio' : 'Tercero') + ' — ' + (b.descripcion || '(sin desc.)');
-        $sel.append('<option value="' + b.id + '">' + label + '</option>');
+// Último pendiente abierto (el más reciente), candidato a cerrarse al crear uno nuevo.
+// Excluye el registro histórico de creación del siniestro.
+function pendienteAbiertoAnterior() {
+    var abiertos = pendientesMem.filter(function(p) {
+        return p.estado === 'Pendiente' && p.responsable !== 'Usuario' && p.codigo_tarea !== 'creacion_siniestro';
     });
-    if (actual) $sel.val(actual);
+    if (!abiertos.length) return null;
+    abiertos.sort(function(a, b) {
+        var fa = String(a.fecha_creacion || ''), fb = String(b.fecha_creacion || '');
+        if (fa !== fb) return fa < fb ? 1 : -1;
+        return Number(b.id) - Number(a.id);
+    });
+    return abiertos[0];
 }
 
 function renderPendientes() {
     var $body = $('#filas_pendientes');
     if (!pendientesMem.length) {
-        $body.html('<tr><td colspan="6" class="text-center text-muted"><em>Sin pendientes registrados.</em></td></tr>');
+        $body.html('<tr><td colspan="8" class="text-center text-muted"><em>Sin pendientes registrados.</em></td></tr>');
         calcularQuienLleva();
         return;
     }
@@ -1332,7 +1368,7 @@ function renderPendientes() {
             ? '<button type="button" class="btn btn-sm btn-outline-primary mr-1" title="Enviar recordatorio amigable" onclick="enviarRecordatorio(' + p.id + ')">✉️</button>'
             : '';
         var botonResolver = (p.estado === 'Pendiente' && !esRegistroHistorico)
-            ? '<button type="button" class="btn btn-sm btn-success mr-1" title="Marcar como Entregado" onclick="abrirModalResolver(' + p.id + ')">✅</button>'
+            ? '<button type="button" class="btn btn-sm btn-success mr-1" title="Cerrar pendiente" onclick="abrirModalResolver(' + p.id + ')">✅</button>'
             : '';
         // Si la tarea está Entregada y tiene datos capturables, el lápiz abre el modal
         // Resolver pre-cargado (para ver/editar lo capturado). Si no, modal genérico.
@@ -1349,6 +1385,8 @@ function renderPendientes() {
             '<td>' + badgeResp(p.responsable, p.usuario_creacion) + '</td>' +
             '<td>' + escHtml(p.descripcion) + '</td>' +
             '<td>' + badgeEstadoPend(p.estado) + '</td>' +
+            '<td>' + fmtFechaHora(p.fecha_creacion) + '</td>' +
+            '<td>' + diasPendiente(p) + '</td>' +
             '<td>' + fmtFechaHora(p.fecha_entrega) + '</td>' +
             '<td><small>' + notasHtml + '</small></td>' +
             '<td style="white-space:nowrap">' +
@@ -1372,7 +1410,6 @@ function cargarPendientes(id_siniestro) {
 }
 
 function abrirModalPendiente(id) {
-    refrescarSelectBienesPendiente();
     if (id) {
         var p = pendientesMem.find(function(x){ return x.id == id; });
         if (!p) return;
@@ -1383,7 +1420,7 @@ function abrirModalPendiente(id) {
         $('#pend_fecha_entrega').val(p.fecha_entrega ? String(p.fecha_entrega).slice(0,10) : '');
         $('#pend_descripcion').val(p.descripcion);
         $('#pend_notas').val(p.notas || '');
-        $('#pend_id_bien').val(p.id_bien || '');
+        $('#pend_cerrar_anterior_wrap').hide();
         $('#pend_edicion_extras').show();
     } else {
         $('#modalPendienteTitle').text('Nuevo pendiente');
@@ -1393,13 +1430,21 @@ function abrirModalPendiente(id) {
         $('#pend_fecha_entrega').val('');
         $('#pend_descripcion').val('');
         $('#pend_notas').val('');
-        $('#pend_id_bien').val('');
         $('#pend_edicion_extras').hide();
+        var ant = pendienteAbiertoAnterior();
+        if (ant) {
+            $('#pend_cerrar_anterior').prop('checked', true).data('id', ant.id);
+            $('#pend_cerrar_anterior_desc').text(ant.responsable + ' — ' + ant.descripcion);
+            $('#pend_cerrar_anterior_wrap').show();
+        } else {
+            $('#pend_cerrar_anterior').data('id', '');
+            $('#pend_cerrar_anterior_wrap').hide();
+        }
     }
     $('#modalPendiente').modal('show');
 }
 
-// Auto-llenar fecha de entrega con hoy al marcar Entregado
+// Auto-llenar fecha de cierre con hoy al marcar Cerrado
 $(document).on('change', '#pend_estado', function() {
     if ($(this).val() === 'Entregado' && !$('#pend_fecha_entrega').val()) {
         var d = new Date();
@@ -1503,10 +1548,10 @@ function abrirModalResolver(id_pendiente) {
     // Si la tarea ya está Entregada, el modal está en modo "ver/editar datos"
     var modoEdicion = (p.estado === 'Entregado');
     $('#modalResolverPendiente .modal-title').html(
-        modoEdicion ? '✏️ Editar datos de la tarea' : '✅ Marcar como Entregado'
+        modoEdicion ? '✏️ Editar datos de la tarea' : '✅ Cerrar pendiente'
     );
     $('#modalResolverPendiente .btn-success').text(
-        modoEdicion ? 'Guardar cambios' : 'Marcar Entregado'
+        modoEdicion ? 'Guardar cambios' : 'Cerrar pendiente'
     );
     $('#modalResolverPendiente').data('modo_edicion', modoEdicion);
     $('#resolver_pend_id').val(p.id);
@@ -1989,7 +2034,7 @@ function guardarPendiente() {
     if (!descripcion) { alert('La descripción es obligatoria.'); return; }
     var data = {
         id_siniestro: id_siniestro,
-        id_bien: $('#pend_id_bien').val(),
+        id_bien: id ? ((pendientesMem.find(function(x){ return x.id == id; }) || {}).id_bien || '') : '',
         responsable: $('#pend_responsable').val(),
         descripcion: descripcion,
         fecha_entrega: $('#pend_fecha_entrega').val(),
@@ -2004,6 +2049,9 @@ function guardarPendiente() {
     } else {
         url = '/bambooQA/backend/siniestros/crea_pendiente.php';
         accionMsg = 'crear';
+        if ($('#pend_cerrar_anterior_wrap').is(':visible') && $('#pend_cerrar_anterior').is(':checked')) {
+            data.cerrar_anterior_id = $('#pend_cerrar_anterior').data('id') || '';
+        }
     }
     $.post(url, data, null, 'json').done(function(resp) {
         if (resp && resp.ok) {
@@ -2286,11 +2334,12 @@ function enviarCorreoLiquidador() {
           <textarea class="form-control" id="pend_descripcion" rows="2"
             placeholder="Ej: Recepción municipal del edificio, Finiquito firmado, Fecha de pago…"></textarea>
         </div>
-        <div class="form-group">
-          <label>Bien asociado (opcional)</label>
-          <select class="form-control" id="pend_id_bien">
-            <option value="">— Siniestro en general —</option>
-          </select>
+        <!-- Solo visible al crear, si hay un pendiente abierto anterior -->
+        <div class="form-group form-check" id="pend_cerrar_anterior_wrap" style="display:none">
+          <input type="checkbox" class="form-check-input" id="pend_cerrar_anterior" checked>
+          <label class="form-check-label" for="pend_cerrar_anterior">
+            Cerrar el pendiente anterior: <strong id="pend_cerrar_anterior_desc"></strong>
+          </label>
         </div>
         <div class="form-group">
           <label>Notas</label>
@@ -2304,12 +2353,12 @@ function enviarCorreoLiquidador() {
               <label>Estado</label>
               <select class="form-control" id="pend_estado">
                 <option value="Pendiente">Pendiente</option>
-                <option value="Entregado">Entregado</option>
+                <option value="Entregado">Cerrado</option>
                 <option value="No aplica">No aplica</option>
               </select>
             </div>
             <div class="col-md-6 form-group">
-              <label>Fecha entrega</label>
+              <label>Fecha cierre</label>
               <input type="date" class="form-control" id="pend_fecha_entrega">
             </div>
           </div>
@@ -2353,7 +2402,7 @@ function enviarCorreoLiquidador() {
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">✅ Marcar como Entregado</h5>
+        <h5 class="modal-title">✅ Cerrar pendiente</h5>
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body">
@@ -2368,7 +2417,7 @@ function enviarCorreoLiquidador() {
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" onclick="guardarResolverPendiente()">Marcar Entregado</button>
+        <button type="button" class="btn btn-success" onclick="guardarResolverPendiente()">Cerrar pendiente</button>
       </div>
     </div>
   </div>

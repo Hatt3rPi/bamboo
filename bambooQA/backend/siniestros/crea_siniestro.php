@@ -429,13 +429,12 @@ var salirDespues  = <?php echo $salir_despues ? 'true' : 'false'; ?>;
 var idParaVolver  = '<?php echo $id_para_volver; ?>';
 alert(mensaje);
 if (!salirDespues && idParaVolver) {
-    // Guardar sin salir: volver al formulario de edición del mismo siniestro
-    $.redirect('/bambooQA/creacion_siniestro.php', {
-        accion: 'modifica_siniestro',
-        id_siniestro: idParaVolver
-    }, 'post');
+    // Guardar sin salir: volver al formulario de edición del mismo siniestro.
+    // replace() saca esta página intermedia del historial: así Atrás no reenvía el guardado.
+    window.location.replace('/bambooQA/creacion_siniestro.php?id_siniestro=' + encodeURIComponent(idParaVolver));
 } else {
-    $.redirect(listado, { 'busqueda': busqueda }, 'post');
+    // Al listado por GET (acepta ?busqueda=) reemplazando esta página en el historial.
+    window.location.replace(listado + (busqueda ? '?busqueda=' + encodeURIComponent(busqueda) : ''));
 }
 </script>
 </body>

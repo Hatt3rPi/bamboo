@@ -1,0 +1,1 @@
+durante Fase actual, solo configuraremos la nueva base de datos. no la dejaremos productiva
