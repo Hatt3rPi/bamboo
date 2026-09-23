@@ -13,6 +13,10 @@ $responsable  = estandariza_info($_POST['responsable']  ?? '');
 $descripcion  = estandariza_info($_POST['descripcion']  ?? '');
 $fecha_entrega = estandariza_info($_POST['fecha_entrega'] ?? '');
 $notas        = estandariza_info($_POST['notas']        ?? '');
+// Pendiente anterior a cerrar al crear este (Adriana 22-sep: al pasar al siguiente
+// pendiente, el anterior debe quedar cerrado). Se cierra sin promover la cadena
+// automática: quien agrega el pendiente manual está conduciendo el flujo a mano.
+$cerrar_anterior_id = estandariza_info($_POST['cerrar_anterior_id'] ?? '');
 $usuario      = $_SESSION['username'] ?? '';
 
 $ok = false; $mensaje = ''; $id_nuevo = null;
@@ -45,6 +49,19 @@ else {
     db_query($link, "SELECT trazabilidad('" . sqlesc($usuario) . "', 'Creación pendiente siniestro',
                         'Siniestro: $id_siniestro, resp: $r', 'siniestros_pendientes',
                         '$id_siniestro', '{$_SERVER['PHP_SELF']}')");
+    if ($id_nuevo && ctype_digit($cerrar_anterior_id)) {
+        $rs_ant = db_query($link, "UPDATE siniestros_pendientes
+                                   SET estado='Entregado', fecha_entrega=NOW(), updated_at=NOW()
+                                   WHERE id='$cerrar_anterior_id' AND id_siniestro='$id_siniestro'
+                                     AND estado='Pendiente'
+                                   RETURNING id");
+        if ($rs_ant && db_fetch_object($rs_ant)) {
+            db_query($link, "INSERT INTO siniestros_pendientes_bitacora
+                                (id_pendiente, accion, estado_anterior, estado_nuevo, usuario)
+                             VALUES
+                                ('$cerrar_anterior_id', 'Cerrado al crear pendiente siguiente', 'Pendiente', 'Entregado', '" . sqlesc($usuario) . "')");
+        }
+    }
     $ok = true; $mensaje = 'Pendiente creado.';
 }
 

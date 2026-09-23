@@ -51,7 +51,10 @@ $sql = "SELECT s.id, s.numero_siniestro, s.numero_poliza, s.ramo, s.tipo_siniest
     COALESCE(sp.pendientes_cliente, 0)    as pendientes_cliente,
     COALESCE(sp.pendientes_liquidador, 0) as pendientes_liquidador,
     COALESCE(sp.pendientes_compania, 0)   as pendientes_compania,
-    COALESCE(sp.pendientes_taller, 0)     as pendientes_taller
+    COALESCE(sp.pendientes_taller, 0)     as pendientes_taller,
+    up.fecha_creacion                     as ultimo_pendiente_fecha,
+    up.responsable                        as ultimo_pendiente_responsable,
+    up.descripcion                        as ultimo_pendiente_descripcion
 FROM siniestros s
 LEFT JOIN clientes c ON s.rut_asegurado = c.rut_sin_dv AND c.rut_sin_dv IS NOT NULL
 LEFT JOIN polizas_2 p ON s.id_poliza = p.id
@@ -63,6 +66,12 @@ LEFT JOIN (
            SUM(CASE WHEN responsable='Taller'     AND estado='Pendiente' THEN 1 ELSE 0 END) as pendientes_taller
     FROM siniestros_pendientes GROUP BY id_siniestro
 ) sp ON sp.id_siniestro = s.id
+LEFT JOIN (
+    SELECT DISTINCT ON (id_siniestro) id_siniestro, fecha_creacion, responsable, descripcion
+    FROM siniestros_pendientes
+    WHERE estado = 'Pendiente' AND responsable <> 'Usuario'
+    ORDER BY id_siniestro, fecha_creacion DESC, id DESC
+) up ON up.id_siniestro = s.id
 LEFT JOIN (
     SELECT id_siniestro,
            string_agg(numero_item::text, ', ' ORDER BY numero_item) as items_afectados,
@@ -139,6 +148,9 @@ while ($row = db_fetch_object($resultado)) {
         "pendientes_liquidador" => (int)$row->pendientes_liquidador,
         "pendientes_compania"   => (int)$row->pendientes_compania,
         "pendientes_taller"     => (int)$row->pendientes_taller
+        "ultimo_pendiente_fecha"       => $row->ultimo_pendiente_fecha,
+        "ultimo_pendiente_responsable" => $row->ultimo_pendiente_responsable,
+        "ultimo_pendiente_descripcion" => $row->ultimo_pendiente_descripcion,
     );
 }
 db_close($link);
